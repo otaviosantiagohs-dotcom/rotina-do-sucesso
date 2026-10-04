@@ -155,12 +155,25 @@ module.exports = async function handler(req, res) {
 
       if (createError || !created?.user) {
         const msg = createError?.message || 'Não foi possível criar o usuário.';
-        const code = /already|registered|exists/i.test(msg) ? 'USERNAME_EXISTS' : 'AUTH_CREATE_FAILED';
-        return json(res, 400, { code, message: msg });
+        const code = /already|registered|exists|email_exists/i.test(msg) ? 'USERNAME_EXISTS' : 'AUTH_CREATE_FAILED';
+        console.error('auth.createUser failed', {
+          code: createError?.code || null,
+          status: createError?.status || null,
+          message: msg
+        });
+        return json(res, createError?.status && createError.status >= 400 ? createError.status : 400, {
+          code,
+          message: msg,
+          authCode: createError?.code || null
+        });
       }
 
       const userId = created.user.id;
-      const { error: profileError } = await admin.from('profiles').update({
+
+      // O perfil deixa de depender de trigger em auth.users.
+      // A API administrativa cria explicitamente o vínculo no banco.
+      const { error: profileError } = await admin.from('profiles').upsert({
+        user_id: userId,
         username,
         first_name: String(u.firstName || '').trim() || null,
         last_name: String(u.lastName || '').trim() || null,
@@ -169,9 +182,10 @@ module.exports = async function handler(req, res) {
         unit_id: unitId,
         active,
         first_access_completed: complete
-      }).eq('user_id', userId);
+      }, { onConflict: 'user_id' });
 
       if (profileError) {
+        console.error('profiles.upsert failed after auth.createUser', profileError);
         await admin.auth.admin.deleteUser(userId);
         return json(res, 400, { code: 'PROFILE_CREATE_FAILED', message: profileError.message });
       }
@@ -314,12 +328,24 @@ module.exports = async function handler(req, res) {
         });
 
         if (error || !created?.user) {
-          results.push({ username, ok: false, code: 'AUTH_CREATE_FAILED' });
+          console.error('auth.createUser failed in bulkCreate', {
+            username,
+            code: error?.code || null,
+            status: error?.status || null,
+            message: error?.message || null
+          });
+          results.push({
+            username,
+            ok: false,
+            code: /already|registered|exists|email_exists/i.test(error?.message || '') ? 'USERNAME_EXISTS' : 'AUTH_CREATE_FAILED',
+            message: error?.message || 'Falha ao criar usuário no Supabase Auth.'
+          });
           continue;
         }
 
         const userId = created.user.id;
-        const { error: profileError } = await admin.from('profiles').update({
+        const { error: profileError } = await admin.from('profiles').upsert({
+          user_id: userId,
           username,
           role: 'colaborador',
           active: true,
@@ -328,11 +354,12 @@ module.exports = async function handler(req, res) {
           last_name: null,
           company_id: null,
           unit_id: null
-        }).eq('user_id', userId);
+        }, { onConflict: 'user_id' });
 
         if (profileError) {
+          console.error('profiles.upsert failed in bulkCreate', profileError);
           await admin.auth.admin.deleteUser(userId);
-          results.push({ username, ok: false, code: 'PROFILE_CREATE_FAILED' });
+          results.push({ username, ok: false, code: 'PROFILE_CREATE_FAILED', message: profileError.message });
           continue;
         }
 

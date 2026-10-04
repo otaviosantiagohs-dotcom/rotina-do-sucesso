@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/><meta name="theme-color" content="#050608"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" name="viewport"/>
-<title>Rotina do Sucesso — V8.10.3 Gerente Operacional</title>
+<title>Rotina do Sucesso — V8.10.4 Cadastro Corrigido</title>
 <style>
 :root{--bg:#0b0e12;--panel:#12171d;--panel2:#171d24;--line:#27303a;--text:#f5f7fa;--muted:#8d98a5;--red:#e43b32;--green:#61d394;--amber:#e9b45d}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
@@ -2992,9 +2992,13 @@ $('#userForm').addEventListener('submit',async e=>{
       USERNAME_EXISTS:'Esse usuário já existe.',
       UNIT_HAS_MANAGER:'Essa unidade já possui outro Gerente/Capitão.',
       LAST_PERFORMANCE:'É necessário manter pelo menos um Performance ativo.',
-      SELF_LOCKOUT:'Não é possível retirar o próprio acesso de Performance.'
+      SELF_LOCKOUT:'Não é possível retirar o próprio acesso de Performance.',
+      PROFILE_CREATE_FAILED:'O acesso foi criado, mas o cadastro interno falhou e foi revertido.',
+      SERVER_CONFIG:'A integração segura com o Supabase não está configurada no servidor.'
     };
-    $('#userFormError').textContent=map[err.code]||err.message;
+    $('#userFormError').textContent=map[err.code]||(err.code==='AUTH_CREATE_FAILED'
+      ? `Falha ao criar o acesso no Supabase Auth: ${err.message}`
+      : err.message);
   }finally{
     if(btn){btn.disabled=false;btn.textContent='SALVAR USUÁRIO'}
   }
