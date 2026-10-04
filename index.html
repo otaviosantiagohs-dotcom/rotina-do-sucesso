@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/><meta name="theme-color" content="#050608"/><meta name="color-scheme" content="dark light"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" name="viewport"/>
-<title>Rotina do Sucesso — V9.4 Final</title>
+<title>Rotina do Sucesso — V9.4.1 Final</title>
 <script>/* V9 — tema aplicado antes da pintura (evita piscar) */(function(){var t='dark';try{var s=localStorage.getItem('rds-theme');if(s==='light'||s==='dark')t=s}catch(e){}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='light'?'#f2f0ec':'#050608')})();</script>
 <style>
 :root{--bg:#0b0e12;--panel:#12171d;--panel2:#171d24;--line:#27303a;--text:#f5f7fa;--muted:#8d98a5;--red:#e43b32;--green:#61d394;--amber:#e9b45d}
@@ -902,7 +902,7 @@ tbody tr:hover{background:var(--accent-soft)}
 <input type="hidden" id="editUserId"/>
 <div class="user-modal-grid">
 <div><label class="label">Usuário</label><input id="userLogin" autocomplete="off" placeholder="ex.: dayana.sos"/></div>
-<div><label class="label">Senha</label><input id="userPassword" type="password" autocomplete="new-password" placeholder="Defina a senha"/><div class="form-hint" id="passwordHint">Obrigatória para novo usuário.</div></div>
+<div><label class="label">Senha</label><input id="userPassword" type="password" autocomplete="new-password" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="4 dígitos"/><div class="form-hint" id="passwordHint">Obrigatória para novo usuário.</div></div>
 <div><label class="label">Nome</label><input id="userFirstName" placeholder="Nome"/></div>
 <div><label class="label">Sobrenome</label><input id="userLastName" placeholder="Sobrenome"/></div>
 <div><label class="label">Perfil</label><select id="userRole"><option value="colaborador">Colaborador</option><option value="gerente">Gerente</option><option value="performance">Performance</option></select></div>
@@ -1140,15 +1140,15 @@ tbody tr:hover{background:var(--accent-soft)}
       <div style="height:10px"></div>
 
       <label class="label">Nova senha</label>
-      <input id="mandatoryNewPassword" type="password" autocomplete="new-password" placeholder="Crie sua nova senha"/>
+      <input id="mandatoryNewPassword" type="password" autocomplete="new-password" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="4 dígitos"/>
 
       <div style="height:10px"></div>
 
       <label class="label">Confirme a nova senha</label>
-      <input id="mandatoryConfirmPassword" type="password" autocomplete="new-password" placeholder="Digite novamente"/>
+      <input id="mandatoryConfirmPassword" type="password" autocomplete="new-password" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="Repita os 4 dígitos"/>
 
       <div class="password-rule">
-        A nova senha deve ter pelo menos 6 caracteres e precisa ser diferente da senha temporária.
+        A nova senha deve ter exatamente 4 dígitos numéricos e precisa ser diferente da senha temporária.
       </div>
 
       <div class="form-error" id="mandatoryPasswordError"></div>
@@ -1255,31 +1255,31 @@ let ORG_PROFILES_DB=[];
 
 
 const userStore=[
-  {id:'u1',username:'performance',password:'123',firstName:'Equipe',lastName:'Performance',role:'performance',company:'',unit:'',active:true,profileComplete:true,lastLogin:null},
-  {id:'u2',username:'marcos.rec',password:'123',firstName:'Marcos',lastName:'Lima',role:'gerente',company:'SOS',unit:'Recife',active:true,profileComplete:true,lastLogin:null},
-  {id:'u3',username:'paula.for',password:'123',firstName:'Paula',lastName:'Reis',role:'gerente',company:'SOS',unit:'Fortaleza',active:true,profileComplete:true,lastLogin:null},
-  {id:'u4',username:'sandra.bel',password:'123',firstName:'Sandra',lastName:'Melo',role:'gerente',company:'Universo',unit:'Belém',active:true,profileComplete:true,lastLogin:null},
-  {id:'u5',username:'carlos.the',password:'123',firstName:'Carlos',lastName:'Nunes',role:'gerente',company:'Universo',unit:'Teresina',active:true,profileComplete:true,lastLogin:null},
-  {id:'u6',username:'emanuel.gru',password:'123',firstName:'Emanuel',lastName:'Silva',role:'gerente',company:'Connect',unit:'Guarulhos',active:true,profileComplete:true,lastLogin:null},
-  {id:'u7',username:'vitor.ssa',password:'123',firstName:'Vitor',lastName:'Souza',role:'gerente',company:'Azul Viagens',unit:'Salvador',active:true,profileComplete:true,lastLogin:null},
-  {id:'u8',username:'dayana.sos',password:'123',firstName:'Dayana',lastName:'Souza',role:'colaborador',company:'SOS',unit:'Recife',active:true,profileComplete:true,lastLogin:null},
-  {id:'u9',username:'renata.rec',password:'123',firstName:'Renata',lastName:'Costa',role:'colaborador',company:'SOS',unit:'Recife',active:true,profileComplete:true,lastLogin:null},
-  {id:'u10',username:'bruno.rec',password:'123',firstName:'Bruno',lastName:'Silva',role:'colaborador',company:'SOS',unit:'Recife',active:true,profileComplete:true,lastLogin:null},
-  {id:'u11',username:'marina.for',password:'123',firstName:'Marina',lastName:'Alves',role:'colaborador',company:'SOS',unit:'Fortaleza',active:true,profileComplete:true,lastLogin:null},
-  {id:'u12',username:'lucas.for',password:'123',firstName:'Lucas',lastName:'Rocha',role:'colaborador',company:'SOS',unit:'Fortaleza',active:true,profileComplete:true,lastLogin:null},
-  {id:'u13',username:'aline.for',password:'123',firstName:'Aline',lastName:'Freitas',role:'colaborador',company:'SOS',unit:'Fortaleza',active:true,profileComplete:true,lastLogin:null},
-  {id:'u14',username:'joao.bel',password:'123',firstName:'João',lastName:'Lima',role:'colaborador',company:'Universo',unit:'Belém',active:true,profileComplete:true,lastLogin:null},
-  {id:'u15',username:'carla.bel',password:'123',firstName:'Carla',lastName:'Dias',role:'colaborador',company:'Universo',unit:'Belém',active:true,profileComplete:true,lastLogin:null},
-  {id:'u16',username:'rafael.bel',password:'123',firstName:'Rafael',lastName:'Nunes',role:'colaborador',company:'Universo',unit:'Belém',active:true,profileComplete:true,lastLogin:null},
-  {id:'u17',username:'camila.the',password:'123',firstName:'Camila',lastName:'Sousa',role:'colaborador',company:'Universo',unit:'Teresina',active:true,profileComplete:true,lastLogin:null},
-  {id:'u18',username:'pedro.the',password:'123',firstName:'Pedro',lastName:'Matos',role:'colaborador',company:'Universo',unit:'Teresina',active:true,profileComplete:true,lastLogin:null},
-  {id:'u19',username:'ana.the',password:'123',firstName:'Ana',lastName:'Lima',role:'colaborador',company:'Universo',unit:'Teresina',active:true,profileComplete:true,lastLogin:null},
-  {id:'u20',username:'luandra.gru',password:'123',firstName:'Luandra',lastName:'Melo',role:'colaborador',company:'Connect',unit:'Guarulhos',active:true,profileComplete:true,lastLogin:null},
-  {id:'u21',username:'neto.gru',password:'123',firstName:'Neto',lastName:'Alves',role:'colaborador',company:'Connect',unit:'Guarulhos',active:true,profileComplete:true,lastLogin:null},
-  {id:'u22',username:'felipe.ssa',password:'123',firstName:'Felipe',lastName:'Costa',role:'colaborador',company:'Azul Viagens',unit:'Salvador',active:true,profileComplete:true,lastLogin:null},
-  {id:'u23',username:'bianca.ssa',password:'123',firstName:'Bianca',lastName:'Reis',role:'colaborador',company:'Azul Viagens',unit:'Salvador',active:true,profileComplete:true,lastLogin:null},
-  {id:'u24',username:'novo.agente',password:'123',firstName:'',lastName:'',role:'colaborador',company:'',unit:'',active:true,profileComplete:false,lastLogin:null},
-  {id:'u25',username:'ana.for',password:'123',firstName:'Ana',lastName:'Ferreira',role:'colaborador',company:'SOS',unit:'Fortaleza',active:false,profileComplete:true,lastLogin:null}
+  {id:'u1',username:'performance',password:'1234',firstName:'Equipe',lastName:'Performance',role:'performance',company:'',unit:'',active:true,profileComplete:true,lastLogin:null},
+  {id:'u2',username:'marcos.rec',password:'1234',firstName:'Marcos',lastName:'Lima',role:'gerente',company:'SOS',unit:'Recife',active:true,profileComplete:true,lastLogin:null},
+  {id:'u3',username:'paula.for',password:'1234',firstName:'Paula',lastName:'Reis',role:'gerente',company:'SOS',unit:'Fortaleza',active:true,profileComplete:true,lastLogin:null},
+  {id:'u4',username:'sandra.bel',password:'1234',firstName:'Sandra',lastName:'Melo',role:'gerente',company:'Universo',unit:'Belém',active:true,profileComplete:true,lastLogin:null},
+  {id:'u5',username:'carlos.the',password:'1234',firstName:'Carlos',lastName:'Nunes',role:'gerente',company:'Universo',unit:'Teresina',active:true,profileComplete:true,lastLogin:null},
+  {id:'u6',username:'emanuel.gru',password:'1234',firstName:'Emanuel',lastName:'Silva',role:'gerente',company:'Connect',unit:'Guarulhos',active:true,profileComplete:true,lastLogin:null},
+  {id:'u7',username:'vitor.ssa',password:'1234',firstName:'Vitor',lastName:'Souza',role:'gerente',company:'Azul Viagens',unit:'Salvador',active:true,profileComplete:true,lastLogin:null},
+  {id:'u8',username:'dayana.sos',password:'1234',firstName:'Dayana',lastName:'Souza',role:'colaborador',company:'SOS',unit:'Recife',active:true,profileComplete:true,lastLogin:null},
+  {id:'u9',username:'renata.rec',password:'1234',firstName:'Renata',lastName:'Costa',role:'colaborador',company:'SOS',unit:'Recife',active:true,profileComplete:true,lastLogin:null},
+  {id:'u10',username:'bruno.rec',password:'1234',firstName:'Bruno',lastName:'Silva',role:'colaborador',company:'SOS',unit:'Recife',active:true,profileComplete:true,lastLogin:null},
+  {id:'u11',username:'marina.for',password:'1234',firstName:'Marina',lastName:'Alves',role:'colaborador',company:'SOS',unit:'Fortaleza',active:true,profileComplete:true,lastLogin:null},
+  {id:'u12',username:'lucas.for',password:'1234',firstName:'Lucas',lastName:'Rocha',role:'colaborador',company:'SOS',unit:'Fortaleza',active:true,profileComplete:true,lastLogin:null},
+  {id:'u13',username:'aline.for',password:'1234',firstName:'Aline',lastName:'Freitas',role:'colaborador',company:'SOS',unit:'Fortaleza',active:true,profileComplete:true,lastLogin:null},
+  {id:'u14',username:'joao.bel',password:'1234',firstName:'João',lastName:'Lima',role:'colaborador',company:'Universo',unit:'Belém',active:true,profileComplete:true,lastLogin:null},
+  {id:'u15',username:'carla.bel',password:'1234',firstName:'Carla',lastName:'Dias',role:'colaborador',company:'Universo',unit:'Belém',active:true,profileComplete:true,lastLogin:null},
+  {id:'u16',username:'rafael.bel',password:'1234',firstName:'Rafael',lastName:'Nunes',role:'colaborador',company:'Universo',unit:'Belém',active:true,profileComplete:true,lastLogin:null},
+  {id:'u17',username:'camila.the',password:'1234',firstName:'Camila',lastName:'Sousa',role:'colaborador',company:'Universo',unit:'Teresina',active:true,profileComplete:true,lastLogin:null},
+  {id:'u18',username:'pedro.the',password:'1234',firstName:'Pedro',lastName:'Matos',role:'colaborador',company:'Universo',unit:'Teresina',active:true,profileComplete:true,lastLogin:null},
+  {id:'u19',username:'ana.the',password:'1234',firstName:'Ana',lastName:'Lima',role:'colaborador',company:'Universo',unit:'Teresina',active:true,profileComplete:true,lastLogin:null},
+  {id:'u20',username:'luandra.gru',password:'1234',firstName:'Luandra',lastName:'Melo',role:'colaborador',company:'Connect',unit:'Guarulhos',active:true,profileComplete:true,lastLogin:null},
+  {id:'u21',username:'neto.gru',password:'1234',firstName:'Neto',lastName:'Alves',role:'colaborador',company:'Connect',unit:'Guarulhos',active:true,profileComplete:true,lastLogin:null},
+  {id:'u22',username:'felipe.ssa',password:'1234',firstName:'Felipe',lastName:'Costa',role:'colaborador',company:'Azul Viagens',unit:'Salvador',active:true,profileComplete:true,lastLogin:null},
+  {id:'u23',username:'bianca.ssa',password:'1234',firstName:'Bianca',lastName:'Reis',role:'colaborador',company:'Azul Viagens',unit:'Salvador',active:true,profileComplete:true,lastLogin:null},
+  {id:'u24',username:'novo.agente',password:'1234',firstName:'',lastName:'',role:'colaborador',company:'',unit:'',active:true,profileComplete:false,lastLogin:null},
+  {id:'u25',username:'ana.for',password:'1234',firstName:'Ana',lastName:'Ferreira',role:'colaborador',company:'SOS',unit:'Fortaleza',active:false,profileComplete:true,lastLogin:null}
 ];
 
 function isOperationalRole(u=currentUser){return !!u&&['colaborador','gerente'].includes(u.role)}
@@ -1959,8 +1959,8 @@ $('#mandatoryPasswordForm').addEventListener('submit',async e=>{
     $('#mandatoryPasswordError').textContent='Preencha os três campos de senha.';
     return;
   }
-  if(newPassword.length<6){
-    $('#mandatoryPasswordError').textContent='A nova senha precisa ter pelo menos 6 caracteres.';
+  if(!/^\d{4}$/.test(newPassword)){
+    $('#mandatoryPasswordError').textContent='A nova senha deve ter exatamente 4 dígitos numéricos.';
     return;
   }
   if(newPassword!==confirmPassword){
@@ -3186,7 +3186,7 @@ function openUserImport(){
   $('#importUsersModal').classList.remove('hidden');
 }
 function downloadUserTemplate(){
-  const csv='\ufeffusuario;senha\r\nagente.exemplo;Senha123\r\noutro.usuario;Senha456\r\n';
+  const csv='\ufeffusuario;senha\r\nagente.exemplo;1234\r\noutro.usuario;5678\r\n';
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
@@ -3238,7 +3238,7 @@ function mapImportRows(rawRows){
     let status='ready',reason='Pronto para importar';
     if(!username||!password){status='error';reason='Usuário ou senha em branco.'}
     else if(!/^[a-z0-9._-]{3,40}$/.test(username)){status='error';reason='Usuário inválido.'}
-    else if(password.length<6){status='error';reason='Senha precisa ter pelo menos 6 caracteres.'}
+    else if(!/^\d{4}$/.test(password)){status='error';reason='Senha deve ter exatamente 4 dígitos numéricos.'}
     else if(fileSeen.has(username)){status='skip';reason='Usuário duplicado dentro da planilha.'}
     else if(ORG_PROFILES_DB.some(p=>p.username.toLowerCase()===username)){status='skip';reason='Usuário já cadastrado.'}
     fileSeen.add(username);
@@ -3548,7 +3548,7 @@ function openUserEditor(profile=null){
   $('#userModalTitle').textContent=profile?'Editar usuário':'Cadastrar usuário';
   $('#userLogin').value=profile?.username||'';
   $('#userPassword').value='';
-  $('#passwordHint').textContent=profile?'Deixe em branco para manter a senha atual.':'Obrigatória para novo usuário.';
+  $('#passwordHint').textContent=profile?'Deixe em branco para manter a senha atual. Se redefinir, use 4 dígitos numéricos.':'Obrigatória para novo usuário: 4 dígitos numéricos.';
   $('#userFirstName').value=profile?.first_name||'';
   $('#userLastName').value=profile?.last_name||'';
   $('#userRole').value=profile?.role||'colaborador';
@@ -3573,8 +3573,8 @@ function validateUserForm(existing){
 
   if(!/^[a-z0-9._-]{3,40}$/.test(username))return 'Usuário deve ter 3 a 40 caracteres: letras, números, ponto, hífen ou underline.';
   if(ORG_PROFILES_DB.some(p=>p.user_id!==existing?.user_id&&p.username.toLowerCase()===username))return 'Esse usuário já existe.';
-  if(!existing&&password.length<6)return 'Defina uma senha com pelo menos 6 caracteres.';
-  if(existing&&password&&password.length<6)return 'A nova senha precisa ter pelo menos 6 caracteres.';
+  if(!existing&&!/^\d{4}$/.test(password))return 'Defina uma senha com exatamente 4 dígitos numéricos.';
+  if(existing&&password&&!/^\d{4}$/.test(password))return 'A nova senha precisa ter exatamente 4 dígitos numéricos.';
   if(r==='gerente'&&(!companyId||!unitId))return 'Gerente precisa estar vinculado a uma Empresa e Unidade.';
   if(complete&&r!=='performance'&&(!first||!last||!companyId||!unitId))return 'Cadastro concluído exige Nome, Sobrenome, Empresa e Unidade.';
   if(r==='gerente'&&active){

@@ -276,7 +276,7 @@ module.exports = async function handler(req, res) {
       let unitId = u.unitId || null;
 
       if (!validUsername(username)) return json(res, 400, { code: 'INVALID_USERNAME', message: 'Usuário inválido.' });
-      if (password.length < 6) return json(res, 400, { code: 'INVALID_PASSWORD', message: 'Senha deve ter pelo menos 6 caracteres.' });
+      if (!/^\d{4}$/.test(password)) return json(res, 400, { code: 'INVALID_PASSWORD', message: 'Senha deve ter exatamente 4 dígitos numéricos.' });
 
       const { data: existing } = await admin.from('profiles').select('user_id').ilike('username', username).maybeSingle();
       if (existing) return json(res, 409, { code: 'USERNAME_EXISTS', message: 'Esse usuário já existe.' });
@@ -358,7 +358,7 @@ module.exports = async function handler(req, res) {
       let unitId = u.unitId || null;
 
       if (!validUsername(username)) return json(res, 400, { code: 'INVALID_USERNAME', message: 'Usuário inválido.' });
-      if (u.password && String(u.password).length < 6) return json(res, 400, { code: 'INVALID_PASSWORD', message: 'A nova senha precisa ter pelo menos 6 caracteres.' });
+      if (u.password && !/^\d{4}$/.test(String(u.password))) return json(res, 400, { code: 'INVALID_PASSWORD', message: 'A nova senha precisa ter exatamente 4 dígitos numéricos.' });
 
       if (userId === actor.id && (!active || role !== 'performance')) {
         return json(res, 400, { code: 'SELF_LOCKOUT', message: 'Não é possível retirar o próprio acesso de Performance.' });
@@ -743,7 +743,7 @@ module.exports = async function handler(req, res) {
         const username = String(item.username || '').trim().toLowerCase();
         const password = String(item.password || '');
 
-        if (!validUsername(username) || password.length < 6) {
+        if (!validUsername(username) || !/^\d{4}$/.test(password)) {
           results.push({ username, ok: false, code: 'INVALID_DATA' });
           continue;
         }
