@@ -670,7 +670,17 @@ const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHA
     detectSessionInUrl:false
   }
 });
-const DEMO_TODAY='2026-10-03';
+function currentBusinessDate(){
+  const parts=new Intl.DateTimeFormat('en-CA',{
+    timeZone:'America/Sao_Paulo',
+    year:'numeric',
+    month:'2-digit',
+    day:'2-digit'
+  }).formatToParts(new Date());
+  const map=Object.fromEntries(parts.map(p=>[p.type,p.value]));
+  return `${map.year}-${map.month}-${map.day}`;
+}
+const DEMO_TODAY=currentBusinessDate();
 const COMPANY_CATALOG=[
   {name:'SOS',active:true},
   {name:'Universo',active:true},
@@ -744,6 +754,10 @@ function managerFor(company,unit){
 function collaboratorsFor(company,unit,{activeOnly=true}={}){return userStore.filter(u=>u.role==='colaborador'&&u.profileComplete&&u.company===company&&u.unit===unit&&(!activeOnly||u.active))}
 function unitShort(company,unit){return unitRecord(company,unit)?.short||`${unit||'—'} ${company||''}`.trim()}
 function getUser(id){return userStore.find(u=>u.id===id)}
+function getRuntimeUser(id){
+  if(currentUser?.id===id)return currentUser;
+  return getUser(id);
+}
 function nextId(){idCounter++;return 'u'+idCounter}
 function nextOrgId(prefix='org'){orgCounter++;return prefix+orgCounter}
 function nowLabel(){return new Intl.DateTimeFormat('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date())}
@@ -759,7 +773,11 @@ function format1(n){return Number(n||0).toLocaleString('pt-BR',{minimumFractionD
 function pctDelta(curr,prev){if(prev===0)return curr>0?'+100%':'0%';const p=((curr-prev)/prev)*100;return `${p>=0?'+':''}${p.toLocaleString('pt-BR',{maximumFractionDigits:1})}%`}
 function addDays(dateStr,delta){const d=new Date(dateStr+'T12:00:00');d.setDate(d.getDate()+delta);return d.toISOString().slice(0,10)}
 function monthLabel(m){return m==='2026-10'?'Outubro/2026':m==='2026-09'?'Setembro/2026':m==='2026-08'?'Agosto/2026':m}
-function demoMonthDays(month){return month==='2026-10'?3:month==='2026-09'?30:31}
+function demoMonthDays(month){
+  if(month===DEMO_TODAY.slice(0,7))return Math.max(1,Number(DEMO_TODAY.slice(8,10))-1);
+  if(month==='2026-09')return 30;
+  return 31;
+}
 function metricValue(r,key){return key==='all'?r.salao+r.online+r.cotacoes:r[key]||0}
 function sum(rows,key){return rows.reduce((a,r)=>a+metricValue(r,key),0)}
 function bars(el,data){const m=Math.max(1,...data.map(x=>x.v));el.innerHTML=data.length?data.map(x=>`<div class="bar" style="height:${Math.max(12,x.v/m*190)}px"><em>${formatInt(x.v)}</em><span>${x.l}</span></div>`).join(''):'<div class="sub">Sem dados para os filtros selecionados.</div>'}
@@ -787,9 +805,21 @@ function ensureLiveState(user){if(!liveStates.has(user.id))liveStates.set(user.i
 function rowsWithLive(){
   let rows=BASE_ROWS.map(r=>({...r}));
   for(const [userId,s] of liveStates.entries()){
-    const u=getUser(userId); if(!u||u.role!=='colaborador'||!u.profileComplete||!u.company||!u.unit)continue;
+    const u=getRuntimeUser(userId);
+    if(!u||u.role!=='colaborador'||!u.profileComplete||!u.company||!u.unit)continue;
     rows=rows.filter(r=>!(r.userId===u.id&&r.date===DEMO_TODAY));
-    rows.push({userId:u.id,date:DEMO_TODAY,company:u.company,unit:u.unit,short:unitShort(u.company,u.unit),agent:fullName(u),salao:s.salao,online:s.online,cotacoes:s.cotacoes,vendas:s.vendas});
+    rows.push({
+      userId:u.id,
+      date:DEMO_TODAY,
+      company:u.company,
+      unit:u.unit,
+      short:unitShort(u.company,u.unit),
+      agent:fullName(u),
+      salao:s.salao,
+      online:s.online,
+      cotacoes:s.cotacoes,
+      vendas:s.vendas
+    });
   }
   return rows;
 }
