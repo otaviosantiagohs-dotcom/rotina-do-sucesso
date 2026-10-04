@@ -509,9 +509,8 @@ main{animation:fadein .22s ease both}
   </div>
 
   <div class="org-note">
-    <b>Cadastro central:</b> uma nova unidade ativa passa a aparecer automaticamente no primeiro acesso,
-    na Gestão de Usuários e nos filtros. O Gerente/Capitão pode ser definido aqui e o vínculo é refletido
-    nos usuários da unidade. Empresas e unidades com histórico são inativadas, não excluídas.
+    <b>Estrutura oficial:</b> empresas e unidades cadastradas aqui ficam salvas no banco do sistema.
+    Unidades inativas preservam o histórico. O vínculo com Gerente/Capitão será utilizado nas permissões e dashboards reais.
   </div>
 
   <div class="org-summary">
@@ -693,6 +692,13 @@ let currentUser=null, role=null, state={salao:0,online:0,cotacoes:0,vendas:0,obs
 const liveStates=new Map();
 const auditLog=[];
 let idCounter=100, orgCounter=100;
+
+// V8.5: dados reais da estrutura organizacional.
+// Mantidos separados dos dados demonstrativos dos dashboards nesta etapa.
+let ORG_COMPANIES_DB=[];
+let ORG_UNITS_DB=[];
+let ORG_PROFILES_DB=[];
+
 
 const userStore=[
   {id:'u1',username:'performance',password:'123',firstName:'Equipe',lastName:'Performance',role:'performance',company:'',unit:'',active:true,profileComplete:true,lastLogin:null},
@@ -879,6 +885,7 @@ $('#loginForm').addEventListener('submit',async e=>{
   try{
     const u=await authenticateReal(name,pass);
     loginAsUser(u);
+    if(u.role==='performance')await loadOrganizationFromSupabase();
   }catch(err){
     if(err?.message==='INVALID_USERNAME')$('#msg').textContent='Formato de usuário inválido.';
     else if(err?.message==='PROFILE_BLOCKED')$('#msg').textContent='Acesso bloqueado ou perfil indisponível. Procure o setor de Performance.';
@@ -938,11 +945,61 @@ function setPerformanceMode(mode){
   if(currentUser?.role==='performance'){
     setTopForView('performance');
     if(users)renderUserManagement();
-    else if(org)renderOrgManagement();
+    else if(org){
+      renderOrgManagement();
+      if(currentUser?.source==='supabase')loadOrganizationFromSupabase();
+    }
     else renderPerformance();
   }
 }
 $$('[data-performance-mode]').forEach(b=>b.addEventListener('click',()=>setPerformanceMode(b.dataset.performanceMode)));
+
+
+function orgDbCompanyById(id){return ORG_COMPANIES_DB.find(c=>c.id===id)||null}
+function orgDbCompanyByName(name){return ORG_COMPANIES_DB.find(c=>c.name===name)||null}
+function orgDbUnitById(id){return ORG_UNITS_DB.find(u=>u.id===id)||null}
+function orgDbProfileById(id){return ORG_PROFILES_DB.find(p=>p.user_id===id)||null}
+function orgDbFullName(p){
+  const n=[p?.first_name,p?.last_name].filter(Boolean).join(' ').trim();
+  return n||p?.username||'Usuário';
+}
+function orgDbManagerFor(unit){
+  if(!unit?.manager_user_id)return null;
+  return orgDbProfileById(unit.manager_user_id);
+}
+function orgDbCollaboratorCountByUnit(unitId){
+  return ORG_PROFILES_DB.filter(p=>p.role==='colaborador'&&p.active&&p.unit_id===unitId).length;
+}
+function orgDbCollaboratorCountByCompany(companyId){
+  return ORG_PROFILES_DB.filter(p=>p.role==='colaborador'&&p.active&&p.company_id===companyId).length;
+}
+async function loadOrganizationFromSupabase(){
+  if(!currentUser || currentUser.role!=='performance' || currentUser.source!=='supabase')return;
+  try{
+    const [companiesRes,unitsRes,profilesRes]=await Promise.all([
+      supabaseClient.from('companies').select('id,name,active,created_at,updated_at').order('name'),
+      supabaseClient.from('units').select('id,company_id,name,short_code,manager_user_id,timezone,active,created_at,updated_at').order('name'),
+      supabaseClient.from('profiles').select('user_id,username,first_name,last_name,role,company_id,unit_id,active,first_access_completed').order('username')
+    ]);
+    if(companiesRes.error)throw companiesRes.error;
+    if(unitsRes.error)throw unitsRes.error;
+    if(profilesRes.error)throw profilesRes.error;
+    ORG_COMPANIES_DB=companiesRes.data||[];
+    ORG_UNITS_DB=unitsRes.data||[];
+    ORG_PROFILES_DB=profilesRes.data||[];
+    renderOrgManagement();
+  }catch(err){
+    console.error('Falha ao carregar estrutura organizacional:',err);
+    if($('#companyTableBody'))$('#companyTableBody').innerHTML='<tr><td colspan="5">Não foi possível carregar as empresas do banco.</td></tr>';
+    if($('#unitTableBody'))$('#unitTableBody').innerHTML='<tr><td colspan="7">Não foi possível carregar as unidades do banco.</td></tr>';
+  }
+}
+function fillOrgCompanyDbSelect(selected=''){
+  const el=$('#orgUnitCompany'); if(!el)return;
+  const companies=ORG_COMPANIES_DB.filter(c=>c.active!==false);
+  el.innerHTML=companies.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  if(companies.some(c=>c.id===selected))el.value=selected;
+}
 
 function activeCompanies(){return COMPANY_CATALOG.filter(c=>c.active!==false)}
 function companyOptionMarkup({includeAll=false,includeInactive=false,blank=false}={}){
@@ -975,54 +1032,78 @@ function orgStatusMarkup(active,labelActive='Ativa',labelInactive='Inativa'){
 }
 function renderOrgManagement(){
   if(!$('#companyTableBody'))return;
-  syncCompanySelects();
-  const filterCompany=$('#orgCompanyFilter')?.value||'all', status=$('#orgStatusFilter')?.value||'all';
 
-  const activeCompaniesCount=COMPANY_CATALOG.filter(c=>c.active!==false).length;
-  const activeUnits=UNIT_CATALOG.filter(effectiveUnitActive);
+  // Se ainda não carregou o banco, mantém a área em estado neutro.
+  const companies=ORG_COMPANIES_DB;
+  const units=ORG_UNITS_DB;
+  const filterCompany=$('#orgCompanyFilter')?.value||'all';
+  const status=$('#orgStatusFilter')?.value||'all';
+
+  // Filtro de empresas desta aba usa IDs reais.
+  const companyFilter=$('#orgCompanyFilter');
+  if(companyFilter){
+    const current=companyFilter.value;
+    companyFilter.innerHTML='<option value="all">Todas as empresas</option>'+
+      companies.map(c=>`<option value="${c.id}">${c.name}${c.active===false?' (Inativa)':''}</option>`).join('');
+    if(current==='all'||companies.some(c=>c.id===current))companyFilter.value=current;
+    else companyFilter.value='all';
+  }
+
+  const chosenCompany=$('#orgCompanyFilter')?.value||'all';
+  const activeCompaniesCount=companies.filter(c=>c.active!==false).length;
+  const activeUnits=units.filter(u=>u.active!==false && orgDbCompanyById(u.company_id)?.active!==false);
+
   $('#orgCompanyCount').textContent=activeCompaniesCount;
   $('#orgUnitCount').textContent=activeUnits.length;
-  $('#orgLinkedCount').textContent=userStore.filter(u=>u.role==='colaborador'&&u.active&&u.profileComplete&&u.company&&u.unit).length;
-  $('#orgNoManagerCount').textContent=activeUnits.filter(u=>!managerFor(u.company,u.unit)).length;
+  $('#orgLinkedCount').textContent=ORG_PROFILES_DB.filter(p=>p.role==='colaborador'&&p.active&&p.company_id&&p.unit_id).length;
+  $('#orgNoManagerCount').textContent=activeUnits.filter(u=>!u.manager_user_id).length;
 
-  let companies=COMPANY_CATALOG.filter(c=>{
-    if(filterCompany!=='all'&&c.name!==filterCompany)return false;
+  const filteredCompanies=companies.filter(c=>{
+    if(chosenCompany!=='all'&&c.id!==chosenCompany)return false;
     if(status==='active'&&c.active===false)return false;
     if(status==='inactive'&&c.active!==false)return false;
     return true;
   });
-  $('#companyTableBody').innerHTML=companies.map(c=>{
-    const units=UNIT_CATALOG.filter(u=>u.company===c.name);
-    const linked=userStore.filter(u=>u.role==='colaborador'&&u.company===c.name).length;
+
+  $('#companyTableBody').innerHTML=filteredCompanies.map(c=>{
+    const companyUnits=units.filter(u=>u.company_id===c.id);
+    const linked=orgDbCollaboratorCountByCompany(c.id);
     return `<tr data-inactive="${c.active===false?1:0}">
       <td><b>${c.name}</b></td>
-      <td>${units.length}</td>
+      <td>${companyUnits.length}</td>
       <td>${linked}</td>
       <td>${orgStatusMarkup(c.active!==false)}</td>
       <td><div class="org-actions">
-        <button class="btn" data-edit-company="${c.name}">Editar</button>
-        <button class="btn ghost" data-toggle-company="${c.name}">${c.active===false?'Ativar':'Inativar'}</button>
+        <button class="btn" data-edit-company="${c.id}">Editar</button>
+        <button class="btn ghost" data-toggle-company="${c.id}">${c.active===false?'Ativar':'Inativar'}</button>
       </div></td>
     </tr>`;
   }).join('')||'<tr><td colspan="5">Nenhuma empresa encontrada.</td></tr>';
 
-  let units=UNIT_CATALOG.filter(u=>{
-    if(filterCompany!=='all'&&u.company!==filterCompany)return false;
-    const active=effectiveUnitActive(u);
+  const filteredUnits=units.filter(u=>{
+    if(chosenCompany!=='all'&&u.company_id!==chosenCompany)return false;
+    const companyActive=orgDbCompanyById(u.company_id)?.active!==false;
+    const active=u.active!==false&&companyActive;
     if(status==='active'&&!active)return false;
     if(status==='inactive'&&active)return false;
     return true;
-  }).sort((a,b)=>`${a.company} ${a.unit}`.localeCompare(`${b.company} ${b.unit}`,'pt-BR'));
+  }).sort((a,b)=>{
+    const ac=orgDbCompanyById(a.company_id)?.name||'';
+    const bc=orgDbCompanyById(b.company_id)?.name||'';
+    return `${ac} ${a.name}`.localeCompare(`${bc} ${b.name}`,'pt-BR');
+  });
 
-  $('#unitTableBody').innerHTML=units.map(u=>{
-    const m=managerFor(u.company,u.unit),linked=collaboratorsFor(u.company,u.unit,{activeOnly:false}).length;
-    const companyActive=companyRecord(u.company)?.active!==false;
+  $('#unitTableBody').innerHTML=filteredUnits.map(u=>{
+    const c=orgDbCompanyById(u.company_id);
+    const m=orgDbManagerFor(u);
+    const linked=orgDbCollaboratorCountByUnit(u.id);
+    const companyActive=c?.active!==false;
     const statusCell=!companyActive?'<span class="org-status warning">Empresa inativa</span>':orgStatusMarkup(u.active!==false);
-    return `<tr data-inactive="${effectiveUnitActive(u)?0:1}">
-      <td>${u.company}</td>
-      <td><b>${u.unit}</b></td>
-      <td>${u.short||'—'}</td>
-      <td>${m?fullName(m):'<span class="muted">Não definido</span>'}</td>
+    return `<tr data-inactive="${u.active!==false&&companyActive?0:1}">
+      <td>${c?.name||'—'}</td>
+      <td><b>${u.name}</b></td>
+      <td>${u.short_code||'—'}</td>
+      <td>${m?orgDbFullName(m):'<span class="muted">Não definido</span>'}</td>
       <td>${linked}</td>
       <td>${statusCell}</td>
       <td><div class="org-actions">
@@ -1033,9 +1114,9 @@ function renderOrgManagement(){
   }).join('')||'<tr><td colspan="7">Nenhuma unidade encontrada.</td></tr>';
 }
 
-function openCompanyEditor(name=''){
-  const c=name?companyRecord(name):null;
-  $('#companyOriginalName').value=c?.name||'';
+function openCompanyEditor(id=''){
+  const c=id?orgDbCompanyById(id):null;
+  $('#companyOriginalName').value=c?.id||'';
   $('#companyModalKicker').textContent=c?'Editar empresa':'Nova empresa';
   $('#companyModalTitle').textContent=c?'Editar empresa':'Cadastrar empresa';
   $('#companyNameInput').value=c?.name||'';
@@ -1044,62 +1125,33 @@ function openCompanyEditor(name=''){
   $('#companyModal').classList.remove('hidden');
 }
 function openUnitEditor(id=''){
-  syncCompanySelects();
-  const u=id?getUnitById(id):null;
+  const u=id?orgDbUnitById(id):null;
   $('#unitEditId').value=u?.id||'';
   $('#unitModalKicker').textContent=u?'Editar unidade':'Nova unidade';
   $('#unitModalTitle').textContent=u?'Editar unidade/loja':'Cadastrar unidade/loja';
-  if(u&&[...$('#orgUnitCompany').options].some(o=>o.value===u.company))$('#orgUnitCompany').value=u.company;
-  else if(!$('#orgUnitCompany').value&&activeCompanies()[0])$('#orgUnitCompany').value=activeCompanies()[0].name;
-  $('#orgUnitName').value=u?.unit||'';
-  $('#orgUnitShort').value=u?.short||'';
+  fillOrgCompanyDbSelect(u?.company_id||'');
+  $('#orgUnitName').value=u?.name||'';
+  $('#orgUnitShort').value=u?.short_code||'';
   $('#orgUnitStatus').value=u?.active===false?'inactive':'active';
-  rebuildOrgManagerOptions(u?.managerId||managerFor(u?.company,u?.unit)?.id||'');
+  rebuildOrgManagerOptionsDb(u?.manager_user_id||'');
   $('#unitFormError').textContent='';
   $('#unitModal').classList.remove('hidden');
 }
-function rebuildOrgManagerOptions(selected=''){
+function rebuildOrgManagerOptionsDb(selected=''){
   const el=$('#orgUnitManager'); if(!el)return;
-  const managers=userStore.filter(u=>u.role==='gerente'&&u.active).sort((a,b)=>fullName(a).localeCompare(fullName(b),'pt-BR'));
-  el.innerHTML='<option value="">Sem gerente definido</option>'+managers.map(m=>`<option value="${m.id}">${fullName(m)}${m.company&&m.unit?` · ${m.company} / ${m.unit}`:''}</option>`).join('');
-  if(managers.some(m=>m.id===selected))el.value=selected;
+  const managers=ORG_PROFILES_DB
+    .filter(p=>p.role==='gerente'&&p.active)
+    .sort((a,b)=>orgDbFullName(a).localeCompare(orgDbFullName(b),'pt-BR'));
+  el.innerHTML='<option value="">Sem gerente definido</option>'+
+    managers.map(m=>{
+      const c=orgDbCompanyById(m.company_id),u=orgDbUnitById(m.unit_id);
+      const suffix=c&&u?` · ${c.name} / ${u.name}`:'';
+      return `<option value="${m.user_id}">${orgDbFullName(m)}${suffix}</option>`;
+    }).join('');
+  if(managers.some(m=>m.user_id===selected))el.value=selected;
 }
-function cascadeCompanyRename(oldName,newName){
-  UNIT_CATALOG.filter(u=>u.company===oldName).forEach(u=>u.company=newName);
-  userStore.filter(u=>u.company===oldName).forEach(u=>u.company=newName);
-  if(typeof BASE_ROWS!=='undefined')BASE_ROWS.filter(r=>r.company===oldName).forEach(r=>r.company=newName);
-}
-function cascadeUnitRename(oldCompany,oldUnit,newCompany,newUnit,newShort){
-  userStore.filter(u=>u.company===oldCompany&&u.unit===oldUnit).forEach(u=>{u.company=newCompany;u.unit=newUnit});
-  if(typeof BASE_ROWS!=='undefined')BASE_ROWS.filter(r=>r.company===oldCompany&&r.unit===oldUnit).forEach(r=>{r.company=newCompany;r.unit=newUnit;r.short=newShort});
-}
-function assignManagerToUnit(unitRec,managerId,previousManager){
-  const selected=managerId?getUser(managerId):null;
-  if(previousManager&&previousManager.id!==managerId){
-    previousManager.company='';previousManager.unit='';previousManager.profileComplete=false;
-  }
-  // If the selected manager was responsible for another unit, release that previous link.
-  if(selected){
-    UNIT_CATALOG.forEach(u=>{if(u.id!==unitRec.id&&u.managerId===selected.id)u.managerId=''});
-    selected.role='gerente';
-    selected.company=unitRec.company;
-    selected.unit=unitRec.unit;
-    selected.profileComplete=true;
-    unitRec.managerId=selected.id;
-  }else{
-    unitRec.managerId='';
-  }
-}
-function refreshOrganization(){
-  syncCompanySelects();
-  rebuildPerformanceOptions();
-  rebuildUserMgmtUnits();
-  rebuildManagerAgentOptions();
-  renderPerformance();
-  renderManager();
-  renderUserManagement();
-  renderOrgManagement();
-  if(currentUser)setMetaForUser(currentUser);
+async function refreshOrganization(){
+  await loadOrganizationFromSupabase();
 }
 
 $('#newCompanyBtn').addEventListener('click',()=>openCompanyEditor());
@@ -1110,68 +1162,129 @@ $('#orgCompanyFilter').addEventListener('change',renderOrgManagement);
 $('#orgStatusFilter').addEventListener('change',renderOrgManagement);
 $('#orgClearFilters').addEventListener('click',()=>{$('#orgCompanyFilter').value='all';$('#orgStatusFilter').value='all';renderOrgManagement()});
 
-$('#companyTableBody').addEventListener('click',e=>{
+$('#companyTableBody').addEventListener('click',async e=>{
   const edit=e.target.closest('[data-edit-company]'),toggle=e.target.closest('[data-toggle-company]');
   if(edit){openCompanyEditor(edit.dataset.editCompany);return}
   if(toggle){
-    const c=companyRecord(toggle.dataset.toggleCompany);if(!c)return;
-    c.active=!c.active;
-    audit(c.active?'Empresa ativada':'Empresa inativada',c.name,`${UNIT_CATALOG.filter(u=>u.company===c.name).length} unidade(s) vinculada(s)`);
-    refreshOrganization();
+    const c=orgDbCompanyById(toggle.dataset.toggleCompany);if(!c)return;
+    const {error}=await supabaseClient.from('companies').update({active:!c.active}).eq('id',c.id);
+    if(error){alert('Não foi possível alterar o status da empresa.');console.error(error);return}
+    await refreshOrganization();
   }
 });
-$('#unitTableBody').addEventListener('click',e=>{
+$('#unitTableBody').addEventListener('click',async e=>{
   const edit=e.target.closest('[data-edit-unit]'),toggle=e.target.closest('[data-toggle-unit]');
   if(edit){openUnitEditor(edit.dataset.editUnit);return}
   if(toggle){
-    const u=getUnitById(toggle.dataset.toggleUnit);if(!u)return;
-    u.active=!u.active;
-    audit(u.active?'Unidade ativada':'Unidade inativada',`${u.company} / ${u.unit}`,u.short||'');
-    refreshOrganization();
+    const u=orgDbUnitById(toggle.dataset.toggleUnit);if(!u)return;
+    const {error}=await supabaseClient.from('units').update({active:!u.active}).eq('id',u.id);
+    if(error){alert('Não foi possível alterar o status da unidade.');console.error(error);return}
+    await refreshOrganization();
   }
 });
 
-$('#companyForm').addEventListener('submit',e=>{
+$('#companyForm').addEventListener('submit',async e=>{
   e.preventDefault();
-  const old=$('#companyOriginalName').value.trim(),name=$('#companyNameInput').value.trim(),active=$('#companyStatusInput').value==='active';
+  const id=$('#companyOriginalName').value.trim();
+  const name=$('#companyNameInput').value.trim();
+  const active=$('#companyStatusInput').value==='active';
+  const btn=e.submitter;
+  $('#companyFormError').textContent='';
   if(!name){$('#companyFormError').textContent='Informe o nome da empresa.';return}
-  const duplicate=COMPANY_CATALOG.find(c=>c.name.toLowerCase()===name.toLowerCase()&&c.name!==old);
+  const duplicate=ORG_COMPANIES_DB.find(c=>c.id!==id&&c.name.toLowerCase()===name.toLowerCase());
   if(duplicate){$('#companyFormError').textContent='Já existe uma empresa com esse nome.';return}
-  if(old){
-    const c=companyRecord(old);if(!c)return;
-    if(old!==name)cascadeCompanyRename(old,name);
-    c.name=name;c.active=active;
-    audit('Empresa editada',name,old!==name?`${old} → ${name}`:`Status: ${active?'Ativa':'Inativa'}`);
-  }else{
-    COMPANY_CATALOG.push({name,active});
-    audit('Empresa criada',name,`Status: ${active?'Ativa':'Inativa'}`);
+  if(btn)btn.disabled=true;
+  try{
+    const result=id
+      ? await supabaseClient.from('companies').update({name,active}).eq('id',id)
+      : await supabaseClient.from('companies').insert({name,active});
+    if(result.error)throw result.error;
+    $('#companyModal').classList.add('hidden');
+    await refreshOrganization();
+  }catch(err){
+    console.error(err);
+    $('#companyFormError').textContent='Não foi possível salvar a empresa.';
+  }finally{
+    if(btn)btn.disabled=false;
   }
-  $('#companyModal').classList.add('hidden');
-  refreshOrganization();
 });
 
-$('#unitForm').addEventListener('submit',e=>{
+$('#unitForm').addEventListener('submit',async e=>{
   e.preventDefault();
-  const id=$('#unitEditId').value,company=$('#orgUnitCompany').value,unitName=$('#orgUnitName').value.trim(),short=$('#orgUnitShort').value.trim().toUpperCase(),active=$('#orgUnitStatus').value==='active',managerId=$('#orgUnitManager').value;
-  if(!company||!unitName){$('#unitFormError').textContent='Informe Empresa e Nome da unidade/loja.';return}
-  if(!companyRecord(company)||companyRecord(company).active===false){$('#unitFormError').textContent='Selecione uma empresa ativa.';return}
-  const duplicate=UNIT_CATALOG.find(u=>u.id!==id&&u.company===company&&u.unit.toLowerCase()===unitName.toLowerCase());
+  const id=$('#unitEditId').value;
+  const companyId=$('#orgUnitCompany').value;
+  const unitName=$('#orgUnitName').value.trim();
+  const short=$('#orgUnitShort').value.trim().toUpperCase();
+  const active=$('#orgUnitStatus').value==='active';
+  const managerId=$('#orgUnitManager').value||null;
+  const btn=e.submitter;
+  $('#unitFormError').textContent='';
+
+  if(!companyId||!unitName){$('#unitFormError').textContent='Informe Empresa e Nome da unidade/loja.';return}
+  const company=orgDbCompanyById(companyId);
+  if(!company||company.active===false){$('#unitFormError').textContent='Selecione uma empresa ativa.';return}
+  const duplicate=ORG_UNITS_DB.find(u=>u.id!==id&&u.company_id===companyId&&u.name.toLowerCase()===unitName.toLowerCase());
   if(duplicate){$('#unitFormError').textContent='Essa unidade já existe nessa empresa.';return}
-  if(id){
-    const u=getUnitById(id);if(!u)return;
-    const oldCompany=u.company,oldUnit=u.unit,oldManager=managerFor(oldCompany,oldUnit);
-    u.company=company;u.unit=unitName;u.short=short||unitName.toUpperCase();u.active=active;
-    cascadeUnitRename(oldCompany,oldUnit,company,unitName,u.short);
-    assignManagerToUnit(u,managerId,oldManager);
-    audit('Unidade editada',`${company} / ${unitName}`,`${oldCompany} / ${oldUnit} → ${company} / ${unitName}`);
-  }else{
-    const u={id:nextOrgId('un'),company,unit:unitName,short:short||unitName.toUpperCase(),active,managerId:''};
-    UNIT_CATALOG.push(u);
-    assignManagerToUnit(u,managerId,null);
-    audit('Unidade criada',`${company} / ${unitName}`,u.short);
+
+  if(btn)btn.disabled=true;
+  try{
+    let unitId=id;
+    const payload={
+      company_id:companyId,
+      name:unitName,
+      short_code:short||unitName.toUpperCase(),
+      active,
+      manager_user_id:managerId
+    };
+
+    if(id){
+      const current=orgDbUnitById(id);
+      const oldManagerId=current?.manager_user_id||null;
+      const {error}=await supabaseClient.from('units').update(payload).eq('id',id);
+      if(error)throw error;
+
+      if(oldManagerId && oldManagerId!==managerId){
+        const {error:oldManagerError}=await supabaseClient
+          .from('profiles')
+          .update({company_id:null,unit_id:null})
+          .eq('user_id',oldManagerId);
+        if(oldManagerError)throw oldManagerError;
+      }
+    }else{
+      const {data,error}=await supabaseClient.from('units').insert(payload).select('id').single();
+      if(error)throw error;
+      unitId=data.id;
+    }
+
+    if(managerId){
+      // Um gerente só pode responder por uma unidade neste modelo.
+      const {error:releaseError}=await supabaseClient
+        .from('units')
+        .update({manager_user_id:null})
+        .eq('manager_user_id',managerId)
+        .neq('id',unitId);
+      if(releaseError)throw releaseError;
+
+      const {error:managerError}=await supabaseClient
+        .from('profiles')
+        .update({
+          role:'gerente',
+          company_id:companyId,
+          unit_id:unitId,
+          first_access_completed:true
+        })
+        .eq('user_id',managerId);
+      if(managerError)throw managerError;
+    }
+
+    $('#unitModal').classList.add('hidden');
+    await refreshOrganization();
+  }catch(err){
+    console.error(err);
+    $('#unitFormError').textContent='Não foi possível salvar a unidade.';
+  }finally{
+    if(btn)btn.disabled=false;
   }
-  $('#unitModal').classList.add('hidden');
-  refreshOrganization();
 });
 
 function rebuildUserMgmtUnits(){const company=$('#umCompany').value,current=$('#umUnit').value,opts=UNIT_CATALOG.filter(x=>company==='all'||x.company===company);$('#umUnit').innerHTML='<option value="all">Todas as unidades</option>'+opts.map(x=>`<option value="${x.unit}">${x.unit}${effectiveUnitActive(x)?'':' (Inativa)'}</option>`).join('');if(opts.some(x=>x.unit===current))$('#umUnit').value=current;else $('#umUnit').value='all'}
