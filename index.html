@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/><meta name="theme-color" content="#050608"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" name="viewport"/>
-<title>Rotina do Sucesso — Central de Missões</title>
+<title>Rotina do Sucesso — V8.8 Dashboards Reais</title>
 <style>
 :root{--bg:#0b0e12;--panel:#12171d;--panel2:#171d24;--line:#27303a;--text:#f5f7fa;--muted:#8d98a5;--red:#e43b32;--green:#61d394;--amber:#e9b45d}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
@@ -701,6 +701,7 @@ const indicatorShort={all:'Ações',salao:'Salão',online:'Online',cotacoes:'Cot
 let currentUser=null, role=null, state={salao:0,online:0,cotacoes:0,vendas:0,obs:''}, editingUserId=null, performanceMode='dashboard';
 const liveStates=new Map();
 let REAL_ROUTINE_ROWS=[];
+let DASHBOARD_ROUTINE_ROWS=[];
 let routineNoteTimer=null;
 let routineSyncErrors=0;
 const auditLog=[];
@@ -759,7 +760,29 @@ function unitShort(company,unit){return unitRecord(company,unit)?.short||`${unit
 function getUser(id){return userStore.find(u=>u.id===id)}
 function getRuntimeUser(id){
   if(currentUser?.id===id)return currentUser;
-  return getUser(id);
+  const local=getUser(id);
+  if(local)return local;
+
+  const p=ORG_PROFILES_DB.find(x=>x.user_id===id);
+  if(!p)return null;
+
+  const c=ORG_COMPANIES_DB.find(x=>x.id===p.company_id);
+  const u=ORG_UNITS_DB.find(x=>x.id===p.unit_id);
+
+  return {
+    id:p.user_id,
+    username:p.username,
+    firstName:p.first_name||'',
+    lastName:p.last_name||'',
+    role:p.role,
+    company:c?.name||'',
+    unit:u?.name||'',
+    companyId:p.company_id||null,
+    unitId:p.unit_id||null,
+    active:p.active===true,
+    profileComplete:p.first_access_completed===true,
+    source:'supabase'
+  };
 }
 function nextId(){idCounter++;return 'u'+idCounter}
 function nextOrgId(prefix='org'){orgCounter++;return prefix+orgCounter}
@@ -775,11 +798,37 @@ function formatInt(n){return Number(n||0).toLocaleString('pt-BR')}
 function format1(n){return Number(n||0).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})}
 function pctDelta(curr,prev){if(prev===0)return curr>0?'+100%':'0%';const p=((curr-prev)/prev)*100;return `${p>=0?'+':''}${p.toLocaleString('pt-BR',{maximumFractionDigits:1})}%`}
 function addDays(dateStr,delta){const d=new Date(dateStr+'T12:00:00');d.setDate(d.getDate()+delta);return d.toISOString().slice(0,10)}
-function monthLabel(m){return m==='2026-10'?'Outubro/2026':m==='2026-09'?'Setembro/2026':m==='2026-08'?'Agosto/2026':m}
+function monthLabel(m){
+  const [y,mo]=m.split('-').map(Number);
+  return new Intl.DateTimeFormat('pt-BR',{month:'long',year:'numeric',timeZone:'America/Sao_Paulo'})
+    .format(new Date(Date.UTC(y,mo-1,1)))
+    .replace(/^./,c=>c.toUpperCase());
+}
 function demoMonthDays(month){
-  if(month===DEMO_TODAY.slice(0,7))return Math.max(1,Number(DEMO_TODAY.slice(8,10))-1);
-  if(month==='2026-09')return 30;
-  return 31;
+  const [y,m]=month.split('-').map(Number);
+  const total=new Date(y,m,0).getDate();
+  if(month===DEMO_TODAY.slice(0,7))return Number(DEMO_TODAY.slice(8,10));
+  return total;
+}
+function previousMonth(month){
+  const [y,m]=month.split('-').map(Number);
+  const d=new Date(Date.UTC(y,m-2,1));
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}`;
+}
+function recentMonths(count=4){
+  const out=[DEMO_TODAY.slice(0,7)];
+  while(out.length<count)out.push(previousMonth(out.at(-1)));
+  return out;
+}
+function rebuildDashboardMonthOptions(){
+  const months=recentMonths(4);
+  [['mgrMonth',3],['pfMonth',4]].forEach(([id,limit])=>{
+    const el=$('#'+id);if(!el)return;
+    const current=el.value;
+    const list=months.slice(0,limit);
+    el.innerHTML=list.map(m=>`<option value="${m}">${monthLabel(m)}</option>`).join('');
+    el.value=list.includes(current)?current:list[0];
+  });
 }
 function metricValue(r,key){return key==='all'?r.salao+r.online+r.cotacoes:r[key]||0}
 function sum(rows,key){return rows.reduce((a,r)=>a+metricValue(r,key),0)}
@@ -940,10 +989,9 @@ async function persistTodayNote(){
 }
 
 function rowsWithLive(){
-  let rows=BASE_ROWS.map(r=>({...r}));
+  let rows=currentUser?.source==='supabase'?[]:BASE_ROWS.map(r=>({...r}));
 
-  // Registros reais prevalecem sobre qualquer linha demonstrativa do mesmo usuário/dia.
-  REAL_ROUTINE_ROWS.forEach(rr=>{
+  [...DASHBOARD_ROUTINE_ROWS,...REAL_ROUTINE_ROWS].forEach(rr=>{
     rows=rows.filter(r=>!(r.userId===rr.userId&&r.date===rr.date));
     rows.push({...rr});
   });
@@ -1096,8 +1144,19 @@ $('#loginForm').addEventListener('submit',async e=>{
 
   try{
     loginAsUser(u);
-    if(u.role==='performance')await loadOrganizationFromSupabase();
-    if(u.role==='colaborador'&&u.profileComplete)await loadMyRoutinesFromSupabase();
+
+    if(u.role==='performance'){
+      await loadOrganizationFromSupabase();
+      await loadDashboardRoutinesFromSupabase();
+    }
+
+    if(u.role==='gerente'){
+      await loadDashboardRoutinesFromSupabase();
+    }
+
+    if(u.role==='colaborador'&&u.profileComplete){
+      await loadMyRoutinesFromSupabase();
+    }
   }catch(err){
     console.error('Erro após autenticação:',err);
     $('#msg').textContent=`Acesso autenticado, mas houve erro ao abrir o sistema: ${err?.message||'erro desconhecido'}`;
@@ -1264,20 +1323,262 @@ $$('.modebtn').forEach(b=>b.addEventListener('click',()=>setCollabMode(b.dataset
 function renderHistory(){if(!currentUser)return;const rows=userRows(currentUser).filter(r=>r.date<=DEMO_TODAY).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);$('#historyBody').innerHTML=rows.map(r=>`<tr><td>${r.date.split('-').reverse().join('/')}</td><td>${r.salao}</td><td>${r.online}</td><td>${r.cotacoes}</td><td>${r.vendas}</td></tr>`).join('')||'<tr><td colspan="5">Sem registros.</td></tr>'}
 $('#history').addEventListener('click',()=>{renderHistory();$('#hist').classList.remove('hidden')});$('#closeHist').addEventListener('click',()=>$('#hist').classList.add('hidden'));$$('.tab').forEach(t=>t.addEventListener('click',()=>view(t.dataset.view)));
 
-function managerContext(){if(currentUser?.role==='gerente')return currentUser;if(currentUser?.role==='performance'){let company=$('#pfCompany')?.value,unit=$('#pfUnit')?.value;if(company&&company!=='all'&&unit&&unit!=='all'){const m=managerFor(company,unit);return m||{role:'gerente',company,unit}}return managerFor('SOS','Recife')||{role:'gerente',company:'SOS',unit:'Recife'}}return null}
-function rebuildManagerAgentOptions(){const c=managerContext();if(!c)return;const current=$('#mgrAgent').value;const historicalIds=unique(rowsWithLive().filter(r=>r.company===c.company&&r.unit===c.unit).map(r=>r.userId));const currentIds=collaboratorsFor(c.company,c.unit,{activeOnly:false}).map(u=>u.id);const ids=unique([...historicalIds,...currentIds]);const eligible=ids.map(getUser).filter(Boolean).sort((a,b)=>fullName(a).localeCompare(fullName(b),'pt-BR'));$('#mgrAgent').innerHTML='<option value="all">Todos os agentes</option>'+eligible.map(u=>`<option value="${u.id}">${fullName(u)}${u.active?'':' (Inativo)'}</option>`).join('');if(ids.includes(current))$('#mgrAgent').value=current;else $('#mgrAgent').value='all';setTopForView('manager')}
-function managerFilteredRows(){const c=managerContext();if(!c)return[];let rows=rowsWithLive().filter(r=>r.company===c.company&&r.unit===c.unit);rows=rowsForWindow(rows,$('#mgrMonth').value,$('#mgrPeriod').value);const agent=$('#mgrAgent').value;if(agent!=='all')rows=rows.filter(r=>r.userId===agent);return rows}
-function renderManagerActionTable(rows,key){const ids=unique(rows.map(r=>r.userId));if(key==='all'){$('#mgrActionHead').innerHTML='<tr><th>Agente</th><th>Salão</th><th>Online</th><th>Cotações</th><th>Total</th></tr>';$('#mgrActionBody').innerHTML=ids.map(id=>{const ar=rows.filter(r=>r.userId===id),u=getUser(id);return `<tr><td><b>${u?fullName(u):ar[0]?.agent||'—'}</b></td><td>${formatInt(sum(ar,'salao'))}</td><td>${formatInt(sum(ar,'online'))}</td><td>${formatInt(sum(ar,'cotacoes'))}</td><td><b>${formatInt(sum(ar,'all'))}</b></td></tr>`}).join('')}else{$('#mgrActionHead').innerHTML=`<tr><th>Agente</th><th>${indicatorShort[key]}</th><th>Participação</th></tr>`;const total=sum(rows,key)||1;$('#mgrActionBody').innerHTML=ids.map(id=>{const ar=rows.filter(r=>r.userId===id),u=getUser(id),v=sum(ar,key);return `<tr><td><b>${u?fullName(u):ar[0]?.agent||'—'}</b></td><td><b>${formatInt(v)}</b></td><td>${format1(v/total*100)}%</td></tr>`}).join('')}}
-function renderManager(){if(!$('#mgrMonth'))return;const c=managerContext();if(!c)return;const key=$('#mgrIndicator').value,rows=managerFilteredRows(),label=indicatorNames[key];$('#mgrUnitLabel').textContent=`${c.unit.toUpperCase()} · ${c.company} · ${getDateRangeLabel(rows)}`;const vals={salao:sum(rows,'salao'),online:sum(rows,'online'),cotacoes:sum(rows,'cotacoes'),all:sum(rows,'all')};$('#mgrStatSalao').textContent=formatInt(vals.salao);$('#mgrStatOnline').textContent=formatInt(vals.online);$('#mgrStatCotacoes').textContent=formatInt(vals.cotacoes);$('#mgrStatTotal').textContent=formatInt(vals[key]??vals.all);$('#mgrStatTotal').parentElement.querySelector('.l').textContent=key==='all'?'Ações totais':indicatorShort[key];['mgrStatSalao','mgrStatOnline','mgrStatCotacoes','mgrStatTotal'].forEach(id=>$('#'+id).parentElement.classList.remove('metric-focus'));const focus={salao:'mgrStatSalao',online:'mgrStatOnline',cotacoes:'mgrStatCotacoes',all:'mgrStatTotal'}[key];$('#'+focus).parentElement.classList.add('metric-focus');const byDate=aggregateByDate(rows,key).sort((a,b)=>a.n.localeCompare(b.n));bars($('#mgrchart'),byDate.map(x=>({l:x.n.slice(8,10),v:x.v})));const byAgent=unique(rows.map(r=>r.userId)).map(id=>{const ar=rows.filter(r=>r.userId===id),u=getUser(id);return {n:u?fullName(u):ar[0]?.agent||'—',s:label,v:sum(ar,key)}});rank($('#mgrrank'),byAgent);$('#mgrChartLabel').textContent=label;$('#mgrRankLabel').textContent=label;renderManagerActionTable(rows,key)}
-['mgrMonth','mgrAgent','mgrIndicator','mgrPeriod'].forEach(id=>$('#'+id).addEventListener('change',renderManager));$('#mgrApply').addEventListener('click',renderManager);
 
-function eligiblePerformanceUsers({activeOnly=true}={}){return userStore.filter(u=>u.role==='colaborador'&&u.profileComplete&&u.company&&u.unit&&(!activeOnly||u.active))}
-function rebuildPerformanceOptions(){const company=$('#pfCompany').value,currentUnit=$('#pfUnit').value,currentAgent=$('#pfAgent').value,us=UNIT_CATALOG.filter(u=>company==='all'||u.company===company);$('#pfUnit').innerHTML='<option value="all">Todas as unidades</option>'+us.map(u=>`<option value="${u.unit}">${u.unit}${effectiveUnitActive(u)?'':' (Inativa)'}</option>`).join('');if(us.some(u=>u.unit===currentUnit))$('#pfUnit').value=currentUnit;else $('#pfUnit').value='all';const selectedUnit=$('#pfUnit').value,agents=eligiblePerformanceUsers({activeOnly:false}).filter(u=>(company==='all'||u.company===company)&&(selectedUnit==='all'||u.unit===selectedUnit)).sort((a,b)=>fullName(a).localeCompare(fullName(b),'pt-BR'));$('#pfAgent').innerHTML='<option value="all">Todos os agentes</option>'+agents.map(u=>`<option value="${u.id}">${fullName(u)}${u.active?'':' (Inativo)'}</option>`).join('');if(agents.some(u=>u.id===currentAgent))$('#pfAgent').value=currentAgent;else $('#pfAgent').value='all'}
+async function loadDashboardReferenceData(){
+  if(!currentUser || currentUser.source!=='supabase' || !['gerente','performance'].includes(currentUser.role))return;
+
+  if(currentUser.role==='performance'){
+    const [companiesRes,unitsRes,profilesRes]=await Promise.all([
+      supabaseClient.from('companies').select('id,name,active').order('name'),
+      supabaseClient.from('units').select('id,company_id,name,short_code,manager_user_id,active').order('name'),
+      supabaseClient.from('profiles')
+        .select('user_id,username,first_name,last_name,role,company_id,unit_id,active,first_access_completed,last_access_at')
+        .order('username')
+    ]);
+
+    if(companiesRes.error)throw companiesRes.error;
+    if(unitsRes.error)throw unitsRes.error;
+    if(profilesRes.error)throw profilesRes.error;
+
+    ORG_COMPANIES_DB=companiesRes.data||[];
+    ORG_UNITS_DB=unitsRes.data||[];
+    ORG_PROFILES_DB=profilesRes.data||[];
+    return;
+  }
+
+  const [companyRes,unitRes,profilesRes]=await Promise.all([
+    supabaseClient.from('companies').select('id,name,active').eq('id',currentUser.companyId).maybeSingle(),
+    supabaseClient.from('units').select('id,company_id,name,short_code,manager_user_id,active').eq('id',currentUser.unitId).maybeSingle(),
+    supabaseClient.from('profiles')
+      .select('user_id,username,first_name,last_name,role,company_id,unit_id,active,first_access_completed,last_access_at')
+      .order('username')
+  ]);
+
+  if(companyRes.error)throw companyRes.error;
+  if(unitRes.error)throw unitRes.error;
+  if(profilesRes.error)throw profilesRes.error;
+
+  ORG_COMPANIES_DB=companyRes.data?[companyRes.data]:[];
+  ORG_UNITS_DB=unitRes.data?[unitRes.data]:[];
+  ORG_PROFILES_DB=profilesRes.data||[];
+}
+
+async function loadDashboardRoutinesFromSupabase(){
+  if(!currentUser || currentUser.source!=='supabase' || !['gerente','performance'].includes(currentUser.role))return;
+
+  try{
+    await loadDashboardReferenceData();
+    rebuildDashboardMonthOptions();
+
+    const startMonth=recentMonths(4).at(-1);
+    const startDate=`${startMonth}-01`;
+
+    const {data,error}=await supabaseClient
+      .from('daily_routines')
+      .select('id,user_id,unit_id,routine_date,floor_approaches,online_captures,quotations,sales,note,closed,created_at,updated_at')
+      .gte('routine_date',startDate)
+      .lte('routine_date',DEMO_TODAY)
+      .order('routine_date',{ascending:true});
+
+    if(error)throw error;
+
+    DASHBOARD_ROUTINE_ROWS=(data||[]).map(mapDbRoutineRow);
+
+    if(currentUser.role==='gerente'){
+      rebuildManagerAgentOptions();
+      renderManager();
+    }else{
+      rebuildPerformanceOptions();
+      renderPerformance();
+    }
+  }catch(err){
+    console.error('Erro ao carregar dashboard real:',err);
+    if(currentUser?.role==='gerente'&&$('#mgrUnitLabel'))$('#mgrUnitLabel').textContent='Falha ao atualizar dados do banco.';
+    if(currentUser?.role==='performance'&&$('#pfPeriodDelta'))$('#pfPeriodDelta').textContent='Erro';
+  }
+}
+
+function managerPreviousRows(){
+  const c=managerContext();if(!c)return[];
+  const period=$('#mgrPeriod').value;
+  const agent=$('#mgrAgent').value;
+  let rows=rowsWithLive().filter(r=>r.company===c.company&&r.unit===c.unit);
+
+  if(period==='month'){
+    rows=rows.filter(r=>r.date.startsWith(previousMonth($('#mgrMonth').value)));
+  }else{
+    const n=Number(period)||7;
+    const currentStart=addDays(DEMO_TODAY,-(n-1));
+    const prevEnd=addDays(currentStart,-1);
+    const prevStart=addDays(prevEnd,-(n-1));
+    rows=rows.filter(r=>r.date>=prevStart&&r.date<=prevEnd);
+  }
+
+  if(agent!=='all')rows=rows.filter(r=>r.userId===agent);
+  return rows;
+}
+
+function managerContext(){if(currentUser?.role==='gerente')return currentUser;if(currentUser?.role==='performance'){let company=$('#pfCompany')?.value,unit=$('#pfUnit')?.value;if(company&&company!=='all'&&unit&&unit!=='all'){const m=managerFor(company,unit);return m||{role:'gerente',company,unit}}return managerFor('SOS','Recife')||{role:'gerente',company:'SOS',unit:'Recife'}}return null}
+function rebuildManagerAgentOptions(){
+  const c=managerContext();if(!c)return;
+  const current=$('#mgrAgent').value;
+  let eligible=[];
+
+  if(currentUser?.source==='supabase'){
+    const historicIds=unique(rowsWithLive().filter(r=>r.company===c.company&&r.unit===c.unit).map(r=>r.userId));
+    const currentIds=ORG_PROFILES_DB
+      .filter(p=>p.role==='colaborador'&&p.company_id===currentUser.companyId&&p.unit_id===currentUser.unitId)
+      .map(p=>p.user_id);
+
+    eligible=unique([...historicIds,...currentIds])
+      .map(getRuntimeUser)
+      .filter(Boolean)
+      .sort((a,b)=>fullName(a).localeCompare(fullName(b),'pt-BR'));
+  }else{
+    const historicIds=unique(rowsWithLive().filter(r=>r.company===c.company&&r.unit===c.unit).map(r=>r.userId));
+    const currentIds=collaboratorsFor(c.company,c.unit,{activeOnly:false}).map(u=>u.id);
+
+    eligible=unique([...historicIds,...currentIds])
+      .map(getUser)
+      .filter(Boolean)
+      .sort((a,b)=>fullName(a).localeCompare(fullName(b),'pt-BR'));
+  }
+
+  $('#mgrAgent').innerHTML='<option value="all">Todos os agentes</option>'+
+    eligible.map(u=>`<option value="${u.id}">${fullName(u)}${u.active?'':' (Inativo)'}</option>`).join('');
+
+  $('#mgrAgent').value=eligible.some(u=>u.id===current)?current:'all';
+  setTopForView('manager');
+}
+function managerFilteredRows(){const c=managerContext();if(!c)return[];let rows=rowsWithLive().filter(r=>r.company===c.company&&r.unit===c.unit);rows=rowsForWindow(rows,$('#mgrMonth').value,$('#mgrPeriod').value);const agent=$('#mgrAgent').value;if(agent!=='all')rows=rows.filter(r=>r.userId===agent);return rows}
+function renderManagerActionTable(rows,key){const ids=unique(rows.map(r=>r.userId));if(key==='all'){$('#mgrActionHead').innerHTML='<tr><th>Agente</th><th>Salão</th><th>Online</th><th>Cotações</th><th>Total</th></tr>';$('#mgrActionBody').innerHTML=ids.map(id=>{const ar=rows.filter(r=>r.userId===id),u=getRuntimeUser(id);return `<tr><td><b>${u?fullName(u):ar[0]?.agent||'—'}</b></td><td>${formatInt(sum(ar,'salao'))}</td><td>${formatInt(sum(ar,'online'))}</td><td>${formatInt(sum(ar,'cotacoes'))}</td><td><b>${formatInt(sum(ar,'all'))}</b></td></tr>`}).join('')}else{$('#mgrActionHead').innerHTML=`<tr><th>Agente</th><th>${indicatorShort[key]}</th><th>Participação</th></tr>`;const total=sum(rows,key)||1;$('#mgrActionBody').innerHTML=ids.map(id=>{const ar=rows.filter(r=>r.userId===id),u=getRuntimeUser(id),v=sum(ar,key);return `<tr><td><b>${u?fullName(u):ar[0]?.agent||'—'}</b></td><td><b>${formatInt(v)}</b></td><td>${format1(v/total*100)}%</td></tr>`}).join('')}}
+function renderManager(){
+  if(!$('#mgrMonth'))return;
+  const c=managerContext();if(!c)return;
+
+  const key=$('#mgrIndicator').value,
+        rows=managerFilteredRows(),
+        prevRows=managerPreviousRows(),
+        label=indicatorNames[key];
+
+  $('#mgrUnitLabel').textContent=`${c.unit.toUpperCase()} · ${c.company} · ${getDateRangeLabel(rows)}`;
+
+  const vals={
+    salao:sum(rows,'salao'),
+    online:sum(rows,'online'),
+    cotacoes:sum(rows,'cotacoes'),
+    all:sum(rows,'all')
+  };
+  const prevVals={
+    salao:sum(prevRows,'salao'),
+    online:sum(prevRows,'online'),
+    cotacoes:sum(prevRows,'cotacoes'),
+    all:sum(prevRows,'all')
+  };
+
+  $('#mgrStatSalao').textContent=formatInt(vals.salao);
+  $('#mgrStatOnline').textContent=formatInt(vals.online);
+  $('#mgrStatCotacoes').textContent=formatInt(vals.cotacoes);
+  $('#mgrStatTotal').textContent=formatInt(vals[key]??vals.all);
+
+  $('#mgrStatSalaoDelta').textContent=`${pctDelta(vals.salao,prevVals.salao)} vs período anterior`;
+  $('#mgrStatOnlineDelta').textContent=`${pctDelta(vals.online,prevVals.online)} vs período anterior`;
+  $('#mgrStatCotacoesDelta').textContent=`${pctDelta(vals.cotacoes,prevVals.cotacoes)} vs período anterior`;
+  $('#mgrStatTotalDelta').textContent=`${pctDelta(vals[key]??vals.all,prevVals[key]??prevVals.all)} vs período anterior`;
+
+  $('#mgrStatTotal').parentElement.querySelector('.l').textContent=key==='all'?'Ações totais':indicatorShort[key];
+
+  ['mgrStatSalao','mgrStatOnline','mgrStatCotacoes','mgrStatTotal']
+    .forEach(id=>$('#'+id).parentElement.classList.remove('metric-focus'));
+
+  const focus={salao:'mgrStatSalao',online:'mgrStatOnline',cotacoes:'mgrStatCotacoes',all:'mgrStatTotal'}[key];
+  $('#'+focus).parentElement.classList.add('metric-focus');
+
+  const byDate=aggregateByDate(rows,key).sort((a,b)=>a.n.localeCompare(b.n));
+  bars($('#mgrchart'),byDate.map(x=>({l:x.n.slice(8,10),v:x.v})));
+
+  const byAgent=unique(rows.map(r=>r.userId)).map(id=>{
+    const ar=rows.filter(r=>r.userId===id),u=getRuntimeUser(id);
+    return {n:u?fullName(u):ar[0]?.agent||'—',s:label,v:sum(ar,key)};
+  });
+  rank($('#mgrrank'),byAgent);
+
+  $('#mgrChartLabel').textContent=label;
+  $('#mgrRankLabel').textContent=label;
+  renderManagerActionTable(rows,key);
+}
+['mgrMonth','mgrAgent','mgrIndicator','mgrPeriod'].forEach(id=>$('#'+id).addEventListener('change',renderManager));$('#mgrApply').addEventListener('click',()=>currentUser?.source==='supabase'?loadDashboardRoutinesFromSupabase():renderManager());
+
+function eligiblePerformanceUsers({activeOnly=true}={}){
+  if(currentUser?.source==='supabase'){
+    return ORG_PROFILES_DB
+      .filter(p=>p.role==='colaborador'&&p.first_access_completed&&p.company_id&&p.unit_id&&(!activeOnly||p.active))
+      .map(p=>getRuntimeUser(p.user_id))
+      .filter(Boolean);
+  }
+  return userStore.filter(u=>u.role==='colaborador'&&u.profileComplete&&u.company&&u.unit&&(!activeOnly||u.active));
+}
+function rebuildPerformanceOptions(){
+  const previousCompany=$('#pfCompany').value,
+        previousUnit=$('#pfUnit').value,
+        previousAgent=$('#pfAgent').value;
+
+  if(currentUser?.source==='supabase'){
+    $('#pfCompany').innerHTML='<option value="all">Todas as empresas</option>'+
+      ORG_COMPANIES_DB.map(c=>`<option value="${c.name}">${c.name}${c.active===false?' (Inativa)':''}</option>`).join('');
+
+    $('#pfCompany').value=
+      previousCompany==='all'||ORG_COMPANIES_DB.some(c=>c.name===previousCompany)
+      ? previousCompany : 'all';
+
+    const company=$('#pfCompany').value;
+    const units=ORG_UNITS_DB.filter(u=>{
+      const c=orgDbCompanyById(u.company_id);
+      return company==='all'||c?.name===company;
+    });
+
+    $('#pfUnit').innerHTML='<option value="all">Todas as unidades</option>'+
+      units.map(u=>`<option value="${u.name}">${u.name}${u.active===false?' (Inativa)':''}</option>`).join('');
+
+    $('#pfUnit').value=
+      previousUnit==='all'||units.some(u=>u.name===previousUnit)
+      ? previousUnit : 'all';
+
+    const unit=$('#pfUnit').value;
+    const agents=eligiblePerformanceUsers({activeOnly:false})
+      .filter(u=>(company==='all'||u.company===company)&&(unit==='all'||u.unit===unit))
+      .sort((a,b)=>fullName(a).localeCompare(fullName(b),'pt-BR'));
+
+    $('#pfAgent').innerHTML='<option value="all">Todos os agentes</option>'+
+      agents.map(u=>`<option value="${u.id}">${fullName(u)}${u.active?'':' (Inativo)'}</option>`).join('');
+
+    $('#pfAgent').value=agents.some(u=>u.id===previousAgent)?previousAgent:'all';
+    return;
+  }
+
+  const company=$('#pfCompany').value;
+  const units=UNIT_CATALOG.filter(u=>company==='all'||u.company===company);
+
+  $('#pfUnit').innerHTML='<option value="all">Todas as unidades</option>'+
+    units.map(u=>`<option value="${u.unit}">${u.unit}${effectiveUnitActive(u)?'':' (Inativa)'}</option>`).join('');
+
+  $('#pfUnit').value=units.some(u=>u.unit===previousUnit)?previousUnit:'all';
+
+  const unit=$('#pfUnit').value;
+  const agents=eligiblePerformanceUsers({activeOnly:false})
+    .filter(u=>(company==='all'||u.company===company)&&(unit==='all'||u.unit===unit))
+    .sort((a,b)=>fullName(a).localeCompare(fullName(b),'pt-BR'));
+
+  $('#pfAgent').innerHTML='<option value="all">Todos os agentes</option>'+
+    agents.map(u=>`<option value="${u.id}">${fullName(u)}${u.active?'':' (Inativo)'}</option>`).join('');
+
+  $('#pfAgent').value=agents.some(u=>u.id===previousAgent)?previousAgent:'all';
+}
 function performanceFilteredRows(monthOverride=null){const month=monthOverride||$('#pfMonth').value,company=$('#pfCompany').value,unit=$('#pfUnit').value,agent=$('#pfAgent').value;return rowsWithLive().filter(r=>r.date.startsWith(month)&&(company==='all'||r.company===company)&&(unit==='all'||r.unit===unit)&&(agent==='all'||r.userId===agent))}
 function expectedRowsForFilter(month){const company=$('#pfCompany').value,unit=$('#pfUnit').value,agent=$('#pfAgent').value;const agents=eligiblePerformanceUsers().filter(u=>(company==='all'||u.company===company)&&(unit==='all'||u.unit===unit)&&(agent==='all'||u.id===agent));return agents.length*demoMonthDays(month)}
-function previousMonth(month){return month==='2026-10'?'2026-09':month==='2026-09'?'2026-08':'2026-08'}
-function renderPerformance(){if(!$('#pfCompany'))return;const key=$('#pfIndicator').value,month=$('#pfMonth').value,rows=performanceFilteredRows(),label=indicatorNames[key],uniqueUnits=unique(rows.map(r=>r.short)),uniqueAgents=unique(rows.map(r=>r.userId)),actions=sum(rows,key),expected=expectedRowsForFilter(month),fill=expected?Math.round(rows.length/expected*100):0;$('#pfStatUnits').textContent=formatInt(uniqueUnits.length);$('#pfStatAgents').textContent=formatInt(uniqueAgents.length);$('#pfStatActions').textContent=formatInt(actions);$('#pfStatFill').textContent=fill+'%';$('#pfStatActions').parentElement.querySelector('.l').textContent=key==='all'?'Ações operacionais':indicatorShort[key];const byUnit=unique(rows.map(r=>r.short)).map(s=>({n:s,l:s.split(' ')[0],v:sum(rows.filter(r=>r.short===s),key)}));bars($('#pfchart'),byUnit.map(x=>({l:x.l,v:x.v})));rank($('#unitrank'),byUnit.map(x=>({n:x.n,s:label,v:x.v})));const byAgent=unique(rows.map(r=>r.userId)).map(id=>{const ar=rows.filter(r=>r.userId===id),u=getUser(id);return {n:u?fullName(u):ar[0]?.agent||'—',s:ar[0]?.short||'',v:sum(ar,key)}});rank($('#agentrank'),byAgent.slice().sort((a,b)=>b.v-a.v).slice(0,8));$('#pfChartLabel').textContent=label;$('#pfUnitRankLabel').textContent=label;$('#pfAgentRankLabel').textContent=label;const prevMonth=previousMonth(month),prev=sum(performanceFilteredRows(prevMonth),key);$('#pfPrevLabel').textContent=monthLabel(prevMonth);$('#pfPrevValue').textContent=formatInt(prev);$('#pfCurrLabel').textContent=monthLabel(month);$('#pfCurrValue').textContent=formatInt(actions);$('#pfPeriodDelta').textContent=pctDelta(actions,prev)}
-$('#pfCompany').addEventListener('change',()=>{rebuildPerformanceOptions();renderPerformance()});$('#pfUnit').addEventListener('change',()=>{rebuildPerformanceOptions();renderPerformance()});['pfAgent','pfMonth','pfIndicator'].forEach(id=>$('#'+id).addEventListener('change',renderPerformance));$('#pfApply').addEventListener('click',renderPerformance);
+
+function renderPerformance(){if(!$('#pfCompany'))return;const key=$('#pfIndicator').value,month=$('#pfMonth').value,rows=performanceFilteredRows(),label=indicatorNames[key],uniqueUnits=unique(rows.map(r=>r.short)),uniqueAgents=unique(rows.map(r=>r.userId)),actions=sum(rows,key),expected=expectedRowsForFilter(month),fill=expected?Math.round(rows.length/expected*100):0;$('#pfStatUnits').textContent=formatInt(uniqueUnits.length);$('#pfStatAgents').textContent=formatInt(uniqueAgents.length);$('#pfStatActions').textContent=formatInt(actions);$('#pfStatFill').textContent=fill+'%';$('#pfStatActions').parentElement.querySelector('.l').textContent=key==='all'?'Ações operacionais':indicatorShort[key];const byUnit=unique(rows.map(r=>r.short)).map(s=>({n:s,l:s.split(' ')[0],v:sum(rows.filter(r=>r.short===s),key)}));bars($('#pfchart'),byUnit.map(x=>({l:x.l,v:x.v})));rank($('#unitrank'),byUnit.map(x=>({n:x.n,s:label,v:x.v})));const byAgent=unique(rows.map(r=>r.userId)).map(id=>{const ar=rows.filter(r=>r.userId===id),u=getRuntimeUser(id);return {n:u?fullName(u):ar[0]?.agent||'—',s:ar[0]?.short||'',v:sum(ar,key)}});rank($('#agentrank'),byAgent.slice().sort((a,b)=>b.v-a.v).slice(0,8));$('#pfChartLabel').textContent=label;$('#pfUnitRankLabel').textContent=label;$('#pfAgentRankLabel').textContent=label;const prevMonth=previousMonth(month),prev=sum(performanceFilteredRows(prevMonth),key);$('#pfPrevLabel').textContent=monthLabel(prevMonth);$('#pfPrevValue').textContent=formatInt(prev);$('#pfCurrLabel').textContent=monthLabel(month);$('#pfCurrValue').textContent=formatInt(actions);$('#pfPeriodDelta').textContent=pctDelta(actions,prev)}
+$('#pfCompany').addEventListener('change',()=>{rebuildPerformanceOptions();renderPerformance()});$('#pfUnit').addEventListener('change',()=>{rebuildPerformanceOptions();renderPerformance()});['pfAgent','pfMonth','pfIndicator'].forEach(id=>$('#'+id).addEventListener('change',renderPerformance));$('#pfApply').addEventListener('click',()=>currentUser?.source==='supabase'?loadDashboardRoutinesFromSupabase():renderPerformance());
 
 function setPerformanceMode(mode){
   performanceMode=mode;
@@ -1286,8 +1587,10 @@ function setPerformanceMode(mode){
   $('#userManagement').classList.toggle('hidden',!users);
   $('#orgManagement').classList.toggle('hidden',!org);
   $$('[data-performance-mode]').forEach(b=>b.classList.toggle('active',b.dataset.performanceMode===mode));
+
   if(currentUser?.role==='performance'){
     setTopForView('performance');
+
     if(users){
       renderUserManagement();
       if(currentUser?.source==='supabase')loadOrganizationFromSupabase().then(()=>{
@@ -1299,7 +1602,10 @@ function setPerformanceMode(mode){
       renderOrgManagement();
       if(currentUser?.source==='supabase')loadOrganizationFromSupabase();
     }
-    else renderPerformance();
+    else{
+      renderPerformance();
+      if(currentUser?.source==='supabase')loadDashboardRoutinesFromSupabase();
+    }
   }
 }
 $$('[data-performance-mode]').forEach(b=>b.addEventListener('click',()=>setPerformanceMode(b.dataset.performanceMode)));
