@@ -860,15 +860,30 @@ async function authenticateReal(username,password){
   if(!email)throw new Error('INVALID_USERNAME');
 
   const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
-  if(error||!data?.user)throw new Error('INVALID_CREDENTIALS');
+  if(error){
+    const e=new Error(error.message||'Falha de autenticação');
+    e.code=error.code||'SUPABASE_AUTH_ERROR';
+    e.status=error.status||0;
+    e.loginEmail=email;
+    throw e;
+  }
+  if(!data?.user){
+    const e=new Error('Supabase não retornou usuário autenticado.');
+    e.code='NO_AUTH_USER';
+    e.loginEmail=email;
+    throw e;
+  }
 
   const profile=await fetchAuthenticatedProfile(data.user);
   if(!profile||!profile.active){
     await supabaseClient.auth.signOut();
-    throw new Error('PROFILE_BLOCKED');
+    const e=new Error('Perfil não encontrado ou usuário inativo.');
+    e.code='PROFILE_BLOCKED';
+    throw e;
   }
 
-  await supabaseClient.rpc('touch_last_access');
+  const {error:touchError}=await supabaseClient.rpc('touch_last_access');
+  if(touchError)console.warn('Não foi possível atualizar último acesso:',touchError);
   return profile;
 }
 function loginAsUser(u){currentUser=u;role=u.role;u.lastLogin=nowLabel();audit('Login',u.username,'Acesso realizado');$('#login').classList.add('hidden');$('#app').classList.remove('hidden');setMetaForUser(u);
@@ -887,9 +902,16 @@ $('#loginForm').addEventListener('submit',async e=>{
     loginAsUser(u);
     if(u.role==='performance')await loadOrganizationFromSupabase();
   }catch(err){
-    if(err?.message==='INVALID_USERNAME')$('#msg').textContent='Formato de usuário inválido.';
-    else if(err?.message==='PROFILE_BLOCKED')$('#msg').textContent='Acesso bloqueado ou perfil indisponível. Procure o setor de Performance.';
-    else $('#msg').textContent='Usuário ou senha inválidos.';
+    console.error('Diagnóstico de login:',err);
+    if(err?.message==='INVALID_USERNAME'){
+      $('#msg').textContent='Formato de usuário inválido.';
+    }else if(err?.code==='PROFILE_BLOCKED'){
+      $('#msg').textContent='Login aceito, mas o perfil está inativo ou indisponível.';
+    }else{
+      const code=err?.code?` [${err.code}]`:'';
+      const status=err?.status?` HTTP ${err.status}`:'';
+      $('#msg').textContent=`Supabase: ${err?.message||'Falha de autenticação'}${code}${status}`;
+    }
   }finally{
     if(btn){btn.disabled=false;btn.textContent='ACEITAR MISSÃO'}
   }
