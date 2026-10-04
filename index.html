@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/><meta name="theme-color" content="#050608"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" name="viewport"/>
-<title>Rotina do Sucesso — V8.10 Produção Piloto</title>
+<title>Rotina do Sucesso — V8.10.2 Importação de Unidades</title>
 <style>
 :root{--bg:#0b0e12;--panel:#12171d;--panel2:#171d24;--line:#27303a;--text:#f5f7fa;--muted:#8d98a5;--red:#e43b32;--green:#61d394;--amber:#e9b45d}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
@@ -529,6 +529,8 @@ main{animation:fadein .22s ease both}
       <div class="sub">Cadastre a estrutura operacional que alimenta usuários, vínculos e dashboards.</div>
     </div>
     <div class="org-head-actions">
+      <button class="btn" id="downloadUnitTemplateBtn">Baixar modelo</button>
+      <button class="btn" id="importUnitsBtn">Importar unidades</button>
       <button class="btn" id="newCompanyBtn">+ Nova empresa</button>
       <button class="btn red" id="newUnitBtn">+ Nova unidade/loja</button>
     </div>
@@ -536,7 +538,8 @@ main{animation:fadein .22s ease both}
 
   <div class="org-note">
     <b>Estrutura oficial:</b> empresas e unidades cadastradas aqui ficam salvas no banco do sistema.
-    Unidades inativas preservam o histórico. O vínculo com Gerente/Capitão será utilizado nas permissões e dashboards reais.
+    Novas unidades seguem o padrão <b>SOS - XXX</b>, <b>UNI - XXX</b> e <b>CON - XXX</b>.
+    Exceções: <b>AZUL VIAGENS</b> e <b>COMERCIAL</b>. A importação é sempre feita por empresa.
   </div>
 
   <div class="org-summary">
@@ -633,10 +636,11 @@ main{animation:fadein .22s ease both}
       <input type="hidden" id="unitEditId"/>
       <div class="org-modal-grid">
         <div><label class="label">Empresa</label><select id="orgUnitCompany"></select></div>
-        <div><label class="label">Nome da unidade/loja</label><input id="orgUnitName" placeholder="Ex.: Manaus"/></div>
-        <div><label class="label">Código curto</label><input id="orgUnitShort" placeholder="Ex.: MAO SOS" maxlength="20"/></div>
+        <div><label class="label">Código da unidade</label><input id="orgUnitName" placeholder="Ex.: BSB" maxlength="20"/></div>
+        <div><label class="label">Nome padronizado</label><input id="orgUnitShort" disabled placeholder="Gerado automaticamente"/></div>
         <div><label class="label">Status</label><select id="orgUnitStatus"><option value="active">Ativa</option><option value="inactive">Inativa</option></select></div>
       </div>
+      <div class="sub" style="margin-top:8px">O sistema aplica automaticamente o prefixo da empresa. Ex.: BSB → SOS - BSB.</div>
       <div style="margin-top:10px">
         <label class="label">Gerente / Capitão responsável</label>
         <select id="orgUnitManager"><option value="">Sem gerente definido</option></select>
@@ -648,6 +652,53 @@ main{animation:fadein .22s ease both}
         <button class="btn red" type="submit">SALVAR UNIDADE</button>
       </div>
     </form>
+  </div>
+</div>
+
+
+<div class="modal hidden" id="importUnitsModal">
+  <div class="modalbox user-editor" style="width:min(820px,100%)">
+    <div class="kicker">Importação por empresa</div>
+    <h2>Importar unidades</h2>
+    <p class="import-help">
+      Selecione primeiro a <b>Empresa</b>. A planilha deve ter a coluna <b>UNIDADE</b>.
+      Para SOS, Universo e Connect, informe apenas o código da unidade. O sistema aplica o padrão automaticamente.
+    </p>
+
+    <div class="rows">
+      <div>
+        <label class="label">Empresa da importação</label>
+        <select id="importUnitsCompany"><option value="">Selecione a empresa</option></select>
+      </div>
+      <div>
+        <label class="label">Padrão aplicado</label>
+        <input id="importUnitsPattern" disabled value="Selecione a empresa"/>
+      </div>
+    </div>
+
+    <div class="import-drop" style="margin-top:12px">
+      <input id="importUnitsFile" type="file" accept=".xlsx,.xls,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"/>
+      <button class="btn red" id="chooseImportUnitsFileBtn" type="button">Selecionar planilha</button>
+      <div class="import-file-name" id="importUnitsFileName">Nenhum arquivo selecionado.</div>
+    </div>
+
+    <div class="import-summary">
+      <div class="card"><div class="t">Linhas lidas</div><div class="n" id="importUnitsReadCount">0</div></div>
+      <div class="card"><div class="t">Prontas para importar</div><div class="n" id="importUnitsReadyCount">0</div></div>
+      <div class="card"><div class="t">Ignoradas / erro</div><div class="n" id="importUnitsSkipCount">0</div></div>
+    </div>
+
+    <div class="table import-preview">
+      <table style="min-width:700px">
+        <thead><tr><th>Linha</th><th>Informado</th><th>Nome padronizado</th><th>Status</th><th>Motivo</th></tr></thead>
+        <tbody id="importUnitsPreviewBody"><tr><td colspan="5">Selecione a empresa e uma planilha.</td></tr></tbody>
+      </table>
+    </div>
+    <div class="import-error" id="importUnitsError"></div>
+    <div class="modal-actions">
+      <button class="btn" id="cancelImportUnitsBtn" type="button">Cancelar</button>
+      <button class="btn red" id="confirmImportUnitsBtn" type="button" disabled>IMPORTAR UNIDADES</button>
+    </div>
   </div>
 </div>
 
@@ -1148,7 +1199,7 @@ function showLogin(){
   $('#user').value='';
   $('#pass').value='';
   $('#msg').textContent='';
-  ['first','hist','userModal','importUsersModal','companyModal','unitModal'].forEach(id=>$('#'+id)?.classList.add('hidden'));
+  ['first','hist','userModal','importUsersModal','importUnitsModal','companyModal','unitModal'].forEach(id=>$('#'+id)?.classList.add('hidden'));
 }
 function technicalEmailForUsername(username){
   const login=username.trim().toLowerCase();
@@ -1896,6 +1947,75 @@ function fillOrgCompanyDbSelect(selected=''){
   if(companies.some(c=>c.id===selected))el.value=selected;
 }
 
+function normalizeUnitText(v){
+  return String(v??'')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .trim().toUpperCase().replace(/\s+/g,' ');
+}
+function unitCompanyRule(company){
+  const n=normalizeUnitText(company?.name||company||'');
+  if(n==='SOS')return {type:'prefix',prefix:'SOS',example:'SOS - BSB'};
+  if(n==='UNIVERSO'||n==='UNI')return {type:'prefix',prefix:'UNI',example:'UNI - CGH'};
+  if(n==='CONNECT'||n==='CON')return {type:'prefix',prefix:'CON',example:'CON - FOR'};
+  if(n==='AZUL VIAGENS'||n==='AZUL')return {type:'exception',fixed:'AZUL VIAGENS',example:'AZUL VIAGENS'};
+  if(n==='COMERCIAL')return {type:'exception',fixed:'COMERCIAL',example:'COMERCIAL'};
+  return null;
+}
+function standardizeUnitForCompany(company,raw){
+  const rule=unitCompanyRule(company);
+  if(!rule)return {ok:false,reason:'Empresa sem padrão de unidade definido.'};
+
+  const value=normalizeUnitText(raw);
+  if(rule.type==='exception'){
+    if(value && value!==rule.fixed){
+      return {ok:false,reason:`Para esta empresa use exatamente "${rule.fixed}".`};
+    }
+    return {ok:true,name:rule.fixed,shortCode:rule.fixed,code:rule.fixed};
+  }
+
+  let code=value;
+  const fullPrefix=/^(SOS|UNI|CON)\s*-\s*/;
+  code=code.replace(fullPrefix,'').trim();
+
+  if(!code)return {ok:false,reason:'Informe o código da unidade.'};
+  if(!/^[A-Z0-9][A-Z0-9 ]{0,14}$/.test(code)){
+    return {ok:false,reason:'Use apenas letras, números e espaço no código.'};
+  }
+
+  return {
+    ok:true,
+    name:`${rule.prefix} - ${code}`,
+    shortCode:code,
+    code
+  };
+}
+function extractUnitCodeForEditor(unit,company){
+  if(!unit)return '';
+  const rule=unitCompanyRule(company);
+  if(!rule)return unit.short_code||unit.name||'';
+  if(rule.type==='exception')return rule.fixed;
+  const fromShort=normalizeUnitText(unit.short_code||'');
+  if(fromShort && !fromShort.includes(' - '))return fromShort;
+  return normalizeUnitText(unit.name||'').replace(/^(SOS|UNI|CON)\s*-\s*/,'').trim();
+}
+function updateUnitStandardPreview(){
+  const company=orgDbCompanyById($('#orgUnitCompany').value);
+  const rule=unitCompanyRule(company);
+  const input=$('#orgUnitName');
+  const preview=$('#orgUnitShort');
+  if(!input||!preview)return;
+
+  if(rule?.type==='exception'){
+    input.value=rule.fixed;
+    input.disabled=true;
+  }else{
+    input.disabled=false;
+  }
+
+  const formatted=standardizeUnitForCompany(company,input.value);
+  preview.value=formatted.ok?formatted.name:(rule?.example||'Padrão não definido');
+}
+
 function activeCompanies(){return COMPANY_CATALOG.filter(c=>c.active!==false)}
 function companyOptionMarkup({includeAll=false,includeInactive=false,blank=false}={}){
   const arr=COMPANY_CATALOG.filter(c=>includeInactive||c.active!==false);
@@ -2025,11 +2145,12 @@ function openUnitEditor(id=''){
   $('#unitModalKicker').textContent=u?'Editar unidade':'Nova unidade';
   $('#unitModalTitle').textContent=u?'Editar unidade/loja':'Cadastrar unidade/loja';
   fillOrgCompanyDbSelect(u?.company_id||'');
-  $('#orgUnitName').value=u?.name||'';
-  $('#orgUnitShort').value=u?.short_code||'';
+  const company=orgDbCompanyById($('#orgUnitCompany').value);
+  $('#orgUnitName').value=u?extractUnitCodeForEditor(u,company):'';
   $('#orgUnitStatus').value=u?.active===false?'inactive':'active';
   rebuildOrgManagerOptionsDb(u?.manager_user_id||'');
   $('#unitFormError').textContent='';
+  updateUnitStandardPreview();
   $('#unitModal').classList.remove('hidden');
 }
 function rebuildOrgManagerOptionsDb(selected=''){
@@ -2051,6 +2172,8 @@ async function refreshOrganization(){
 
 $('#newCompanyBtn').addEventListener('click',()=>openCompanyEditor());
 $('#newUnitBtn').addEventListener('click',()=>openUnitEditor());
+$('#orgUnitCompany').addEventListener('change',updateUnitStandardPreview);
+$('#orgUnitName').addEventListener('input',updateUnitStandardPreview);
 $('#cancelCompanyEdit').addEventListener('click',()=>$('#companyModal').classList.add('hidden'));
 $('#cancelUnitEdit').addEventListener('click',()=>$('#unitModal').classList.add('hidden'));
 $('#orgCompanyFilter').addEventListener('change',renderOrgManagement);
@@ -2108,16 +2231,20 @@ $('#unitForm').addEventListener('submit',async e=>{
   e.preventDefault();
   const id=$('#unitEditId').value;
   const companyId=$('#orgUnitCompany').value;
-  const unitName=$('#orgUnitName').value.trim();
-  const short=$('#orgUnitShort').value.trim().toUpperCase();
+  const rawUnit=$('#orgUnitName').value.trim();
   const active=$('#orgUnitStatus').value==='active';
   const managerId=$('#orgUnitManager').value||null;
   const btn=e.submitter;
   $('#unitFormError').textContent='';
 
-  if(!companyId||!unitName){$('#unitFormError').textContent='Informe Empresa e Nome da unidade/loja.';return}
+  if(!companyId){$('#unitFormError').textContent='Informe a Empresa.';return}
   const company=orgDbCompanyById(companyId);
   if(!company||company.active===false){$('#unitFormError').textContent='Selecione uma empresa ativa.';return}
+  const formatted=standardizeUnitForCompany(company,rawUnit);
+  if(!formatted.ok){$('#unitFormError').textContent=formatted.reason;return}
+
+  const unitName=formatted.name;
+  const short=formatted.shortCode;
   const duplicate=ORG_UNITS_DB.find(u=>u.id!==id&&u.company_id===companyId&&u.name.toLowerCase()===unitName.toLowerCase());
   if(duplicate){$('#unitFormError').textContent='Essa unidade já existe nessa empresa.';return}
 
@@ -2127,9 +2254,10 @@ $('#unitForm').addEventListener('submit',async e=>{
     const payload={
       company_id:companyId,
       name:unitName,
-      short_code:short||unitName.toUpperCase(),
+      short_code:short,
       active,
-      manager_user_id:managerId
+      manager_user_id:managerId,
+      timezone:'America/Sao_Paulo'
     };
 
     if(id){
@@ -2464,7 +2592,212 @@ $('#downloadUserTemplateBtn').addEventListener('click',downloadUserTemplate);
 $('#chooseImportFileBtn').addEventListener('click',()=>$('#importUsersFile').click());
 $('#importUsersFile').addEventListener('change',e=>handleUserImportFile(e.target.files?.[0]));
 $('#cancelImportUsersBtn').addEventListener('click',()=>$('#importUsersModal').classList.add('hidden'));
+
 $('#confirmImportUsersBtn').addEventListener('click',confirmUserImport);
+
+// ---------------- Importação de unidades por empresa ----------------
+let pendingUnitImport=[];
+
+function fillUnitImportCompanies(){
+  const el=$('#importUnitsCompany');
+  const current=el.value;
+  const companies=ORG_COMPANIES_DB.filter(c=>c.active!==false);
+  el.innerHTML='<option value="">Selecione a empresa</option>'+
+    companies.map(c=>`<option value="${c.id}">${importEsc(c.name)}</option>`).join('');
+  if(companies.some(c=>c.id===current))el.value=current;
+  updateUnitImportPattern();
+}
+function updateUnitImportPattern(){
+  const company=orgDbCompanyById($('#importUnitsCompany').value);
+  const rule=unitCompanyRule(company);
+  $('#importUnitsPattern').value=rule?rule.example:'Selecione a empresa';
+  pendingUnitImport=[];
+  $('#importUnitsReadCount').textContent='0';
+  $('#importUnitsReadyCount').textContent='0';
+  $('#importUnitsSkipCount').textContent='0';
+  $('#importUnitsPreviewBody').innerHTML='<tr><td colspan="5">Selecione a empresa e uma planilha.</td></tr>';
+  $('#confirmImportUnitsBtn').disabled=true;
+  $('#importUnitsError').textContent=company&&!rule?'Esta empresa ainda não possui um padrão de cadastro definido.':'';
+}
+function resetUnitImport(){
+  pendingUnitImport=[];
+  $('#importUnitsFile').value='';
+  $('#importUnitsFileName').textContent='Nenhum arquivo selecionado.';
+  $('#importUnitsReadCount').textContent='0';
+  $('#importUnitsReadyCount').textContent='0';
+  $('#importUnitsSkipCount').textContent='0';
+  $('#importUnitsPreviewBody').innerHTML='<tr><td colspan="5">Selecione a empresa e uma planilha.</td></tr>';
+  $('#importUnitsError').textContent='';
+  $('#confirmImportUnitsBtn').disabled=true;
+}
+function openUnitImport(){
+  resetUnitImport();
+  fillUnitImportCompanies();
+  $('#importUnitsModal').classList.remove('hidden');
+}
+function downloadUnitTemplate(){
+  if(typeof XLSX==='undefined'){
+    alert('Leitor de Excel indisponível neste momento.');
+    return;
+  }
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet([['UNIDADE']]);
+  ws['!cols']=[{wch:22}];
+  XLSX.utils.book_append_sheet(wb,ws,'UNIDADES');
+
+  const help=XLSX.utils.aoa_to_sheet([
+    ['IMPORTAÇÃO DE UNIDADES',''],
+    ['Como usar','No sistema, selecione primeiro a Empresa e depois importe a planilha.'],
+    ['SOS','Informe apenas o código. Ex.: BSB → SOS - BSB'],
+    ['Universo','Informe apenas o código. Ex.: CGH → UNI - CGH'],
+    ['Connect','Informe apenas o código. Ex.: FOR → CON - FOR'],
+    ['Azul Viagens','Exceção: use AZUL VIAGENS'],
+    ['Comercial','Exceção: use COMERCIAL']
+  ]);
+  help['!cols']=[{wch:20},{wch:62}];
+  XLSX.utils.book_append_sheet(wb,help,'INSTRUCOES');
+  XLSX.writeFile(wb,'Modelo_Importacao_Unidades_Rotina_do_Sucesso.xlsx');
+}
+function mapUnitImportRows(rawRows){
+  if(!rawRows.length)return[];
+  const company=orgDbCompanyById($('#importUnitsCompany').value);
+  if(!company)throw new Error('Selecione a empresa antes de importar a planilha.');
+  const rule=unitCompanyRule(company);
+  if(!rule)throw new Error('A empresa selecionada não possui padrão de cadastro definido.');
+
+  const originalHeaders=Object.keys(rawRows[0]||{});
+  const headerMap=new Map(originalHeaders.map(h=>[normalizeImportHeader(h),h]));
+  const unitHeader=headerMap.get('unidade')||headerMap.get('codigo')||headerMap.get('loja')||headerMap.get('sigla');
+  if(!unitHeader)throw new Error('A planilha precisa conter a coluna "UNIDADE".');
+
+  const seen=new Set();
+  return rawRows.map((r,i)=>{
+    const informed=String(r[unitHeader]??'').trim();
+    const formatted=standardizeUnitForCompany(company,informed);
+    let status='ready',reason='Pronto para importar',name='',shortCode='';
+
+    if(!formatted.ok){
+      status='error';
+      reason=formatted.reason;
+    }else{
+      name=formatted.name;
+      shortCode=formatted.shortCode;
+      const key=name.toLowerCase();
+
+      if(seen.has(key)){
+        status='skip';
+        reason='Unidade duplicada dentro da planilha.';
+      }else if(ORG_UNITS_DB.some(u=>u.company_id===company.id&&u.name.toLowerCase()===key)){
+        status='skip';
+        reason='Unidade já cadastrada nesta empresa.';
+      }
+      seen.add(key);
+    }
+
+    return {line:i+2,informed,name,shortCode,status,reason};
+  });
+}
+function renderUnitImportPreview(){
+  const rows=pendingUnitImport;
+  const ready=rows.filter(x=>x.status==='ready').length;
+  const skip=rows.length-ready;
+
+  $('#importUnitsReadCount').textContent=String(rows.length);
+  $('#importUnitsReadyCount').textContent=String(ready);
+  $('#importUnitsSkipCount').textContent=String(skip);
+  $('#confirmImportUnitsBtn').disabled=ready===0;
+
+  $('#importUnitsPreviewBody').innerHTML=rows.length?rows.map(x=>`<tr>
+    <td>${x.line}</td>
+    <td>${importEsc(x.informed||'—')}</td>
+    <td><b>${importEsc(x.name||'—')}</b></td>
+    <td><span class="import-status ${x.status==='ready'?'ok':x.status==='skip'?'skip':'err'}">${x.status==='ready'?'IMPORTAR':x.status==='skip'?'IGNORAR':'ERRO'}</span></td>
+    <td>${importEsc(x.reason)}</td>
+  </tr>`).join(''):'<tr><td colspan="5">Nenhuma unidade encontrada.</td></tr>';
+}
+async function handleUnitImportFile(file){
+  pendingUnitImport=[];
+  $('#importUnitsReadCount').textContent='0';
+  $('#importUnitsReadyCount').textContent='0';
+  $('#importUnitsSkipCount').textContent='0';
+  $('#confirmImportUnitsBtn').disabled=true;
+  $('#importUnitsError').textContent='';
+
+  if(!$('#importUnitsCompany').value){
+    $('#importUnitsError').textContent='Selecione a empresa antes da planilha.';
+    $('#importUnitsFile').value='';
+    return;
+  }
+  if(!file)return;
+
+  $('#importUnitsFileName').textContent=file.name;
+  $('#importUnitsError').textContent='Lendo planilha...';
+
+  try{
+    const lower=file.name.toLowerCase();
+    let rawRows=[];
+    if(lower.endsWith('.csv'))rawRows=parseDelimited(await file.text());
+    else if(lower.endsWith('.xlsx')||lower.endsWith('.xls'))rawRows=rowsFromWorkbook(await file.arrayBuffer());
+    else throw new Error('Formato não suportado. Use XLSX, XLS ou CSV.');
+
+    pendingUnitImport=mapUnitImportRows(rawRows);
+    renderUnitImportPreview();
+    $('#importUnitsError').textContent=pendingUnitImport.length?'':'A planilha está vazia.';
+  }catch(err){
+    pendingUnitImport=[];
+    renderUnitImportPreview();
+    $('#importUnitsError').textContent=err?.message||'Não foi possível ler a planilha.';
+  }
+}
+async function confirmUnitImport(){
+  const company=orgDbCompanyById($('#importUnitsCompany').value);
+  const ready=pendingUnitImport.filter(x=>x.status==='ready');
+  if(!company||!ready.length)return;
+
+  const btn=$('#confirmImportUnitsBtn');
+  btn.disabled=true;
+  btn.textContent='IMPORTANDO...';
+
+  try{
+    const payloads=ready.map(x=>({
+      company_id:company.id,
+      name:x.name,
+      short_code:x.shortCode,
+      active:true,
+      manager_user_id:null,
+      timezone:'America/Sao_Paulo'
+    }));
+
+    const {data,error}=await supabaseClient
+      .from('units')
+      .insert(payloads)
+      .select('id,name');
+
+    if(error)throw error;
+
+    $('#importUnitsModal').classList.add('hidden');
+    await refreshOrganization();
+    alert(`${data?.length||ready.length} unidade(s) importada(s) em ${company.name}.`);
+  }catch(err){
+    console.error(err);
+    $('#importUnitsError').textContent=err?.message||'Não foi possível importar as unidades.';
+  }finally{
+    btn.disabled=false;
+    btn.textContent='IMPORTAR UNIDADES';
+  }
+}
+
+$('#importUnitsBtn').addEventListener('click',openUnitImport);
+$('#downloadUnitTemplateBtn').addEventListener('click',downloadUnitTemplate);
+$('#importUnitsCompany').addEventListener('change',()=>{
+  updateUnitImportPattern();
+  $('#importUnitsFile').value='';
+  $('#importUnitsFileName').textContent='Nenhum arquivo selecionado.';
+});
+$('#chooseImportUnitsFileBtn').addEventListener('click',()=>$('#importUnitsFile').click());
+$('#importUnitsFile').addEventListener('change',e=>handleUnitImportFile(e.target.files?.[0]));
+$('#cancelImportUnitsBtn').addEventListener('click',()=>$('#importUnitsModal').classList.add('hidden'));
+$('#confirmImportUnitsBtn').addEventListener('click',confirmUnitImport);
 
 // ---------------- Editor real de usuário ----------------
 function fillUserEditorCompanies(selected=''){

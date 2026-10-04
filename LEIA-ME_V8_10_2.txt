@@ -1,0 +1,107 @@
+ROTINA DO SUCESSO — V8.10.2 PRODUÇÃO PILOTO
+
+STATUS
+Versão preparada para início de uso pelas equipes em piloto.
+
+HORÁRIO OFICIAL
+Todo o sistema operacional usa:
+São Paulo/Brasília — America/Sao_Paulo
+
+AJUSTES DESTA VERSÃO
+
+1. LOGIN / SESSÃO
+- Atualizar a página (F5) não derruba mais o login.
+- Depois de cada atualização da página, aparece obrigatoriamente:
+  "VOCÊ ESTÁ LOGADO COMO: Nome do usuário"
+  com botão OK.
+- Desktop: a sessão sobrevive a F5, mas não é mantida depois que a aba é fechada.
+- Desktop: logout por 30 minutos de inatividade.
+- Mobile: a sessão pode permanecer salva entre acessos.
+- Se o usuário for inativado ou tiver perfil/vínculo alterado, a aplicação exige novo login ao detectar a mudança.
+- As regras RLS continuam bloqueando imediatamente operações de usuário inativo.
+
+2. DATA / VIRADA DO DIA
+- Data visual sempre em America/Sao_Paulo.
+- Horário do sistema fica destacado em todos os módulos.
+- Na virada da data operacional, a aplicação recarrega a interface.
+- Como a sessão é preservada, o usuário não precisa digitar a senha novamente.
+- Após a recarga da virada, a mensagem de confirmação do usuário também aparece.
+
+3. FECHAMENTO DIÁRIO
+- Dias anteriores ficam bloqueados por regra de banco.
+- Novo dia começa zerado ao primeiro acesso/lançamento.
+- Campo closed_at adicionado para auditoria.
+- Cron diário materializa o fechamento no banco.
+- A data operacional é calculada no servidor pelo fuso America/Sao_Paulo.
+
+4. SEGURANÇA DA PRODUÇÃO
+- Colaborador não grava mais diretamente na tabela daily_routines.
+- +1 / -1 / observação / zerar passam exclusivamente pelas RPCs seguras.
+- Performance mantém leitura consolidada, mas não pode editar produção histórica pela aplicação.
+- Vendas continuam fora dos KPIs principais.
+
+5. DASHBOARD AO VIVO
+- Continua modular em modules/dashboard-ao-vivo/.
+- Atualização automática: 30 minutos.
+- Atualizar agora: mantido.
+- Consultas otimizadas conforme V8.9.3.
+- Horários visuais explicitamente em São Paulo/Brasília.
+
+ORDEM DE PUBLICAÇÃO
+
+PASSO 1 — SUPABASE
+Execute no SQL Editor:
+supabase_migration_3_1_producao_piloto_data_br.sql
+
+Observação: no banco, campos DATE continuam sendo DATE nativo.
+O Supabase/PostgreSQL pode mostrar internamente AAAA-MM-DD.
+Na interface e nas saídas de leitura humana usamos DD/MM/AAAA.
+
+Ao final, a coluna:
+rotinas_antigas_ainda_abertas
+deve retornar 0.
+
+PASSO 2 — VERCEL/GITHUB
+Publique TODOS os arquivos deste pacote mantendo a estrutura de pastas.
+
+PASSO 3 — TESTE
+1. Entre com um colaborador.
+2. Faça +1 em um indicador.
+3. Atualize a página (F5).
+4. Confirme que aparece:
+   VOCÊ ESTÁ LOGADO COMO: <nome>
+5. Confirme que o número continua salvo.
+6. Entre como Performance e confira os dashboards.
+
+IMPORTANTE
+Na primeira abertura após trocar da versão antiga para esta, quem estava usando a
+versão com persistSession=false poderá precisar fazer login uma última vez.
+Depois disso, F5 passa a preservar a sessão conforme as regras acima.
+
+
+SOBRE AS PASTAS NO GITHUB
+- NÃO apague o repositório inteiro.
+- Substitua os arquivos do pacote mantendo a mesma estrutura.
+- Atualize também os arquivos dentro das pastas:
+  api/admin-users.js
+  modules/dashboard-ao-vivo/index.html
+  modules/dashboard-ao-vivo/bridge.js
+  modules/dashboard-ao-vivo/README.md
+- Se as pastas api/ e modules/ já existem, basta substituir os arquivos correspondentes.
+
+
+IMPORTAÇÃO DE UNIDADES — V8.10.2
+- Novo botão: Importar unidades.
+- A importação é obrigatoriamente feita por empresa.
+- Selecione a empresa antes de escolher a planilha.
+- A planilha usa uma única coluna: UNIDADE.
+- SOS: BSB vira SOS - BSB.
+- Universo: CGH vira UNI - CGH.
+- Connect: FOR vira CON - FOR.
+- Exceção Azul Viagens: AZUL VIAGENS.
+- Exceção Comercial: COMERCIAL.
+- Duplicidades na mesma empresa são ignoradas.
+- A importação é enviada ao Supabase em lote.
+- O cadastro manual de novas unidades também passa a aplicar o mesmo padrão.
+- Incluído no pacote: Modelo_Importacao_Unidades_Rotina_do_Sucesso.xlsx.
+- Não há SQL novo nesta versão.
