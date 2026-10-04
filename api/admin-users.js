@@ -152,7 +152,13 @@ module.exports = async function handler(req, res) {
       const authClient = createClient(
         SUPABASE_URL,
         SUPABASE_PUBLISHABLE_KEY || SUPABASE_SECRET_KEY,
-        { auth: { autoRefreshToken: false, persistSession: false } }
+        {
+          auth: {
+            autoRefreshToken: false,
+            persistSession: false,
+            detectSessionInUrl: false
+          }
+        }
       );
 
       const { data, error } = await authClient.auth.signInWithPassword({
@@ -161,7 +167,15 @@ module.exports = async function handler(req, res) {
       });
 
       const ok = !error && data?.user?.id === actor.id;
-      try { await authClient.auth.signOut(); } catch (_) {}
+
+      // IMPORTANTE:
+      // signOut() sem scope usa "global" no Supabase e revoga TODAS as
+      // sessões do usuário, inclusive a sessão aberta no navegador.
+      // Aqui encerramos somente a sessão temporária criada para validar
+      // a senha administrativa.
+      if (data?.session) {
+        try { await authClient.auth.signOut({ scope: 'local' }); } catch (_) {}
+      }
 
       if (!ok) {
         const err = new Error('Senha de login incorreta.');
