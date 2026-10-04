@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/><meta name="theme-color" content="#050608"/><meta name="color-scheme" content="dark light"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" name="viewport"/>
-<title>Rotina do Sucesso — V9.3.1 Final</title>
+<title>Rotina do Sucesso — V9.4 Final</title>
 <script>/* V9 — tema aplicado antes da pintura (evita piscar) */(function(){var t='dark';try{var s=localStorage.getItem('rds-theme');if(s==='light'||s==='dark')t=s}catch(e){}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='light'?'#f2f0ec':'#050608')})();</script>
 <style>
 :root{--bg:#0b0e12;--panel:#12171d;--panel2:#171d24;--line:#27303a;--text:#f5f7fa;--muted:#8d98a5;--red:#e43b32;--green:#61d394;--amber:#e9b45d}
@@ -617,6 +617,17 @@ tbody tr:hover{background:var(--accent-soft)}
   }
 </style>
 
+
+<style id="v9-4-first-password">
+  #mandatoryPasswordModal{z-index:160}
+  #mandatoryPasswordModal .modalbox{width:min(540px,100%)}
+  .password-rule{
+    margin-top:10px;padding:10px 12px;border:1px solid var(--line);
+    border-radius:10px;background:var(--panel2);font-size:12px;color:var(--muted);
+    line-height:1.5
+  }
+</style>
+
 </head>
 <body>
 <section class="login" id="login">
@@ -1115,6 +1126,40 @@ tbody tr:hover{background:var(--accent-soft)}
   </div>
 </div>
 
+
+<div class="modal hidden" id="mandatoryPasswordModal">
+  <div class="modalbox">
+    <div class="kicker">Primeiro acesso · Segurança</div>
+    <h2>Crie sua nova senha</h2>
+    <p class="sub">A senha fornecida pelo Administrador é temporária. Para continuar no sistema, você precisa substituí-la agora.</p>
+
+    <form id="mandatoryPasswordForm">
+      <label class="label">Senha atual</label>
+      <input id="mandatoryCurrentPassword" type="password" autocomplete="current-password" placeholder="Senha recebida do Administrador"/>
+
+      <div style="height:10px"></div>
+
+      <label class="label">Nova senha</label>
+      <input id="mandatoryNewPassword" type="password" autocomplete="new-password" placeholder="Crie sua nova senha"/>
+
+      <div style="height:10px"></div>
+
+      <label class="label">Confirme a nova senha</label>
+      <input id="mandatoryConfirmPassword" type="password" autocomplete="new-password" placeholder="Digite novamente"/>
+
+      <div class="password-rule">
+        A nova senha deve ter pelo menos 6 caracteres e precisa ser diferente da senha temporária.
+      </div>
+
+      <div class="form-error" id="mandatoryPasswordError"></div>
+
+      <div class="modal-actions">
+        <button class="btn red" type="submit">ALTERAR SENHA E CONTINUAR</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -1277,6 +1322,7 @@ function getRuntimeUser(id){
     unitId:p.unit_id||null,
     active:p.active===true,
     profileComplete:p.first_access_completed===true,
+    mustChangePassword:p.must_change_password===true,
     source:'supabase'
   };
 }
@@ -1605,7 +1651,7 @@ function showLogin(){
   $('#user').value='';
   $('#pass').value='';
   $('#msg').textContent='';
-  ['first','hist','userModal','importUsersModal','importUnitsModal','companyModal','unitModal','broadcastAlertModal','alertViewsModal','adminAlertPopup','deleteConfirmModal'].forEach(id=>$('#'+id)?.classList.add('hidden'));
+  ['first','hist','userModal','importUsersModal','importUnitsModal','companyModal','unitModal','broadcastAlertModal','alertViewsModal','adminAlertPopup','deleteConfirmModal','mandatoryPasswordModal'].forEach(id=>$('#'+id)?.classList.add('hidden'));
 }
 function technicalEmailForUsername(username){
   const login=username.trim().toLowerCase();
@@ -1615,7 +1661,7 @@ function technicalEmailForUsername(username){
 async function fetchAuthenticatedProfile(authUser){
   const {data:profile,error}=await supabaseClient
     .from('profiles')
-    .select('user_id,username,first_name,last_name,role,company_id,unit_id,active,first_access_completed,last_access_at')
+    .select('user_id,username,first_name,last_name,role,company_id,unit_id,active,first_access_completed,must_change_password,last_access_at')
     .eq('user_id',authUser.id)
     .single();
   if(error||!profile)return null;
@@ -1640,6 +1686,7 @@ async function fetchAuthenticatedProfile(authUser){
     unit:unitName,
     active:profile.active===true,
     profileComplete:profile.first_access_completed===true,
+    mustChangePassword:profile.must_change_password===true,
     lastLogin:profile.last_access_at||null,
     authUserId:authUser.id,
     companyId:profile.company_id||null,
@@ -1712,7 +1759,7 @@ async function verifyCurrentAccess(){
   try{
     const {data,error}=await supabaseClient
       .from('profiles')
-      .select('active,role,company_id,unit_id')
+      .select('active,role,company_id,unit_id,must_change_password')
       .eq('user_id',currentUser.id)
       .maybeSingle();
 
@@ -1730,6 +1777,13 @@ async function verifyCurrentAccess(){
       alert('Seu acesso foi alterado ou inativado. Entre novamente para continuar.');
       return false;
     }
+
+    if(data.must_change_password===true&&!currentUser.mustChangePassword){
+      currentUser.mustChangePassword=true;
+      openMandatoryPasswordChange();
+      return false;
+    }
+
     return true;
   }finally{
     accessCheckBusy=false;
@@ -1767,12 +1821,14 @@ async function restoreSessionAfterRefresh(){
       if(touchError)console.warn('Não foi possível atualizar último acesso:',touchError);
     }catch(_){}
 
-    await loadRoleData(profile);
-    resetDesktopIdleTimer();
+    if(!profile.mustChangePassword){
+      await loadRoleData(profile);
+      // Pedido operacional: após qualquer atualização/F5, confirmar claramente
+      // qual usuário permaneceu autenticado.
+      alert(`VOCÊ ESTÁ LOGADO COMO: ${fullName(profile)}`);
+    }
 
-    // Pedido operacional: após qualquer atualização/F5, confirmar claramente
-    // qual usuário permaneceu autenticado.
-    alert(`VOCÊ ESTÁ LOGADO COMO: ${fullName(profile)}`);
+    resetDesktopIdleTimer();
     return true;
   }catch(err){
     console.error('Falha ao restaurar sessão:',err);
@@ -1798,7 +1854,6 @@ function loginAsUser(u){
     state=ensureLiveState(u);
     view('collab');
     setCollabMode('entry');
-    if(!u.profileComplete)openFirstAccess();
   }
   else if(u.role==='gerente'){
     state=ensureLiveState(u);
@@ -1807,6 +1862,21 @@ function loginAsUser(u){
   else{
     setPerformanceMode('dashboard');
     view('performance');
+  }
+
+  if(u.mustChangePassword){
+    openMandatoryPasswordChange();
+    return;
+  }
+
+  finishAuthenticatedEntry();
+}
+
+function finishAuthenticatedEntry(){
+  if(!currentUser)return;
+
+  if(currentUser.role==='colaborador'&&!currentUser.profileComplete){
+    openFirstAccess();
   }
 
   startAdminAlertChannels();
@@ -1839,7 +1909,7 @@ $('#loginForm').addEventListener('submit',async e=>{
   try{
     loginAsUser(u);
 
-    await loadRoleData(u);
+    if(!u.mustChangePassword)await loadRoleData(u);
   }catch(err){
     console.error('Erro após autenticação:',err);
     $('#msg').textContent=`Acesso autenticado, mas houve erro ao abrir o sistema: ${err?.message||'erro desconhecido'}`;
@@ -1854,6 +1924,102 @@ function fillSelectUnits(companyEl,unitEl,allowBlank=false,blankLabel='Definir n
   unitEl.innerHTML=(allowBlank?`<option value="">${blankLabel}</option>`:'')+opts.map(x=>`<option value="${x.unit}">${x.unit}${x.active===false?' (Inativa)':''}</option>`).join('');
   if(opts.some(x=>x.unit===current))unitEl.value=current;else if(allowBlank)unitEl.value='';
 }
+
+
+// ---------------- Troca obrigatória de senha no primeiro login ----------------
+function openMandatoryPasswordChange(){
+  if(!currentUser?.mustChangePassword)return;
+  $('#mandatoryCurrentPassword').value='';
+  $('#mandatoryNewPassword').value='';
+  $('#mandatoryConfirmPassword').value='';
+  $('#mandatoryPasswordError').textContent='';
+  $('#mandatoryPasswordModal').classList.remove('hidden');
+  setTimeout(()=>$('#mandatoryCurrentPassword').focus(),50);
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&!$('#mandatoryPasswordModal').classList.contains('hidden')){
+    e.preventDefault();
+    e.stopPropagation();
+  }
+},true);
+
+$('#mandatoryPasswordForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(!currentUser?.mustChangePassword)return;
+
+  const currentPassword=$('#mandatoryCurrentPassword').value;
+  const newPassword=$('#mandatoryNewPassword').value;
+  const confirmPassword=$('#mandatoryConfirmPassword').value;
+  const btn=e.submitter;
+
+  $('#mandatoryPasswordError').textContent='';
+
+  if(!currentPassword||!newPassword||!confirmPassword){
+    $('#mandatoryPasswordError').textContent='Preencha os três campos de senha.';
+    return;
+  }
+  if(newPassword.length<6){
+    $('#mandatoryPasswordError').textContent='A nova senha precisa ter pelo menos 6 caracteres.';
+    return;
+  }
+  if(newPassword!==confirmPassword){
+    $('#mandatoryPasswordError').textContent='A confirmação da nova senha não confere.';
+    return;
+  }
+  if(newPassword===currentPassword){
+    $('#mandatoryPasswordError').textContent='A nova senha precisa ser diferente da senha temporária.';
+    return;
+  }
+
+  if(btn){btn.disabled=true;btn.textContent='ALTERANDO SENHA...'}
+
+  try{
+    const email=technicalEmailForUsername(currentUser.username);
+    if(!email)throw new Error('Usuário inválido para revalidação.');
+
+    // Revalida a senha temporária antes de permitir a troca.
+    const {data:reauth,error:reauthError}=await supabaseClient.auth.signInWithPassword({
+      email,
+      password:currentPassword
+    });
+    if(reauthError||reauth?.user?.id!==currentUser.id){
+      const err=new Error('Senha atual incorreta.');
+      err.code='INVALID_CURRENT_PASSWORD';
+      throw err;
+    }
+
+    const {error:updateError}=await supabaseClient.auth.updateUser({
+      password:newPassword
+    });
+    if(updateError)throw updateError;
+
+    const {error:flagError}=await supabaseClient.rpc('complete_mandatory_password_change');
+    if(flagError)throw flagError;
+
+    currentUser.mustChangePassword=false;
+    $('#mandatoryPasswordModal').classList.add('hidden');
+
+    finishAuthenticatedEntry();
+    await loadRoleData(currentUser);
+
+    if(currentUser.role==='colaborador'&&!currentUser.profileComplete){
+      // O formulário de perfil já terá sido aberto por finishAuthenticatedEntry().
+    }else{
+      alert('Senha alterada com sucesso.');
+    }
+  }catch(err){
+    console.error('Falha na troca obrigatória de senha:',err);
+    if(err?.code==='INVALID_CURRENT_PASSWORD'){
+      $('#mandatoryPasswordError').textContent='Senha atual incorreta.';
+    }else{
+      $('#mandatoryPasswordError').textContent=err?.message||'Não foi possível alterar a senha.';
+    }
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='ALTERAR SENHA E CONTINUAR'}
+  }
+});
+
 
 /* Primeiro acesso real: empresa/unidade vêm do Supabase e o vínculo é salvo via RPC. */
 let FIRST_ACCESS_COMPANIES=[];
@@ -2033,7 +2199,7 @@ async function loadDashboardReferenceData(){
       supabaseClient.from('companies').select('id,name,active').order('name'),
       supabaseClient.from('units').select('id,company_id,name,short_code,manager_user_id,active').order('name'),
       supabaseClient.from('profiles')
-        .select('user_id,username,first_name,last_name,role,company_id,unit_id,active,first_access_completed,last_access_at')
+        .select('user_id,username,first_name,last_name,role,company_id,unit_id,active,first_access_completed,must_change_password,last_access_at')
         .order('username')
     ]);
 
@@ -2051,7 +2217,7 @@ async function loadDashboardReferenceData(){
     supabaseClient.from('companies').select('id,name,active').eq('id',currentUser.companyId).maybeSingle(),
     supabaseClient.from('units').select('id,company_id,name,short_code,manager_user_id,active').eq('id',currentUser.unitId).maybeSingle(),
     supabaseClient.from('profiles')
-      .select('user_id,username,first_name,last_name,role,company_id,unit_id,active,first_access_completed,last_access_at')
+      .select('user_id,username,first_name,last_name,role,company_id,unit_id,active,first_access_completed,must_change_password,last_access_at')
       .order('username')
   ]);
 
@@ -2354,7 +2520,7 @@ async function loadOrganizationFromSupabase(){
     const [companiesRes,unitsRes,profilesRes]=await Promise.all([
       supabaseClient.from('companies').select('id,name,active,created_at,updated_at').order('name'),
       supabaseClient.from('units').select('id,company_id,name,short_code,manager_user_id,timezone,active,created_at,updated_at').order('name'),
-      supabaseClient.from('profiles').select('user_id,username,first_name,last_name,role,company_id,unit_id,active,first_access_completed,last_access_at').order('username')
+      supabaseClient.from('profiles').select('user_id,username,first_name,last_name,role,company_id,unit_id,active,first_access_completed,must_change_password,last_access_at').order('username')
     ]);
     if(companiesRes.error)throw companiesRes.error;
     if(unitsRes.error)throw unitsRes.error;
@@ -2866,6 +3032,7 @@ function profileFullName(p){
 }
 function profileStatusMarkup(p){
   if(!p.active)return '<span class="status-badge inactive">Inativo</span>';
+  if(p.must_change_password)return '<span class="status-badge pending">Troca de senha</span>';
   if(!p.first_access_completed)return '<span class="status-badge pending">1º acesso</span>';
   return '<span class="status-badge active">Ativo</span>';
 }
@@ -2939,7 +3106,7 @@ function filteredUsers(){
     if(r!=='all'&&p.role!==r)return false;
     if(s==='active'&&!p.active)return false;
     if(s==='inactive'&&p.active)return false;
-    if(s==='pending'&&p.first_access_completed)return false;
+    if(s==='pending'&&p.first_access_completed&&!p.must_change_password)return false;
     if(c!=='all'&&p.company_id!==c)return false;
     if(u!=='all'&&p.unit_id!==u)return false;
     return true;
@@ -2955,7 +3122,7 @@ function renderUserManagement(){
   $('#umActiveCount').textContent=ORG_PROFILES_DB.filter(p=>p.active).length;
   $('#umCollabCount').textContent=ORG_PROFILES_DB.filter(p=>p.active&&p.role==='colaborador').length;
   $('#umManagerCount').textContent=ORG_PROFILES_DB.filter(p=>p.active&&p.role==='gerente').length;
-  $('#umPendingCount').textContent=ORG_PROFILES_DB.filter(p=>p.active&&!p.first_access_completed).length;
+  $('#umPendingCount').textContent=ORG_PROFILES_DB.filter(p=>p.active&&(!p.first_access_completed||p.must_change_password)).length;
 
   $('#userTableBody').innerHTML=rows.map(p=>{
     const unit=orgDbUnitById(p.unit_id);

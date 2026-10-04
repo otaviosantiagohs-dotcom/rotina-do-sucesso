@@ -327,7 +327,8 @@ module.exports = async function handler(req, res) {
         company_id: companyId,
         unit_id: unitId,
         active,
-        first_access_completed: complete
+        first_access_completed: complete,
+        must_change_password: true
       }, { onConflict: 'user_id' });
 
       if (profileError) {
@@ -337,7 +338,7 @@ module.exports = async function handler(req, res) {
       }
 
       await syncManager(userId, role, active, unitId);
-      await audit('USUARIO_CRIADO', username, JSON.stringify({ role, active, companyId, unitId, firstAccessCompleted: complete }));
+      await audit('USUARIO_CRIADO', username, JSON.stringify({ role, active, companyId, unitId, firstAccessCompleted: complete, mustChangePassword: true }));
       return json(res, 200, { ok: true, userId });
     }
 
@@ -392,7 +393,7 @@ module.exports = async function handler(req, res) {
       const { error: authUpdateError } = await admin.auth.admin.updateUserById(userId, authUpdate);
       if (authUpdateError) return json(res, 400, { code: 'AUTH_UPDATE_FAILED', message: authUpdateError.message });
 
-      const { error: profileError } = await admin.from('profiles').update({
+      const profilePatch = {
         username,
         first_name: String(u.firstName || '').trim() || null,
         last_name: String(u.lastName || '').trim() || null,
@@ -401,12 +402,18 @@ module.exports = async function handler(req, res) {
         unit_id: unitId,
         active,
         first_access_completed: complete
-      }).eq('user_id', userId);
+      };
+
+      // Se um Administrador redefinir a senha de um usuário,
+      // essa senha volta a ser temporária.
+      if (u.password) profilePatch.must_change_password = true;
+
+      const { error: profileError } = await admin.from('profiles').update(profilePatch).eq('user_id', userId);
 
       if (profileError) return json(res, 400, { code: 'PROFILE_UPDATE_FAILED', message: profileError.message });
 
       await syncManager(userId, role, active, unitId);
-      await audit('USUARIO_EDITADO', username, JSON.stringify({ role, active, companyId, unitId, firstAccessCompleted: complete }), JSON.stringify({
+      await audit('USUARIO_EDITADO', username, JSON.stringify({ role, active, companyId, unitId, firstAccessCompleted: complete, passwordResetRequiresChange: !!u.password }), JSON.stringify({
         role: oldProfile.role, active: oldProfile.active, companyId: oldProfile.company_id, unitId: oldProfile.unit_id
       }));
       return json(res, 200, { ok: true });
@@ -777,6 +784,7 @@ module.exports = async function handler(req, res) {
           role: 'colaborador',
           active: true,
           first_access_completed: false,
+          must_change_password: true,
           first_name: null,
           last_name: null,
           company_id: null,
