@@ -700,6 +700,9 @@ const indicatorShort={all:'Ações',salao:'Salão',online:'Online',cotacoes:'Cot
 
 let currentUser=null, role=null, state={salao:0,online:0,cotacoes:0,vendas:0,obs:''}, editingUserId=null, performanceMode='dashboard';
 const liveStates=new Map();
+let REAL_ROUTINE_ROWS=[];
+let routineNoteTimer=null;
+let routineSyncErrors=0;
 const auditLog=[];
 let idCounter=100, orgCounter=100;
 
@@ -802,8 +805,149 @@ function generateRows(){
 }
 const BASE_ROWS=generateRows();
 function ensureLiveState(user){if(!liveStates.has(user.id))liveStates.set(user.id,{salao:0,online:0,cotacoes:0,vendas:0,obs:''});return liveStates.get(user.id)}
+
+function mapDbRoutineRow(r){
+  const unit=ORG_UNITS_DB.find(u=>u.id===r.unit_id);
+  const company=unit?ORG_COMPANIES_DB.find(c=>c.id===unit.company_id):null;
+  const p=ORG_PROFILES_DB.find(x=>x.user_id===r.user_id);
+  const agent=p?orgDbFullName(p):(currentUser?.id===r.user_id?fullName(currentUser):'Usuário');
+  return {
+    dbId:r.id,
+    userId:r.user_id,
+    unitId:r.unit_id,
+    date:r.routine_date,
+    company:company?.name||(currentUser?.id===r.user_id?currentUser.company:''),
+    unit:unit?.name||(currentUser?.id===r.user_id?currentUser.unit:''),
+    short:unit?.short_code||'',
+    agent,
+    salao:Number(r.floor_approaches||0),
+    online:Number(r.online_captures||0),
+    cotacoes:Number(r.quotations||0),
+    vendas:Number(r.sales||0),
+    obs:r.note||'',
+    closed:r.closed===true
+  };
+}
+function applyTodayRoutineToState(dbRow){
+  if(!currentUser||!dbRow)return;
+  state=ensureLiveState(currentUser);
+  state.salao=Number(dbRow.floor_approaches||0);
+  state.online=Number(dbRow.online_captures||0);
+  state.cotacoes=Number(dbRow.quotations||0);
+  state.vendas=Number(dbRow.sales||0);
+  state.obs=dbRow.note||'';
+}
+async function loadMyRoutinesFromSupabase(){
+  if(!currentUser||currentUser.role!=='colaborador'||currentUser.source!=='supabase'||!currentUser.profileComplete)return;
+
+  // Carrega também os catálogos necessários para nomear o histórico.
+  if(!ORG_COMPANIES_DB.length||!ORG_UNITS_DB.length||!ORG_PROFILES_DB.length){
+    try{await loadOrganizationFromSupabase()}catch(_){}
+  }
+
+  const start=addDays(DEMO_TODAY,-90);
+  const {data,error}=await supabaseClient
+    .from('daily_routines')
+    .select('id,user_id,unit_id,routine_date,floor_approaches,online_captures,quotations,sales,note,closed,created_at,updated_at')
+    .eq('user_id',currentUser.id)
+    .gte('routine_date',start)
+    .lte('routine_date',DEMO_TODAY)
+    .order('routine_date',{ascending:true});
+
+  if(error)throw error;
+
+  let rows=data||[];
+  let today=rows.find(r=>r.routine_date===DEMO_TODAY);
+
+  if(!today){
+    const {data:created,error:createError}=await supabaseClient.rpc('ensure_today_routine');
+    if(createError)throw createError;
+    today=created;
+    rows=[...rows.filter(r=>r.routine_date!==DEMO_TODAY),created];
+  }
+
+  REAL_ROUTINE_ROWS=rows.map(mapDbRoutineRow);
+  applyTodayRoutineToState(today);
+  render();
+}
+function updateRealTodayFromState(){
+  if(!currentUser)return;
+  const mapped={
+    dbId:null,
+    userId:currentUser.id,
+    unitId:currentUser.unitId,
+    date:DEMO_TODAY,
+    company:currentUser.company,
+    unit:currentUser.unit,
+    short:'',
+    agent:fullName(currentUser),
+    salao:state.salao,
+    online:state.online,
+    cotacoes:state.cotacoes,
+    vendas:state.vendas,
+    obs:state.obs||'',
+    closed:false
+  };
+  const i=REAL_ROUTINE_ROWS.findIndex(r=>r.userId===currentUser.id&&r.date===DEMO_TODAY);
+  if(i>=0)REAL_ROUTINE_ROWS[i]={...REAL_ROUTINE_ROWS[i],...mapped};
+  else REAL_ROUTINE_ROWS.push(mapped);
+}
+const metricDbMap={
+  salao:'floor_approaches',
+  online:'online_captures',
+  cotacoes:'quotations',
+  vendas:'sales'
+};
+async function persistMetricDelta(key,delta){
+  if(!currentUser||currentUser.role!=='colaborador'||currentUser.source!=='supabase')return;
+  const previous=state[key];
+  state[key]=Math.max(0,state[key]+delta);
+  updateRealTodayFromState();
+  render();
+  pulse();
+  try{
+    const {error}=await supabaseClient.rpc('change_today_metric',{
+      p_metric:metricDbMap[key],
+      p_delta:delta
+    });
+    if(error)throw error;
+    routineSyncErrors=0;
+  }catch(err){
+    console.error('Erro ao salvar indicador:',err);
+    routineSyncErrors++;
+    // Recarrega o valor oficial para evitar divergência.
+    try{await loadMyRoutinesFromSupabase()}catch(_){
+      state[key]=previous;
+      updateRealTodayFromState();
+      render();
+    }
+    alert('Não foi possível salvar esta alteração. O sistema recarregou o valor oficial.');
+  }
+}
+async function persistTodayNote(){
+  if(!currentUser||currentUser.role!=='colaborador'||currentUser.source!=='supabase')return;
+  try{
+    const {error}=await supabaseClient.rpc('save_today_note',{p_note:state.obs||''});
+    if(error)throw error;
+    routineSyncErrors=0;
+    pulse();
+  }catch(err){
+    console.error('Erro ao salvar observação:',err);
+    routineSyncErrors++;
+    $('#savestatus').textContent='● erro ao salvar observação';
+    $('#savestatus').style.color='var(--red)';
+  }
+}
+
 function rowsWithLive(){
   let rows=BASE_ROWS.map(r=>({...r}));
+
+  // Registros reais prevalecem sobre qualquer linha demonstrativa do mesmo usuário/dia.
+  REAL_ROUTINE_ROWS.forEach(rr=>{
+    rows=rows.filter(r=>!(r.userId===rr.userId&&r.date===rr.date));
+    rows.push({...rr});
+  });
+
   for(const [userId,s] of liveStates.entries()){
     const u=getRuntimeUser(userId);
     if(!u||u.role!=='colaborador'||!u.profileComplete||!u.company||!u.unit)continue;
@@ -826,7 +970,7 @@ function rowsWithLive(){
 function rowsForWindow(rows,month,period){if(period==='month')return rows.filter(r=>r.date.startsWith(month));const n=Number(period)||7,start=addDays(DEMO_TODAY,-(n-1));return rows.filter(r=>r.date>=start&&r.date<=DEMO_TODAY)}
 function userRows(user){return rowsWithLive().filter(r=>r.userId===user.id)}
 
-function pulse(){const el=$('#savestatus');if(!el)return;el.textContent='● salvando...';el.style.color='var(--amber)';clearTimeout(pulse.t);pulse.t=setTimeout(()=>{el.textContent='● salvo automaticamente';el.style.color='var(--green)'},280)}
+function pulse(){const el=$('#savestatus');if(!el)return;el.textContent='● salvando...';el.style.color='var(--amber)';clearTimeout(pulse.t);pulse.t=setTimeout(()=>{if(!routineSyncErrors){el.textContent='● salvo automaticamente';el.style.color='var(--green)'}},420)}
 function setMetaForUser(u){
   $('#uname').textContent=fullName(u);$('#avatar').textContent=initials(fullName(u));
   if(u.role==='performance')$('#meta').innerHTML='<span class="chip">Administrador</span><span class="chip">Todas as empresas</span><span class="chip">Todas as unidades</span>';
@@ -953,6 +1097,7 @@ $('#loginForm').addEventListener('submit',async e=>{
   try{
     loginAsUser(u);
     if(u.role==='performance')await loadOrganizationFromSupabase();
+    if(u.role==='colaborador'&&u.profileComplete)await loadMyRoutinesFromSupabase();
   }catch(err){
     console.error('Erro após autenticação:',err);
     $('#msg').textContent=`Acesso autenticado, mas houve erro ao abrir o sistema: ${err?.message||'erro desconhecido'}`;
@@ -1064,6 +1209,7 @@ $('#firstForm').addEventListener('submit',async e=>{
     setMetaForUser(currentUser);
     $('#first').classList.add('hidden');
     render();
+    await loadMyRoutinesFromSupabase();
   }catch(err){
     console.error(err);
     $('#firstAccessError').textContent=err?.message||'Não foi possível concluir o primeiro acesso.';
@@ -1072,10 +1218,44 @@ $('#firstForm').addEventListener('submit',async e=>{
   }
 });
 
-$$('.plus').forEach(b=>b.addEventListener('click',()=>{if(currentUser?.role!=='colaborador')return;state[b.dataset.k]++;render();pulse()}));
-$$('.minus').forEach(b=>b.addEventListener('click',()=>{if(currentUser?.role!=='colaborador')return;state[b.dataset.k]=Math.max(0,state[b.dataset.k]-1);render();pulse()}));
-$('#obs').addEventListener('input',e=>{if(currentUser?.role!=='colaborador')return;state.obs=e.target.value;pulse()});
-$('#clearDay').addEventListener('click',()=>{if(currentUser?.role!=='colaborador')return;if(!confirm('Zerar todas as contagens e a observação do dia atual?'))return;state.salao=state.online=state.cotacoes=state.vendas=0;state.obs='';audit('Rotina zerada',currentUser.username,'Dados do dia atual zerados');render();pulse()});
+$$('.plus').forEach(b=>b.addEventListener('click',()=>{
+  if(currentUser?.role!=='colaborador')return;
+  persistMetricDelta(b.dataset.k,1);
+}));
+$$('.minus').forEach(b=>b.addEventListener('click',()=>{
+  if(currentUser?.role!=='colaborador')return;
+  if(state[b.dataset.k]<=0)return;
+  persistMetricDelta(b.dataset.k,-1);
+}));
+$('#obs').addEventListener('input',e=>{
+  if(currentUser?.role!=='colaborador')return;
+  state.obs=e.target.value;
+  updateRealTodayFromState();
+  pulse();
+  clearTimeout(routineNoteTimer);
+  routineNoteTimer=setTimeout(persistTodayNote,650);
+});
+$('#clearDay').addEventListener('click',async()=>{
+  if(currentUser?.role!=='colaborador')return;
+  if(!confirm('Zerar todas as contagens e a observação do dia atual?'))return;
+  const before={...state};
+  state.salao=state.online=state.cotacoes=state.vendas=0;
+  state.obs='';
+  updateRealTodayFromState();
+  render();
+  pulse();
+  try{
+    const {error}=await supabaseClient.rpc('clear_today_routine');
+    if(error)throw error;
+    audit('Rotina zerada',currentUser.username,'Dados do dia atual zerados');
+  }catch(err){
+    console.error(err);
+    Object.assign(state,before);
+    updateRealTodayFromState();
+    render();
+    alert('Não foi possível zerar a rotina.');
+  }
+});
 
 function personalRows(period){if(!currentUser)return[];return rowsForWindow(userRows(currentUser),$('#personalPeriod').value==='month'?DEMO_TODAY.slice(0,7):DEMO_TODAY.slice(0,7),period)}
 function renderPersonalDashboard(){if(!currentUser||currentUser.role!=='colaborador'||!currentUser.profileComplete)return;const key=$('#personalIndicator').value,period=$('#personalPeriod').value,rows=rowsForWindow(userRows(currentUser),DEMO_TODAY.slice(0,7),period),label=indicatorNames[key];const total=sum(rows,key),byDate=aggregateByDate(rows,key).sort((a,b)=>a.n.localeCompare(b.n)),todayRow=rows.find(r=>r.date===DEMO_TODAY),today=todayRow?metricValue(todayRow,key):0,best=byDate.length?Math.max(...byDate.map(x=>x.v)):0,bestRow=byDate.find(x=>x.v===best);$('#personalIndicatorLabel').textContent=label;$('#personalChartLabel').textContent=label;$('#personalTotal').textContent=formatInt(total);$('#personalToday').textContent=formatInt(today);$('#personalAverage').textContent=format1(byDate.length?total/byDate.length:0);$('#personalBest').textContent=formatInt(best);$('#personalBestDate').textContent=bestRow?(bestRow.n===DEMO_TODAY?'Hoje':bestRow.n.slice(8,10)+'/'+bestRow.n.slice(5,7)):'—';bars($('#personalChart'),byDate.map(x=>({l:x.n===DEMO_TODAY?'Hoje':x.n.slice(8,10),v:x.v})));rank($('#personalBreakdown'),[{n:'Abordagem no Salão',s:'captação presencial',v:sum(rows,'salao')},{n:'Captação Online',s:'prospecção e carteira',v:sum(rows,'online')},{n:'Cotações',s:'oportunidades trabalhadas',v:sum(rows,'cotacoes')}]);$('#personalSalesTotal').textContent=formatInt(rows.reduce((a,r)=>a+r.vendas,0))}
