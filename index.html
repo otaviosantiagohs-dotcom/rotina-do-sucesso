@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/><meta name="theme-color" content="#050608"/><meta name="color-scheme" content="dark light"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" name="viewport"/>
-<title>Rotina do Sucesso — V9.1 Final</title>
+<title>Rotina do Sucesso — V9.2 Final</title>
 <script>/* V9 — tema aplicado antes da pintura (evita piscar) */(function(){var t='dark';try{var s=localStorage.getItem('rds-theme');if(s==='light'||s==='dark')t=s}catch(e){}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='light'?'#f2f0ec':'#050608')})();</script>
 <style>
 :root{--bg:#0b0e12;--panel:#12171d;--panel2:#171d24;--line:#27303a;--text:#f5f7fa;--muted:#8d98a5;--red:#e43b32;--green:#61d394;--amber:#e9b45d}
@@ -563,6 +563,37 @@ tbody tr:hover{background:var(--accent-soft)}
 @media(prefers-reduced-motion:reduce){.theme-btn.spin .rays{animation:none}}
 
 </style>
+
+<style id="v9-2-admin-features">
+  .danger-action{border-color:var(--err-line)!important;color:var(--err)!important}
+  .danger-action:hover{background:var(--err-bg)!important}
+  .admin-alert-body{
+    white-space:pre-wrap;line-height:1.65;padding:16px;border:1px solid var(--line);
+    border-radius:12px;background:var(--panel2);margin:14px 0;font-size:15px
+  }
+  .recipient-list{
+    max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:12px;
+    background:var(--panel2);padding:8px;margin-top:8px
+  }
+  .recipient-row{
+    display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:center;
+    padding:8px;border-bottom:1px solid var(--line)
+  }
+  .recipient-row:last-child{border-bottom:0}
+  .recipient-row input{width:18px;height:18px}
+  .recipient-row small{display:block;color:var(--muted);margin-top:2px}
+  .destructive-note{
+    border:1px solid var(--err-line);background:var(--err-bg);color:var(--err);
+    padding:11px 12px;border-radius:10px;line-height:1.5;margin:12px 0
+  }
+  #adminAlertPopup{z-index:120}
+  #adminAlertPopup .modalbox{width:min(580px,100%)}
+  #adminAlertOk:disabled{opacity:.45;cursor:not-allowed}
+  @media(max-width:760px){
+    .recipient-list{max-height:220px}
+  }
+</style>
+
 </head>
 <body>
 <section class="login" id="login">
@@ -740,7 +771,7 @@ tbody tr:hover{background:var(--accent-soft)}
 </div>
 
 <div class="hidden" id="userManagement">
-<div class="section" style="margin-top:0"><div><h2>Gestão de Usuários</h2><div class="sub">Cadastros, perfis, unidades e acesso ao sistema.</div></div><div class="user-head-actions"><button class="btn" id="downloadUserTemplateBtn">Baixar modelo</button><button class="btn" id="importUsersBtn">Importar planilha</button><button class="btn red" id="newUserBtn">+ Novo usuário</button></div></div>
+<div class="section" style="margin-top:0"><div><h2>Gestão de Usuários</h2><div class="sub">Cadastros, perfis, unidades e acesso ao sistema.</div></div><div class="user-head-actions"><button class="btn" id="broadcastAlertBtn">Disparar alerta</button><button class="btn" id="downloadUserTemplateBtn">Baixar modelo</button><button class="btn" id="importUsersBtn">Importar planilha</button><button class="btn red" id="newUserBtn">+ Novo usuário</button></div></div>
 <div class="user-link-note"><b>Vínculo automático por unidade:</b> o Gerente visualiza todos os colaboradores ativos vinculados à mesma Empresa + Unidade. O Capitão é identificado automaticamente pelo usuário marcado como Gerente daquela unidade. Usuários inativos permanecem no histórico, mas não conseguem entrar.</div>
 <div class="user-summary">
 <div class="card"><div class="t">Usuários ativos</div><div class="n" id="umActiveCount">0</div></div>
@@ -778,6 +809,7 @@ tbody tr:hover{background:var(--accent-soft)}
   <div class="org-note">
     <b>Estrutura oficial:</b> empresas e unidades cadastradas aqui ficam salvas no banco do sistema.
     Novas unidades seguem o padrão <b>SOS - XXX</b>, <b>UNI - XXX</b> e <b>CON - XXX</b>.
+    Quando houver identificação numérica, também são aceitos formatos como <b>SOS 2 - BEL</b>.
     Exceções: <b>AZUL VIAGENS</b> e <b>COMERCIAL</b>. A importação é sempre feita por empresa.
   </div>
 
@@ -819,6 +851,11 @@ tbody tr:hover{background:var(--accent-soft)}
       </div>
     </section>
   </div>
+
+  <section class="card pad" style="margin-top:14px">
+    <div class="section" style="margin:0"><h2>Auditoria administrativa</h2><span>Exclusões de unidades</span></div>
+    <div class="audit-list" id="orgAuditList"></div>
+  </section>
 </div>
 
 </main>
@@ -875,11 +912,11 @@ tbody tr:hover{background:var(--accent-soft)}
       <input type="hidden" id="unitEditId"/>
       <div class="org-modal-grid">
         <div><label class="label">Empresa</label><select id="orgUnitCompany"></select></div>
-        <div><label class="label">Código da unidade</label><input id="orgUnitName" placeholder="Ex.: BSB" maxlength="20"/></div>
+        <div><label class="label">Código da unidade</label><input id="orgUnitName" placeholder="Ex.: BSB ou 2 - BEL" maxlength="20"/></div>
         <div><label class="label">Nome padronizado</label><input id="orgUnitShort" disabled placeholder="Gerado automaticamente"/></div>
         <div><label class="label">Status</label><select id="orgUnitStatus"><option value="active">Ativa</option><option value="inactive">Inativa</option></select></div>
       </div>
-      <div class="sub" style="margin-top:8px">O sistema aplica automaticamente o prefixo da empresa. Ex.: BSB → SOS - BSB.</div>
+      <div class="sub" style="margin-top:8px">O sistema aplica automaticamente o prefixo da empresa. Ex.: BSB → SOS - BSB | 2 - BEL → SOS 2 - BEL.</div>
       <div style="margin-top:10px">
         <label class="label">Gerente / Capitão responsável</label>
         <select id="orgUnitManager"><option value="">Sem gerente definido</option></select>
@@ -901,7 +938,7 @@ tbody tr:hover{background:var(--accent-soft)}
     <h2>Importar unidades</h2>
     <p class="import-help">
       Selecione primeiro a <b>Empresa</b>. A planilha deve ter a coluna <b>UNIDADE</b>.
-      Para SOS, Universo e Connect, informe apenas o código da unidade. O sistema aplica o padrão automaticamente.
+      Para SOS, Universo e Connect, informe o código da unidade. Também é permitido informar número + código, como <b>2 - BEL</b>, gerando <b>SOS 2 - BEL</b>.
     </p>
 
     <div class="rows">
@@ -969,6 +1006,69 @@ tbody tr:hover{background:var(--accent-soft)}
     <div class="modal-actions">
       <button class="btn" id="cancelImportUsersBtn" type="button">Cancelar</button>
       <button class="btn red" id="confirmImportUsersBtn" type="button" disabled>IMPORTAR USUÁRIOS</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal hidden" id="deleteConfirmModal">
+  <div class="modalbox" style="width:min(560px,100%)">
+    <div class="kicker">Confirmação administrativa</div>
+    <h2 id="deleteConfirmTitle">Confirmar exclusão</h2>
+    <div class="destructive-note" id="deleteConfirmText"></div>
+    <label class="label">Redigite sua senha de login</label>
+    <input id="deleteConfirmPassword" type="password" autocomplete="current-password" placeholder="Sua senha"/>
+    <div class="form-error" id="deleteConfirmError"></div>
+    <div class="modal-actions">
+      <button class="btn" id="cancelDeleteBtn" type="button">Cancelar</button>
+      <button class="btn red" id="confirmDeleteBtn" type="button">EXCLUIR DEFINITIVAMENTE</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal hidden" id="broadcastAlertModal">
+  <div class="modalbox user-editor" style="width:min(720px,100%)">
+    <div class="kicker">Comunicação imediata</div>
+    <h2>Disparar alerta</h2>
+    <p class="sub">Somente usuários conectados no momento recebem o alerta. O conteúdo não é salvo no banco nem fica em histórico.</p>
+    <form id="broadcastAlertForm">
+      <label class="label">Destinatários</label>
+      <select id="broadcastAudience">
+        <option value="all">Todos os usuários ativos</option>
+        <option value="specific">Usuários específicos</option>
+      </select>
+
+      <div class="hidden" id="broadcastSpecificBox" style="margin-top:12px">
+        <label class="label">Selecione os usuários</label>
+        <div class="recipient-list" id="broadcastRecipientList"></div>
+      </div>
+
+      <div style="margin-top:12px">
+        <label class="label">Mensagem</label>
+        <textarea id="broadcastMessage" maxlength="1000" placeholder="Digite o alerta que será exibido para os usuários..."></textarea>
+        <div class="sub" style="margin-top:6px">Máximo de 1.000 caracteres.</div>
+      </div>
+
+      <div class="form-error" id="broadcastAlertError"></div>
+      <div class="modal-actions">
+        <button class="btn" id="cancelBroadcastAlertBtn" type="button">Cancelar</button>
+        <button class="btn red" type="submit">DISPARAR ALERTA</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal hidden" id="adminAlertPopup">
+  <div class="modalbox">
+    <div class="kicker">Alerta da Administração</div>
+    <h2>Atenção</h2>
+    <div class="admin-alert-body" id="adminAlertText"></div>
+    <div class="checkline">
+      <input id="adminAlertAck" type="checkbox"/>
+      <label for="adminAlertAck"><b>Li e estou ciente deste alerta.</b></label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn red" id="adminAlertOk" type="button" disabled>OK</button>
     </div>
   </div>
 </div>
@@ -1454,6 +1554,7 @@ $$('[data-manager-mode]').forEach(b=>{
 });
 
 function showLogin(){
+  stopAdminAlertChannels();
   currentUser=null;
   role=null;
   if(desktopIdleTimer){clearTimeout(desktopIdleTimer);desktopIdleTimer=null}
@@ -1665,6 +1766,8 @@ function loginAsUser(u){
     setPerformanceMode('dashboard');
     view('performance');
   }
+
+  startAdminAlertChannels();
 }
 $('#loginForm').addEventListener('submit',async e=>{
   e.preventDefault();
@@ -2238,11 +2341,11 @@ function normalizeUnitText(v){
 function unitCompanyRule(company){
   const n=normalizeUnitText(company?.name||company||'');
 
-  // Reconhece tanto o nome curto quanto o nome institucional cadastrado.
-  // Ex.: "SOS", "SOS Passagens Aéreas" e variações continuam gerando SOS - XXX.
-  if(n==='SOS'||n.startsWith('SOS '))return {type:'prefix',prefix:'SOS',example:'SOS - BSB'};
-  if(n==='UNI'||n==='UNIVERSO'||n.startsWith('UNIVERSO '))return {type:'prefix',prefix:'UNI',example:'UNI - CGH'};
-  if(n==='CON'||n==='CONNECT'||n.startsWith('CONNECT '))return {type:'prefix',prefix:'CON',example:'CON - FOR'};
+  // Reconhece nome curto e nome institucional.
+  // Também permite identificador numérico: SOS 2 - BEL, UNI 2 - CGH, CON 2 - FOR.
+  if(n==='SOS'||n.startsWith('SOS '))return {type:'prefix',prefix:'SOS',example:'SOS - BSB',numberedExample:'SOS 2 - BEL'};
+  if(n==='UNI'||n==='UNIVERSO'||n.startsWith('UNIVERSO '))return {type:'prefix',prefix:'UNI',example:'UNI - CGH',numberedExample:'UNI 2 - CGH'};
+  if(n==='CON'||n==='CONNECT'||n.startsWith('CONNECT '))return {type:'prefix',prefix:'CON',example:'CON - FOR',numberedExample:'CON 2 - FOR'};
   if(n==='AZUL'||n==='AZUL VIAGENS'||n.startsWith('AZUL VIAGENS '))return {type:'exception',fixed:'AZUL VIAGENS',example:'AZUL VIAGENS'};
   if(n==='COMERCIAL'||n.startsWith('COMERCIAL '))return {type:'exception',fixed:'COMERCIAL',example:'COMERCIAL'};
   return null;
@@ -2260,19 +2363,42 @@ function standardizeUnitForCompany(company,raw){
   }
 
   let code=value;
-  const fullPrefix=/^(SOS|UNI|CON)\s*-\s*/;
-  code=code.replace(fullPrefix,'').trim();
+  let unitNumber='';
+
+  // Formatos aceitos:
+  // BEL         -> SOS - BEL
+  // 2 - BEL     -> SOS 2 - BEL
+  // SOS - BEL   -> SOS - BEL
+  // SOS 2 - BEL -> SOS 2 - BEL
+  const fullPattern=new RegExp(`^${rule.prefix}(?:\\s+(\\d{1,3}))?\\s*-\\s*(.+)$`);
+  const fullMatch=code.match(fullPattern);
+
+  if(fullMatch){
+    unitNumber=fullMatch[1]||'';
+    code=fullMatch[2].trim();
+  }else{
+    const numberedShort=code.match(/^(\d{1,3})\s*-\s*(.+)$/);
+    if(numberedShort){
+      unitNumber=numberedShort[1];
+      code=numberedShort[2].trim();
+    }
+  }
 
   if(!code)return {ok:false,reason:'Informe o código da unidade.'};
   if(!/^[A-Z0-9][A-Z0-9 ]{0,14}$/.test(code)){
-    return {ok:false,reason:'Use apenas letras, números e espaço no código.'};
+    return {ok:false,reason:'Use letras, números e espaço no código. Para unidade numerada, use por exemplo "2 - BEL".'};
   }
+
+  if(unitNumber)unitNumber=String(Number(unitNumber));
+  const numberedPrefix=unitNumber?`${rule.prefix} ${unitNumber}`:rule.prefix;
+  const shortCode=unitNumber?`${unitNumber} - ${code}`:code;
 
   return {
     ok:true,
-    name:`${rule.prefix} - ${code}`,
-    shortCode:code,
-    code
+    name:`${numberedPrefix} - ${code}`,
+    shortCode,
+    code,
+    unitNumber
   };
 }
 function extractUnitCodeForEditor(unit,company){
@@ -2280,9 +2406,14 @@ function extractUnitCodeForEditor(unit,company){
   const rule=unitCompanyRule(company);
   if(!rule)return unit.short_code||unit.name||'';
   if(rule.type==='exception')return rule.fixed;
-  const fromShort=normalizeUnitText(unit.short_code||'');
-  if(fromShort && !fromShort.includes(' - '))return fromShort;
-  return normalizeUnitText(unit.name||'').replace(/^(SOS|UNI|CON)\s*-\s*/,'').trim();
+
+  const name=normalizeUnitText(unit.name||'');
+  const match=name.match(new RegExp(`^${rule.prefix}(?:\\s+(\\d{1,3}))?\\s*-\\s*(.+)$`));
+  if(match){
+    return match[1]?`${match[1]} - ${match[2]}`:match[2];
+  }
+
+  return normalizeUnitText(unit.short_code||'');
 }
 function updateUnitStandardPreview(){
   const company=orgDbCompanyById($('#orgUnitCompany').value);
@@ -2299,7 +2430,7 @@ function updateUnitStandardPreview(){
   }
 
   const formatted=standardizeUnitForCompany(company,input.value);
-  preview.value=formatted.ok?formatted.name:(rule?.example||'Padrão não definido');
+  preview.value=formatted.ok?formatted.name:(rule?.numberedExample?`${rule.example} | ${rule.numberedExample}`:(rule?.example||'Padrão não definido'));
 }
 
 function activeCompanies(){return COMPANY_CATALOG.filter(c=>c.active!==false)}
@@ -2333,6 +2464,7 @@ function orgStatusMarkup(active,labelActive='Ativa',labelInactive='Inativa'){
 }
 function renderOrgManagement(){
   if(!$('#companyTableBody'))return;
+  if(currentUser?.role==='performance')loadOrgAuditFromSupabase();
 
   // Se ainda não carregou o banco, mantém a área em estado neutro.
   const companies=ORG_COMPANIES_DB;
@@ -2410,6 +2542,7 @@ function renderOrgManagement(){
       <td><div class="org-actions">
         <button class="btn" data-edit-unit="${u.id}">Editar</button>
         <button class="btn ghost" data-toggle-unit="${u.id}">${u.active===false?'Ativar':'Inativar'}</button>
+        <button class="btn ghost danger-action" data-delete-unit="${u.id}">Excluir</button>
       </div></td>
     </tr>`;
   }).join('')||'<tr><td colspan="7">Nenhuma unidade encontrada.</td></tr>';
@@ -2477,8 +2610,23 @@ $('#companyTableBody').addEventListener('click',async e=>{
   }
 });
 $('#unitTableBody').addEventListener('click',async e=>{
-  const edit=e.target.closest('[data-edit-unit]'),toggle=e.target.closest('[data-toggle-unit]');
+  const edit=e.target.closest('[data-edit-unit]'),
+        toggle=e.target.closest('[data-toggle-unit]'),
+        del=e.target.closest('[data-delete-unit]');
+
   if(edit){openUnitEditor(edit.dataset.editUnit);return}
+
+  if(del){
+    const u=orgDbUnitById(del.dataset.deleteUnit);if(!u)return;
+    openDeleteConfirmation({
+      type:'unit',
+      id:u.id,
+      title:'Excluir unidade',
+      text:`A unidade "${u.name}" será excluída definitivamente. Usuários vinculados precisam ser removidos ou transferidos antes. O histórico operacional da unidade também será removido.`
+    });
+    return;
+  }
+
   if(toggle){
     const u=orgDbUnitById(toggle.dataset.toggleUnit);if(!u)return;
     const {error}=await supabaseClient.from('units').update({active:!u.active}).eq('id',u.id);
@@ -2656,6 +2804,26 @@ async function loadUserAuditFromSupabase(){
   </div>`).join('')||'<div class="sub" style="padding:10px 0">Nenhuma alteração registrada.</div>';
 }
 
+
+async function loadOrgAuditFromSupabase(){
+  if(currentUser?.role!=='performance')return;
+  const {data,error}=await supabaseClient
+    .from('audit_logs')
+    .select('id,actor_user_id,event_type,entity_type,entity_id,old_value,new_value,created_at')
+    .eq('entity_type','unit')
+    .order('created_at',{ascending:false})
+    .limit(10);
+
+  if(error){console.error(error);return}
+  const el=$('#orgAuditList');if(!el)return;
+  el.innerHTML=(data||[]).map(a=>`<div class="audit-row">
+    <div class="muted">${formatLastAccess(a.created_at)}</div>
+    <div><b>${a.event_type.replaceAll('_',' ')}</b><br><span class="muted">${a.entity_id||'unidade'}</span></div>
+    <div>${a.new_value||'—'}</div>
+    <div class="muted">registro seguro</div>
+  </div>`).join('')||'<div class="sub" style="padding:10px 0">Nenhuma exclusão de unidade registrada.</div>';
+}
+
 function rebuildUserMgmtCompanyFilter(){
   const el=$('#umCompany'),current=el.value||'all';
   el.innerHTML='<option value="all">Todas as empresas</option>'+
@@ -2716,6 +2884,7 @@ function renderUserManagement(){
       <td><div class="user-actions">
         <button class="btn" data-edit-user="${p.user_id}">Editar</button>
         <button class="btn ghost" data-toggle-user="${p.user_id}">${p.active?'Inativar':'Ativar'}</button>
+        <button class="btn ghost danger-action" data-delete-user="${p.user_id}">Excluir</button>
       </div></td>
     </tr>`;
   }).join('')||'<tr><td colspan="9">Nenhum usuário encontrado.</td></tr>';
@@ -2896,7 +3065,7 @@ function fillUnitImportCompanies(){
 function updateUnitImportPattern(){
   const company=orgDbCompanyById($('#importUnitsCompany').value);
   const rule=unitCompanyRule(company);
-  $('#importUnitsPattern').value=rule?rule.example:'Selecione a empresa';
+  $('#importUnitsPattern').value=rule?(rule.numberedExample?`${rule.example} | ${rule.numberedExample}`:rule.example):'Selecione a empresa';
   pendingUnitImport=[];
   $('#importUnitsReadCount').textContent='0';
   $('#importUnitsReadyCount').textContent='0';
@@ -2934,9 +3103,9 @@ function downloadUnitTemplate(){
   const help=XLSX.utils.aoa_to_sheet([
     ['IMPORTAÇÃO DE UNIDADES',''],
     ['Como usar','No sistema, selecione primeiro a Empresa e depois importe a planilha.'],
-    ['SOS','Informe apenas o código. Ex.: BSB → SOS - BSB'],
-    ['Universo','Informe apenas o código. Ex.: CGH → UNI - CGH'],
-    ['Connect','Informe apenas o código. Ex.: FOR → CON - FOR'],
+    ['SOS','Informe BSB → SOS - BSB ou 2 - BEL → SOS 2 - BEL'],
+    ['Universo','Informe CGH → UNI - CGH ou 2 - CGH → UNI 2 - CGH'],
+    ['Connect','Informe FOR → CON - FOR ou 2 - FOR → CON 2 - FOR'],
     ['Azul Viagens','Exceção: use AZUL VIAGENS'],
     ['Comercial','Exceção: use COMERCIAL']
   ]);
@@ -3170,11 +3339,31 @@ $('#userUnit').addEventListener('change',updateUserCaptainPreview);
 $('#userRole').addEventListener('change',syncUserRoleFields);
 
 $('#userTableBody').addEventListener('click',async e=>{
-  const edit=e.target.closest('[data-edit-user]'),toggle=e.target.closest('[data-toggle-user]');
+  const edit=e.target.closest('[data-edit-user]'),
+        toggle=e.target.closest('[data-toggle-user]'),
+        del=e.target.closest('[data-delete-user]');
+
   if(edit){
     openUserEditor(orgDbProfileById(edit.dataset.editUser));
     return;
   }
+
+  if(del){
+    const p=orgDbProfileById(del.dataset.deleteUser);
+    if(!p)return;
+    if(currentUser&&p.user_id===currentUser.id){
+      alert('Não é possível excluir o usuário que está logado.');
+      return;
+    }
+    openDeleteConfirmation({
+      type:'user',
+      id:p.user_id,
+      title:'Excluir usuário',
+      text:`O usuário "${profileFullName(p)}" (${p.username}) será excluído definitivamente. O acesso, o perfil e o histórico operacional desse usuário serão removidos.`
+    });
+    return;
+  }
+
   if(toggle){
     const p=orgDbProfileById(toggle.dataset.toggleUser);
     if(!p)return;
@@ -3252,6 +3441,213 @@ async function refreshAfterUserChange(){
 
 function downloadExcel(rows,filename){const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');const table=`<table><thead><tr><th>Data</th><th>Empresa</th><th>Unidade</th><th>Agente</th><th>Abordagem no Salão</th><th>Captação Online</th><th>Cotações</th><th>Vendas</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.date)}</td><td>${esc(r.company)}</td><td>${esc(r.unit)}</td><td>${esc(r.agent)}</td><td>${r.salao}</td><td>${r.online}</td><td>${r.cotacoes}</td><td>${r.vendas}</td></tr>`).join('')}</tbody></table>`;const blob=new Blob(['\ufeff<html><meta charset="utf-8"><body>'+table+'</body></html>'],{type:'application/vnd.ms-excel;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),200)}
 $('#export').addEventListener('click',()=>{if(!currentUser)return;if(!$('#collab').classList.contains('hidden'))downloadExcel(userRows(currentUser).filter(r=>r.date===DEMO_TODAY),'rotina_do_sucesso_colaborador.xls');else if(!$('#manager').classList.contains('hidden'))downloadExcel(managerFilteredRows(),'rotina_do_sucesso_gerente.xls');else downloadExcel(performanceFilteredRows(),'rotina_do_sucesso_performance.xls')});
+
+
+// ---------------- Exclusão administrativa com revalidação de senha ----------------
+let pendingDeleteAction=null;
+
+function openDeleteConfirmation(action){
+  if(currentUser?.role!=='performance')return;
+  pendingDeleteAction=action;
+  $('#deleteConfirmTitle').textContent=action.title||'Confirmar exclusão';
+  $('#deleteConfirmText').textContent=action.text||'Esta ação é permanente.';
+  $('#deleteConfirmPassword').value='';
+  $('#deleteConfirmError').textContent='';
+  $('#deleteConfirmModal').classList.remove('hidden');
+  setTimeout(()=>$('#deleteConfirmPassword').focus(),40);
+}
+
+function closeDeleteConfirmation(){
+  pendingDeleteAction=null;
+  $('#deleteConfirmPassword').value='';
+  $('#deleteConfirmError').textContent='';
+  $('#deleteConfirmModal').classList.add('hidden');
+}
+
+$('#cancelDeleteBtn').addEventListener('click',closeDeleteConfirmation);
+
+$('#confirmDeleteBtn').addEventListener('click',async()=>{
+  if(!pendingDeleteAction)return;
+  const password=$('#deleteConfirmPassword').value;
+  if(!password){
+    $('#deleteConfirmError').textContent='Redigite sua senha de login.';
+    return;
+  }
+
+  const btn=$('#confirmDeleteBtn');
+  btn.disabled=true;
+  btn.textContent='EXCLUINDO...';
+  $('#deleteConfirmError').textContent='';
+
+  try{
+    if(pendingDeleteAction.type==='user'){
+      await adminApi('deleteUser',{userId:pendingDeleteAction.id,password});
+      closeDeleteConfirmation();
+      await refreshAfterUserChange();
+    }else if(pendingDeleteAction.type==='unit'){
+      await adminApi('deleteUnit',{unitId:pendingDeleteAction.id,password});
+      closeDeleteConfirmation();
+      await refreshOrganization();
+    }
+  }catch(err){
+    console.error(err);
+    const map={
+      INVALID_PASSWORD:'Senha incorreta. A exclusão não foi realizada.',
+      PASSWORD_REQUIRED:'Redigite sua senha de login.',
+      UNIT_HAS_LINKED_USERS:'Esta unidade ainda possui usuários vinculados. Transfira ou exclua esses usuários primeiro.',
+      LAST_PERFORMANCE:'É necessário manter pelo menos um Administrador/Performance ativo.',
+      SELF_DELETE:'Não é possível excluir o usuário que está logado.'
+    };
+    $('#deleteConfirmError').textContent=map[err.code]||err.message;
+  }finally{
+    btn.disabled=false;
+    btn.textContent='EXCLUIR DEFINITIVAMENTE';
+  }
+});
+
+// ---------------- Disparo de alerta efêmero ----------------
+function renderBroadcastRecipients(){
+  const el=$('#broadcastRecipientList');if(!el)return;
+  const rows=ORG_PROFILES_DB
+    .filter(p=>p.active)
+    .slice()
+    .sort((a,b)=>profileFullName(a).localeCompare(profileFullName(b),'pt-BR'));
+
+  el.innerHTML=rows.map(p=>{
+    const unit=profileUnitName(p);
+    return `<label class="recipient-row">
+      <input type="checkbox" value="${p.user_id}" data-alert-recipient/>
+      <span><b>${profileFullName(p)}</b><small>${p.username} · ${roleLabel(p.role)}${unit?` · ${unit}`:''}</small></span>
+    </label>`;
+  }).join('')||'<div class="sub" style="padding:10px">Nenhum usuário ativo.</div>';
+}
+
+function openBroadcastAlert(){
+  if(currentUser?.role!=='performance')return;
+  $('#broadcastAudience').value='all';
+  $('#broadcastSpecificBox').classList.add('hidden');
+  $('#broadcastMessage').value='';
+  $('#broadcastAlertError').textContent='';
+  renderBroadcastRecipients();
+  $('#broadcastAlertModal').classList.remove('hidden');
+}
+
+$('#broadcastAlertBtn').addEventListener('click',openBroadcastAlert);
+$('#cancelBroadcastAlertBtn').addEventListener('click',()=>$('#broadcastAlertModal').classList.add('hidden'));
+$('#broadcastAudience').addEventListener('change',e=>{
+  $('#broadcastSpecificBox').classList.toggle('hidden',e.target.value!=='specific');
+});
+
+$('#broadcastAlertForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(currentUser?.role!=='performance')return;
+
+  const audience=$('#broadcastAudience').value;
+  const message=$('#broadcastMessage').value.trim();
+  const userIds=$$('[data-alert-recipient]:checked').map(x=>x.value);
+  const btn=e.submitter;
+
+  $('#broadcastAlertError').textContent='';
+  if(!message){
+    $('#broadcastAlertError').textContent='Digite a mensagem do alerta.';
+    return;
+  }
+  if(audience==='specific'&&!userIds.length){
+    $('#broadcastAlertError').textContent='Selecione pelo menos um usuário.';
+    return;
+  }
+
+  if(btn){btn.disabled=true;btn.textContent='DISPARANDO...'}
+
+  try{
+    const result=await adminApi('broadcastMessage',{
+      audience,
+      userIds:audience==='specific'?userIds:[],
+      message
+    });
+    $('#broadcastAlertModal').classList.add('hidden');
+    alert(`Alerta disparado para ${result.targets||0} destino(s) em tempo real.`);
+  }catch(err){
+    console.error(err);
+    $('#broadcastAlertError').textContent=err.message;
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='DISPARAR ALERTA'}
+  }
+});
+
+// ---------------- Recebimento do alerta: sem armazenamento ----------------
+let adminAlertChannels=[];
+let adminAlertQueue=[];
+let activeAdminAlert=null;
+
+async function stopAdminAlertChannels(){
+  const channels=adminAlertChannels.slice();
+  adminAlertChannels=[];
+  for(const ch of channels){
+    try{await supabaseClient.removeChannel(ch)}catch(_){}
+  }
+}
+
+function enqueueAdminAlert(payload){
+  const msg=String(payload?.message||'').trim();
+  if(!msg)return;
+  adminAlertQueue.push({
+    message:msg,
+    sender:payload?.sender||'Administração',
+    sentAt:payload?.sentAt||null
+  });
+  showNextAdminAlert();
+}
+
+function showNextAdminAlert(){
+  if(activeAdminAlert||!adminAlertQueue.length)return;
+  activeAdminAlert=adminAlertQueue.shift();
+  $('#adminAlertText').textContent=activeAdminAlert.message;
+  $('#adminAlertAck').checked=false;
+  $('#adminAlertOk').disabled=true;
+  $('#adminAlertPopup').classList.remove('hidden');
+}
+
+$('#adminAlertAck').addEventListener('change',e=>{
+  $('#adminAlertOk').disabled=!e.target.checked;
+});
+
+$('#adminAlertOk').addEventListener('click',()=>{
+  if(!$('#adminAlertAck').checked)return;
+  $('#adminAlertPopup').classList.add('hidden');
+  activeAdminAlert=null;
+  showNextAdminAlert();
+});
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&!$('#adminAlertPopup').classList.contains('hidden')){
+    e.preventDefault();
+    e.stopPropagation();
+  }
+},true);
+
+async function startAdminAlertChannels(){
+  await stopAdminAlertChannels();
+  if(!currentUser||currentUser.source!=='supabase')return;
+
+  const {data:{session}}=await supabaseClient.auth.getSession();
+  if(!session?.access_token)return;
+
+  try{supabaseClient.realtime.setAuth(session.access_token)}catch(_){}
+
+  const topics=['rds-alerts-all',`rds-alerts-user-${currentUser.id}`];
+
+  for(const topic of topics){
+    const channel=supabaseClient.channel(topic,{config:{private:true}});
+    channel
+      .on('broadcast',{event:'admin-alert'},({payload})=>enqueueAdminAlert(payload))
+      .subscribe(status=>{
+        if(status==='CHANNEL_ERROR')console.warn('Falha ao conectar canal de alerta:',topic);
+      });
+    adminAlertChannels.push(channel);
+  }
+}
+
 
 // Inicialização
 syncCompanySelects();fillSelectUnits($('#company'),$('#unit'),false);updateFirstCaptain();rebuildPerformanceOptions();rebuildUserMgmtUnits();renderPerformance();renderUserManagement();renderOrgManagement();

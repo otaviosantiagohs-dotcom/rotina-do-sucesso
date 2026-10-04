@@ -2,6 +2,7 @@ const { createClient } = require('@supabase/supabase-js');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY;
+const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
 
 function json(res, status, payload) {
   res.status(status).json(payload);
@@ -42,18 +43,68 @@ module.exports = async function handler(req, res) {
       .single();
 
     if (actorProfileError || !actorProfile || !actorProfile.active || actorProfile.role !== 'performance') {
-      return json(res, 403, { code: 'FORBIDDEN', message: 'Apenas Performance pode administrar usuários.' });
+      return json(res, 403, { code: 'FORBIDDEN', message: 'Apenas Administradores/Performance podem executar esta operação.' });
     }
 
-    async function audit(eventType, entityId, newValue, oldValue = null) {
-      await admin.from('audit_logs').insert({
+    async function audit(eventType, entityId, newValue, oldValue = null, entityType = 'user') {
+      const { error } = await admin.from('audit_logs').insert({
         actor_user_id: actor.id,
         event_type: eventType,
-        entity_type: 'user',
+        entity_type: entityType,
         entity_id: entityId || null,
         old_value: oldValue,
         new_value: newValue
       });
+      if (error) throw error;
+    }
+
+    async function verifyActorPassword(password) {
+      const value = String(password || '');
+      if (!value) {
+        const err = new Error('Senha obrigatória.');
+        err.code = 'PASSWORD_REQUIRED';
+        throw err;
+      }
+
+      const authClient = createClient(
+        SUPABASE_URL,
+        SUPABASE_PUBLISHABLE_KEY || SUPABASE_SECRET_KEY,
+        { auth: { autoRefreshToken: false, persistSession: false } }
+      );
+
+      const { data, error } = await authClient.auth.signInWithPassword({
+        email: technicalEmail(actorProfile.username),
+        password: value
+      });
+
+      const ok = !error && data?.user?.id === actor.id;
+      try { await authClient.auth.signOut(); } catch (_) {}
+
+      if (!ok) {
+        const err = new Error('Senha de login incorreta.');
+        err.code = 'INVALID_PASSWORD';
+        throw err;
+      }
+    }
+
+    async function sendRealtimeAlert(topic, payload) {
+      const url = `${SUPABASE_URL}/realtime/v1/api/broadcast/${encodeURIComponent(topic)}/events/admin-alert?private=true`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_SECRET_KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const detail = await response.text().catch(() => '');
+        console.error('Realtime broadcast failed', response.status, detail);
+        const err = new Error('Não foi possível disparar o alerta em tempo real.');
+        err.code = 'BROADCAST_FAILED';
+        throw err;
+      }
     }
 
     async function activePerformanceCount() {
@@ -296,6 +347,158 @@ module.exports = async function handler(req, res) {
 
       await audit(active ? 'USUARIO_ATIVADO' : 'USUARIO_INATIVADO', profile.username, JSON.stringify({ active }));
       return json(res, 200, { ok: true });
+    }
+
+
+    if (action === 'deleteUser') {
+      const userId = String(body.userId || '');
+      if (!userId) return json(res, 400, { code: 'MISSING_USER', message: 'Usuário não informado.' });
+      if (userId === actor.id) return json(res, 400, { code: 'SELF_DELETE', message: 'Não é possível excluir o usuário que está logado.' });
+
+      try {
+        await verifyActorPassword(body.password);
+      } catch (e) {
+        return json(res, 401, { code: e.code || 'INVALID_PASSWORD', message: e.message });
+      }
+
+      const { data: profile } = await admin.from('profiles').select('*').eq('user_id', userId).maybeSingle();
+      if (!profile) return json(res, 404, { code: 'USER_NOT_FOUND', message: 'Usuário não encontrado.' });
+
+      if (profile.role === 'performance' && profile.active && (await activePerformanceCount()) <= 1) {
+        return json(res, 400, { code: 'LAST_PERFORMANCE', message: 'É necessário manter pelo menos um Performance ativo.' });
+      }
+
+      const { count: routineCount } = await admin
+        .from('daily_routines')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId);
+
+      const details = JSON.stringify({
+        username: profile.username,
+        role: profile.role,
+        companyId: profile.company_id,
+        unitId: profile.unit_id,
+        routinesRemoved: routineCount || 0,
+        passwordRevalidated: true
+      });
+
+      await audit('USUARIO_EXCLUSAO_AUTORIZADA', profile.username, details);
+
+      try {
+        await admin.from('units').update({ manager_user_id: null }).eq('manager_user_id', userId);
+
+        const { error: routinesError } = await admin.from('daily_routines').delete().eq('user_id', userId);
+        if (routinesError) throw routinesError;
+
+        const { error: deleteError } = await admin.auth.admin.deleteUser(userId);
+        if (deleteError) throw deleteError;
+
+        await audit('USUARIO_EXCLUIDO', profile.username, details);
+        return json(res, 200, { ok: true });
+      } catch (e) {
+        try {
+          await audit('USUARIO_EXCLUSAO_FALHOU', profile.username, JSON.stringify({ message: e.message }));
+        } catch (_) {}
+        throw e;
+      }
+    }
+
+    if (action === 'deleteUnit') {
+      const unitId = String(body.unitId || '');
+      if (!unitId) return json(res, 400, { code: 'MISSING_UNIT', message: 'Unidade não informada.' });
+
+      try {
+        await verifyActorPassword(body.password);
+      } catch (e) {
+        return json(res, 401, { code: e.code || 'INVALID_PASSWORD', message: e.message });
+      }
+
+      const { data: unit } = await admin
+        .from('units')
+        .select('id,company_id,name,short_code,manager_user_id,active')
+        .eq('id', unitId)
+        .maybeSingle();
+
+      if (!unit) return json(res, 404, { code: 'UNIT_NOT_FOUND', message: 'Unidade não encontrada.' });
+
+      const { count: linkedUsers } = await admin
+        .from('profiles')
+        .select('user_id', { count: 'exact', head: true })
+        .eq('unit_id', unitId);
+
+      if ((linkedUsers || 0) > 0) {
+        return json(res, 409, {
+          code: 'UNIT_HAS_LINKED_USERS',
+          message: 'A unidade possui usuários vinculados. Transfira ou exclua esses usuários primeiro.'
+        });
+      }
+
+      const { count: routineCount } = await admin
+        .from('daily_routines')
+        .select('id', { count: 'exact', head: true })
+        .eq('unit_id', unitId);
+
+      const details = JSON.stringify({
+        name: unit.name,
+        companyId: unit.company_id,
+        routinesRemoved: routineCount || 0,
+        passwordRevalidated: true
+      });
+
+      await audit('UNIDADE_EXCLUSAO_AUTORIZADA', unit.name, details, null, 'unit');
+
+      try {
+        const { error: routinesError } = await admin.from('daily_routines').delete().eq('unit_id', unitId);
+        if (routinesError) throw routinesError;
+
+        const { error: unitError } = await admin.from('units').delete().eq('id', unitId);
+        if (unitError) throw unitError;
+
+        await audit('UNIDADE_EXCLUIDA', unit.name, details, null, 'unit');
+        return json(res, 200, { ok: true });
+      } catch (e) {
+        try {
+          await audit('UNIDADE_EXCLUSAO_FALHOU', unit.name, JSON.stringify({ message: e.message }), null, 'unit');
+        } catch (_) {}
+        throw e;
+      }
+    }
+
+    if (action === 'broadcastMessage') {
+      const message = String(body.message || '').trim();
+      const audience = body.audience === 'specific' ? 'specific' : 'all';
+
+      if (!message) return json(res, 400, { code: 'EMPTY_MESSAGE', message: 'Digite a mensagem do alerta.' });
+      if (message.length > 1000) return json(res, 400, { code: 'MESSAGE_TOO_LONG', message: 'O alerta pode ter no máximo 1.000 caracteres.' });
+
+      const payload = {
+        message,
+        sender: actorProfile.username || 'Administração',
+        sentAt: new Date().toISOString()
+      };
+
+      if (audience === 'all') {
+        await sendRealtimeAlert('rds-alerts-all', payload);
+        return json(res, 200, { ok: true, targets: 1 });
+      }
+
+      const requested = Array.isArray(body.userIds) ? [...new Set(body.userIds.map(String))].slice(0, 200) : [];
+      if (!requested.length) return json(res, 400, { code: 'NO_RECIPIENTS', message: 'Selecione pelo menos um usuário.' });
+
+      const { data: recipients, error: recipientsError } = await admin
+        .from('profiles')
+        .select('user_id')
+        .in('user_id', requested)
+        .eq('active', true);
+
+      if (recipientsError) throw recipientsError;
+      const ids = (recipients || []).map(x => x.user_id);
+
+      await Promise.all(
+        ids.map(id => sendRealtimeAlert(`rds-alerts-user-${id}`, payload))
+      );
+
+      return json(res, 200, { ok: true, targets: ids.length });
     }
 
     if (action === 'bulkCreate') {
