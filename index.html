@@ -324,13 +324,13 @@ main{animation:fadein .22s ease both}
 <form class="authbox" id="loginForm">
 <div class="kicker">Identificação</div>
 <h2>Identifique-se, agente</h2>
-<p>O protótipo não mantém a sessão após recarregar a página.</p>
+<p>Autenticação conectada ao ambiente seguro da Rotina do Sucesso.</p>
 <label class="label">Usuário</label><input autocomplete="off" id="user" placeholder="seu.usuario"/>
 <div style="height:10px"></div>
 <label class="label">Senha</label><input autocomplete="new-password" id="pass" placeholder="••••••••" type="password"/>
 <button class="btn red" type="submit">ACEITAR MISSÃO</button>
 <div id="msg" style="color:#ff8c85;font-size:12px;margin-top:9px"></div>
-<div class="demo"><b>Acessos de teste (protótipo):</b><br/>dayana.sos / 123 — Colaborador<br/>marcos.rec / 123 — Gerente<br/>performance / 123 — Performance<br/>novo.agente / 123 — Primeiro acesso</div>
+<div class="demo"><b>Login real ativado.</b><br/>Nesta etapa, o acesso já é validado pelo Supabase Auth e pelo perfil cadastrado no banco.</div>
 </form>
 </div>
 </section>
@@ -659,8 +659,18 @@ main{animation:fadein .22s ease both}
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const SUPABASE_URL='https://vhlqutmtrsjjhjnfcgke.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_qOjlqv9mOGAylLvGAmR6Ew_pyYZVHZA';
+const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{
+  auth:{
+    persistSession:false,
+    autoRefreshToken:true,
+    detectSessionInUrl:false
+  }
+});
 const DEMO_TODAY='2026-10-03';
 const COMPANY_CATALOG=[
   {name:'SOS',active:true},
@@ -799,14 +809,85 @@ function setTopForView(v){
 function view(v){['collab','manager','performance'].forEach(x=>$('#'+x).classList.add('hidden'));$('#'+v).classList.remove('hidden');$$('.tab').forEach(x=>x.classList.toggle('active',x.dataset.view===v));setTopForView(v);if(v==='manager'){rebuildManagerAgentOptions();renderManager()}if(v==='performance'){renderPerformance();renderUserManagement();renderOrgManagement()}if(v==='collab')renderPersonalDashboard()}
 
 function showLogin(){currentUser=null;role=null;$('#app').classList.add('hidden');$('#login').classList.remove('hidden');$('#user').value='';$('#pass').value='';$('#msg').textContent='';['first','hist','userModal','importUsersModal','companyModal','unitModal'].forEach(id=>$('#'+id)?.classList.add('hidden'))}
-function authenticate(username,password){const alias={colaborador:'dayana.sos',gerente:'marcos.rec'};const login=(alias[username.toLowerCase()]||username).toLowerCase();return userStore.find(u=>u.username.toLowerCase()===login&&u.password===password)||null}
+function technicalEmailForUsername(username){
+  const login=username.trim().toLowerCase();
+  if(!/^[a-z0-9._-]{3,40}$/.test(login))return null;
+  return `${login}@rotina.internal`;
+}
+async function fetchAuthenticatedProfile(authUser){
+  const {data:profile,error}=await supabaseClient
+    .from('profiles')
+    .select('user_id,username,first_name,last_name,role,company_id,unit_id,active,first_access_completed,last_access_at')
+    .eq('user_id',authUser.id)
+    .single();
+  if(error||!profile)return null;
+
+  let companyName='',unitName='';
+  if(profile.company_id){
+    const {data:company}=await supabaseClient.from('companies').select('name').eq('id',profile.company_id).maybeSingle();
+    companyName=company?.name||'';
+  }
+  if(profile.unit_id){
+    const {data:unit}=await supabaseClient.from('units').select('name,short_code').eq('id',profile.unit_id).maybeSingle();
+    unitName=unit?.name||'';
+  }
+
+  return {
+    id:profile.user_id,
+    username:profile.username,
+    firstName:profile.first_name||'',
+    lastName:profile.last_name||'',
+    role:profile.role,
+    company:companyName,
+    unit:unitName,
+    active:profile.active===true,
+    profileComplete:profile.first_access_completed===true,
+    lastLogin:profile.last_access_at||null,
+    authUserId:authUser.id,
+    companyId:profile.company_id||null,
+    unitId:profile.unit_id||null,
+    source:'supabase'
+  };
+}
+async function authenticateReal(username,password){
+  const email=technicalEmailForUsername(username);
+  if(!email)throw new Error('INVALID_USERNAME');
+
+  const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+  if(error||!data?.user)throw new Error('INVALID_CREDENTIALS');
+
+  const profile=await fetchAuthenticatedProfile(data.user);
+  if(!profile||!profile.active){
+    await supabaseClient.auth.signOut();
+    throw new Error('PROFILE_BLOCKED');
+  }
+
+  await supabaseClient.rpc('touch_last_access');
+  return profile;
+}
 function loginAsUser(u){currentUser=u;role=u.role;u.lastLogin=nowLabel();audit('Login',u.username,'Acesso realizado');$('#login').classList.add('hidden');$('#app').classList.remove('hidden');setMetaForUser(u);
   if(u.role==='colaborador'){state=ensureLiveState(u);$('#tabs').classList.add('hidden');view('collab');setCollabMode('entry');if(!u.profileComplete)openFirstAccess()}
   else if(u.role==='gerente'){$('#tabs').classList.add('hidden');view('manager')}
   else{$('#tabs').classList.remove('hidden');setPerformanceMode('dashboard');view('performance')}
 }
-$('#loginForm').addEventListener('submit',e=>{e.preventDefault();const name=$('#user').value.trim(),pass=$('#pass').value;const exact=userStore.find(u=>u.username.toLowerCase()===({colaborador:'dayana.sos',gerente:'marcos.rec'}[name.toLowerCase()]||name.toLowerCase()));if(exact&&!exact.active){$('#msg').textContent='Usuário inativo. Procure o setor de Performance.';return}const u=authenticate(name,pass);if(!u){$('#msg').textContent='Usuário ou senha inválidos.';return}if(!u.active){$('#msg').textContent='Usuário inativo.';return}$('#msg').textContent='';loginAsUser(u)});
-$('#logout').addEventListener('click',showLogin);
+$('#loginForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const name=$('#user').value.trim(),pass=$('#pass').value,btn=e.submitter||$('#loginForm button[type="submit"]');
+  $('#msg').textContent='';
+  if(!name||!pass){$('#msg').textContent='Informe usuário e senha.';return}
+  if(btn){btn.disabled=true;btn.textContent='VALIDANDO ACESSO...'}
+  try{
+    const u=await authenticateReal(name,pass);
+    loginAsUser(u);
+  }catch(err){
+    if(err?.message==='INVALID_USERNAME')$('#msg').textContent='Formato de usuário inválido.';
+    else if(err?.message==='PROFILE_BLOCKED')$('#msg').textContent='Acesso bloqueado ou perfil indisponível. Procure o setor de Performance.';
+    else $('#msg').textContent='Usuário ou senha inválidos.';
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='ACEITAR MISSÃO'}
+  }
+});
+$('#logout').addEventListener('click',async()=>{try{await supabaseClient.auth.signOut()}finally{showLogin()}});
 
 function fillSelectUnits(companyEl,unitEl,allowBlank=false,blankLabel='Definir no primeiro acesso',includeInactive=false){
   const company=companyEl.value,current=unitEl.value,opts=company?UNIT_CATALOG.filter(x=>x.company===company&&(includeInactive||x.active!==false)):[];
