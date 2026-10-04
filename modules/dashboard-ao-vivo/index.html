@@ -4,6 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta name="theme-color" content="#050608" />
+<meta name="color-scheme" content="dark light" />
+<script>/* V9 — tema aplicado antes da pintura (evita piscar) */(function(){var t='dark';try{var s=localStorage.getItem('rds-theme');if(s==='light'||s==='dark')t=s}catch(e){}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='light'?'#f2f0ec':'#050608')})();</script>
 <title>Rotina do Sucesso — Dashboard Ao Vivo</title>
 <style>
   :root{
@@ -512,6 +514,61 @@ h1{font-family:var(--mono);font-size:22px;letter-spacing:-.02em}
   *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition:none!important}
   #boot{display:none}
 }
+
+/* =====================================================================
+   V9 — Tema claro / escuro do Dashboard Ao Vivo (sincronizado com o site)
+   Somente tokens e cores; nenhuma regra do script foi alterada.
+   ===================================================================== */
+html[data-theme="light"]{
+  color-scheme:light;
+  --bg:#f2f0ec;--panel:#ffffff;--panel-2:#f8f7f4;--panel-3:#f3f1ed;--border:#e3dfd8;
+  --text:#15181c;--muted:#68727e;--soft:#454d57;--red:#c92d26;--red-dim:#e8b5b1;--green:#17784a;--amber:#a35f06;--steel:#68727e;
+}
+html:not([data-theme="light"]){color-scheme:dark}
+/* raios dos cartões alinhados ao site */
+.panel{border-radius:12px}.metric,.pulse-card,.action-card{border-radius:10px}.btn,.select,.live-pill,.meta-pill{border-radius:8px}
+html[data-theme="light"] body{background:var(--bg)}
+html[data-theme="light"] .app{background:radial-gradient(1000px 480px at 88% -8%,rgba(201,45,38,.06),transparent 62%),var(--bg)}
+html[data-theme="light"] .panel{background:#fff;box-shadow:0 1px 2px rgba(20,24,28,.05),0 12px 28px -20px rgba(20,24,28,.28)}
+html[data-theme="light"] .metric{background:linear-gradient(180deg,#fff,#f8f7f4)}
+html[data-theme="light"] .metric.primary{border-color:rgba(201,45,38,.34);background:linear-gradient(180deg,rgba(201,45,38,.08),#fff)}
+html[data-theme="light"] .pulse-card,html[data-theme="light"] .action-card{background:#f8f7f4;border-color:var(--border)}
+html[data-theme="light"] .mark{background:#fff;color:var(--text);border-color:rgba(201,45,38,.34)}
+html[data-theme="light"] .live-pill,html[data-theme="light"] .meta-pill,html[data-theme="light"] .period-switch,html[data-theme="light"] .select,html[data-theme="light"] .btn{background:#fff;color:var(--text)}
+html[data-theme="light"] .meta-pill{color:var(--muted)}
+html[data-theme="light"] .meta-pill strong,html[data-theme="light"] .live-pill strong{color:var(--text)}
+html[data-theme="light"] .live-pill{border-color:rgba(201,45,38,.34);color:var(--red)}
+html[data-theme="light"] .btn:hover{border-color:rgba(201,45,38,.34);background:#fff}
+html[data-theme="light"] .btn.active{background:rgba(201,45,38,.08);border-color:rgba(201,45,38,.34);color:var(--red)}
+html[data-theme="light"] .period-btn.active,html[data-theme="light"] .tab.active{background:rgba(201,45,38,.08);color:var(--text);border-color:var(--red)}
+html[data-theme="light"] .tab{background:#fff;color:var(--muted)}
+html[data-theme="light"] .tab:hover{border-color:rgba(201,45,38,.34)}
+html[data-theme="light"] .select:focus{border-color:var(--red)}
+html[data-theme="light"] .gridline{stroke:rgba(20,24,28,.09)}
+html[data-theme="light"] .axis-label{fill:#68727e}
+html[data-theme="light"] .line{stroke:var(--red);filter:none}
+html[data-theme="light"] .point{fill:#fff;stroke:#68727e}
+html[data-theme="light"] #chartPoints circle:last-child{fill:var(--red);stroke:#fff}
+html[data-theme="light"] .mini-track{background:#e9e5de}
+html[data-theme="light"] .leader b,html[data-theme="light"] .ovb-name{color:var(--text)}
+html[data-theme="light"] .rank-row{border-bottom-color:#ece8e1}
+html[data-theme="light"] .rank-row::after{background:#c9c3b9}
+html[data-theme="light"] .rank-row.ov-up{background:linear-gradient(90deg,rgba(201,45,38,.14),transparent 75%)}
+html[data-theme="light"] .ov-status{background:#f8f7f4;border-color:var(--border);color:var(--muted)}
+html[data-theme="light"] .ov-status.alert{background:linear-gradient(90deg,rgba(201,45,38,.14),#fff 85%);color:var(--red);border-color:rgba(201,45,38,.34)}
+html[data-theme="light"] .ov-dot{background:#c9c3b9}
+html[data-theme="light"] .spark svg polyline{stroke:#68727e}
+html[data-theme="light"] .pulse-card:nth-child(2) .spark svg polyline{stroke:var(--red)}
+html[data-theme="light"] #ovBig{background:radial-gradient(ellipse at center,rgba(242,240,236,.82),rgba(242,240,236,.94))}
+html[data-theme="light"] .ovb-card{background-color:#fff;border-color:rgba(201,45,38,.34);box-shadow:0 20px 60px -20px rgba(20,24,28,.35)}
+html[data-theme="light"] .ovb-row.ovb-up .ovb-sub{color:var(--red)}
+html[data-theme="light"] .ovb-row.ovb-down .ovb-name{color:var(--soft)}
+html[data-theme="light"] .ovb-row{border-top-color:var(--border)}
+html[data-theme="light"] #boot{background:var(--bg)}
+html[data-theme="light"] #boot .b-t{color:var(--text)}
+html[data-theme="light"] .cd-line{background:rgba(201,45,38,.12)}
+html.theme-anim *{transition:background-color .28s ease,color .28s ease,border-color .28s ease,fill .28s ease,stroke .28s ease!important}
+
 </style>
 </head>
 <body>
@@ -1435,6 +1492,15 @@ function formatCurrentDate(){
   new MutationObserver(process).observe(rk,{childList:true});
   process();
 }catch(err){console.warn('V8 LIVE visual layer:',err)}})();
+</script>
+<script>
+/* V9 — recebe o tema do site (mensagem ou armazenamento compartilhado). Independente das funções do módulo. */
+(function(){
+  var KEY='rds-theme',root=document.documentElement,timer=null;
+  function paint(t){if(t!=='light'&&t!=='dark')return;root.classList.add('theme-anim');clearTimeout(timer);timer=setTimeout(function(){root.classList.remove('theme-anim')},450);root.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='light'?'#f2f0ec':'#050608')}
+  window.addEventListener('message',function(e){if(e.origin!==window.location.origin)return;if(e.data&&e.data.type==='rotina-theme')paint(e.data.theme)});
+  window.addEventListener('storage',function(e){if(e.key===KEY)paint(e.newValue)});
+})();
 </script>
 </body>
 </html>
