@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/><meta name="theme-color" content="#050608"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" name="viewport"/>
+<title>Rotina do Sucesso — Central de Missões</title>
+<style>
+:root{--bg:#0b0e12;--panel:#12171d;--panel2:#171d24;--line:#27303a;--text:#f5f7fa;--muted:#8d98a5;--red:#e43b32;--green:#61d394;--amber:#e9b45d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+button,input,select,textarea{font:inherit}.hidden{display:none!important}.wrap{max-width:1240px;margin:auto;padding:18px}.top{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:12px 0 18px;border-bottom:1px solid var(--line)}.brand{display:flex;gap:12px;align-items:center}.slash{width:14px;height:36px;background:var(--red);clip-path:polygon(35% 0,100% 0,65% 100%,0 100%)}.brand b{letter-spacing:.08em;text-transform:uppercase}.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:.14em;text-transform:uppercase;margin-top:3px}.actions{display:flex;gap:8px;flex-wrap:wrap}.btn{border:1px solid var(--line);background:#151b21;color:var(--text);padding:10px 13px;border-radius:10px;font-weight:800;cursor:pointer}.btn.red{background:var(--red);border-color:var(--red)}.btn.ghost{background:transparent}.btn:active{transform:translateY(1px)}.head{display:flex;justify-content:space-between;gap:14px;align-items:flex-end;margin:22px 0}.kicker{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}h1{font-size:30px;margin:4px 0 0}.sub{color:var(--muted);margin-top:5px}.chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}.chip{border:1px solid var(--line);background:#0f1419;padding:7px 9px;border-radius:8px;color:#b7c0c9;font-size:12px}.user{display:flex;gap:9px;align-items:center}.avatar{width:38px;height:38px;border-radius:50%;background:#202831;border:1px solid #303a44;display:grid;place-items:center;font-weight:900}.save{color:var(--green);font-size:12px;margin-top:3px}.notice{padding:13px 14px;border:1px solid #3c3327;background:#18140f;color:#e4c79d;border-radius:12px;font-size:13px}.grid{display:grid;gap:14px}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.card{background:linear-gradient(180deg,rgba(255,255,255,.02),transparent),var(--panel);border:1px solid var(--line);border-radius:16px}.pad{padding:17px}.section{display:flex;justify-content:space-between;gap:12px;align-items:center;margin:24px 0 11px}.section h2{font-size:15px;text-transform:uppercase;letter-spacing:.07em;margin:0}.section span{font-size:12px;color:var(--muted)}.metric{padding:17px;display:flex;flex-direction:column;min-height:245px}.metric h3{margin:0;font-size:18px}.metric p{color:var(--muted);font-size:12px;line-height:1.45;margin:6px 0 0}.count{font-size:58px;font-weight:900;margin:20px 0 15px}.plus{border:0;background:var(--red);color:white;font-weight:900;font-size:18px;min-height:62px;border-radius:14px;cursor:pointer}.minus{margin-top:9px;border:1px solid #313a44;background:transparent;color:#abb4bd;min-height:40px;border-radius:10px;font-weight:800;cursor:pointer}.sales{border-color:#4c3b29}.sales .plus{background:#71502f}.summary{font-size:64px;font-weight:900;margin:7px 0}.label{font-size:12px;color:#aeb8c3;font-weight:800;margin-bottom:7px;display:block}textarea,select,input{width:100%;border:1px solid #2c3540;background:#0f1419;color:var(--text);border-radius:10px;padding:12px;outline:none}textarea{min-height:122px;resize:vertical}.filters{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.stat{padding:17px}.stat .l{font-size:11px;text-transform:uppercase;letter-spacing:.11em;color:var(--muted)}.stat .v{font-size:34px;font-weight:900;margin-top:7px}.stat .d{font-size:12px;color:var(--green);margin-top:4px}.chart{height:250px;display:flex;align-items:flex-end;gap:8px;padding:18px 8px 28px;border-bottom:1px solid var(--line)}.bar{flex:1;min-width:14px;background:linear-gradient(180deg,#9f2c27,var(--red));border-radius:6px 6px 0 0;position:relative}.bar span{position:absolute;bottom:-23px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--muted)}.bar em{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-style:normal;font-size:10px;color:#d2d8de}.rankrow{display:grid;grid-template-columns:34px 1fr 70px;gap:10px;padding:12px 0;border-bottom:1px solid var(--line);align-items:center}.rankrow:last-child{border-bottom:0}.pos{color:#73808c;font-weight:900}.name{font-weight:800}.rs{font-size:11px;color:var(--muted);margin-top:3px}.rv{text-align:right;font-weight:900}.prog{height:6px;background:#0d1115;border-radius:99px;overflow:hidden;margin-top:6px}.prog i{display:block;height:100%;background:var(--red)}.table{overflow:auto;border:1px solid var(--line);border-radius:12px}table{border-collapse:collapse;width:100%;min-width:760px}th,td{padding:12px 13px;border-bottom:1px solid var(--line);text-align:left;font-size:12px}th{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:#0f1419}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.tab{border:1px solid var(--line);background:#11161b;color:#9fa9b3;padding:9px 11px;border-radius:9px;font-weight:800;cursor:pointer}.tab.active{background:#26110f;border-color:#69211c;color:white}.login{min-height:100vh;display:grid;grid-template-columns:1.1fr .9fr}.hero{padding:48px;display:flex;flex-direction:column;justify-content:space-between;background:radial-gradient(circle at 30% 20%,rgba(228,59,50,.12),transparent 28%),linear-gradient(90deg,rgba(228,59,50,.07),transparent 42%),#0b0e12}.hero h1{font-size:58px;line-height:.95;letter-spacing:-.05em;margin:12px 0}.hero p{max-width:540px;color:#aab3bd;line-height:1.6}.auth{display:grid;place-items:center;padding:24px;background:#0f1318}.authbox{width:min(420px,100%);padding:24px;background:#13181e;border:1px solid var(--line);border-radius:18px}.authbox h2{margin:4px 0}.authbox p{color:var(--muted);font-size:13px;margin:0 0 18px}.authbox .btn{width:100%;margin-top:13px}.demo{margin-top:17px;padding-top:14px;border-top:1px solid var(--line);color:#aab3bd;font-size:12px;line-height:1.7}.modal{position:fixed;inset:0;background:rgba(0,0,0,.74);display:grid;place-items:center;padding:15px;z-index:20}.modalbox{width:min(560px,100%);background:#12171d;border:1px solid #2b343e;border-radius:18px;padding:21px}.rows{display:grid;grid-template-columns:1fr 1fr;gap:11px}.modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:16px}.foot{color:#606a75;text-align:center;font-size:11px;padding:28px 0}
+@media(max-width:960px){.g4,.stats{grid-template-columns:repeat(2,1fr)}.g2{grid-template-columns:1fr}.filters{grid-template-columns:repeat(2,1fr)}.login{grid-template-columns:1fr}.hero{min-height:38vh;padding:30px}.hero h1{font-size:42px}}
+@media(max-width:620px){.wrap{padding:13px}.top{align-items:flex-start}.head{align-items:flex-start;flex-direction:column}.g4,.stats,.filters,.rows{grid-template-columns:1fr}.metric{min-height:auto}.count{font-size:48px;margin:15px 0 12px}.hero{padding:26px 21px}.hero h1{font-size:38px}.auth{padding:16px}}
+
+/* v3 — mobile-first refinements + colaborador dashboard */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
+button,select,input,textarea{-webkit-tap-highlight-color:transparent}
+button{touch-action:manipulation}
+.mobile-collab-nav{display:flex;gap:8px;margin:0 0 16px;padding:5px;background:#0f1419;border:1px solid var(--line);border-radius:13px}
+.mobile-collab-nav .modebtn{flex:1;min-height:46px;border:0;border-radius:9px;background:transparent;color:#93a0ac;font-weight:900}
+.mobile-collab-nav .modebtn.active{background:var(--red);color:#fff}
+.personal-filter{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.personal-highlight{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.personal-stat{padding:16px}
+.personal-stat .pv{font-size:30px;font-weight:900;margin-top:6px}
+.personal-stat .pl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.personal-stat .pd{font-size:11px;color:var(--green);margin-top:4px}
+.sales-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;padding:12px 14px;border:1px solid #493a2c;background:#18140f;border-radius:12px}
+.sales-toggle-row span{font-size:12px;color:#d6bd9b}
+.switch{position:relative;width:48px;height:28px;flex:0 0 auto}
+.switch input{opacity:0;position:absolute}
+.slider{pointer-events:none;position:absolute;inset:0;background:#2a3139;border-radius:99px;transition:.18s}
+.slider:before{content:"";position:absolute;width:22px;height:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.18s}
+.switch input:checked + .slider{background:#71502f}
+.switch input:checked + .slider:before{transform:translateX(20px)}
+.mobile-only{display:none}
+.desktop-only{display:block}
+@media(max-width:760px){
+  body{padding-bottom:calc(10px + env(safe-area-inset-bottom))}
+  .wrap{padding:12px 12px calc(78px + env(safe-area-inset-bottom))}
+  .top{padding-top:calc(9px + env(safe-area-inset-top));align-items:center;position:sticky;top:0;z-index:8;background:rgba(11,14,18,.94);backdrop-filter:blur(14px)}
+  .brand b{font-size:13px}.brand small{display:none}.slash{height:30px;width:12px}
+  .actions{gap:6px}.actions .btn{padding:9px 10px;font-size:11px}
+  .head{margin:16px 0 14px;gap:10px}
+  .head h1{font-size:25px}
+  .user{width:100%;justify-content:flex-start;padding:10px 0 0;border-top:1px solid var(--line)}
+  .notice{font-size:12px;line-height:1.45}
+  .section{margin:18px 0 10px;align-items:flex-end}
+  .section h2{font-size:13px}.section span{font-size:10px}
+  .metric{padding:14px;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 68px;grid-template-areas:"title count" "desc count" "plus plus" "minus minus";column-gap:12px}
+  .metric h3{grid-area:title;font-size:16px}.metric p{grid-area:desc;margin:4px 0 0;font-size:11px}
+  .metric .count{grid-area:count;font-size:42px;margin:0;text-align:right;align-self:center}
+  .metric .plus{grid-area:plus;margin-top:13px;min-height:58px;font-size:17px}
+  .metric .minus{grid-area:minus;min-height:46px}
+  .g4{grid-template-columns:1fr}
+  .summary{font-size:52px}
+  textarea{min-height:100px;font-size:16px}
+  select,input{font-size:16px;min-height:48px}
+  .filters,.personal-filter{grid-template-columns:1fr}
+  .stats,.personal-highlight{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stat,.personal-stat{padding:14px}
+  .stat .v,.personal-stat .pv{font-size:28px}
+  .chart{height:225px;gap:5px;padding-left:2px;padding-right:2px}
+  .bar em{font-size:9px}.bar span{font-size:9px}
+  .rankrow{grid-template-columns:28px minmax(0,1fr) 58px;gap:8px}
+  .table{border-radius:10px}
+  .mobile-only{display:block}.desktop-only{display:none}
+  .modal{align-items:end;padding:0}
+  .modalbox{width:100%;max-height:88vh;overflow:auto;border-radius:18px 18px 0 0;padding:18px 14px calc(18px + env(safe-area-inset-bottom))}
+}
+@media(max-width:390px){
+  .actions #export{display:none}
+  .stats,.personal-highlight{grid-template-columns:1fr 1fr}
+  .chip{font-size:10px;padding:6px 7px}
+  .metric p{max-width:220px}
+}
+
+
+/* v5 — revisão funcional e responsiva */
+.filters{grid-template-columns:repeat(5,minmax(0,1fr))}
+#performance .filters{grid-template-columns:repeat(6,minmax(0,1fr))}
+.metric-focus{outline:1px solid rgba(228,59,50,.55);background:linear-gradient(180deg,rgba(228,59,50,.07),transparent),var(--panel)}
+.filter-note{font-size:11px;color:var(--muted);margin-top:8px}
+@media(max-width:960px){#performance .filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){
+  .filters,#performance .filters{grid-template-columns:1fr}
+  .actions{width:100%;justify-content:flex-end}
+  #clearDay{order:3}
+  .top{flex-wrap:wrap}
+  .chart{overflow-x:auto;align-items:flex-end}
+  .bar{min-width:24px}
+}
+
+/* v6 — usuários, vínculos e autenticação dinâmica */
+.admin-nav{display:flex;gap:8px;margin:0 0 16px;padding:5px;background:#0f1419;border:1px solid var(--line);border-radius:13px}
+.admin-nav button{flex:1;min-height:44px;border:0;border-radius:9px;background:transparent;color:#96a2ae;font-weight:900;cursor:pointer}
+.admin-nav button.active{background:var(--red);color:#fff}
+.user-toolbar{display:grid;grid-template-columns:2fr repeat(4,minmax(0,1fr)) auto;gap:9px;align-items:center;margin-bottom:12px}
+.user-actions{display:flex;gap:7px;flex-wrap:wrap}.user-actions .btn{padding:7px 9px;font-size:11px}
+.status-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border-radius:999px;border:1px solid var(--line);font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.06em}
+.status-badge.active{color:#9de5bd;border-color:#27533c;background:#102019}.status-badge.inactive{color:#e79791;border-color:#56312e;background:#211311}.status-badge.pending{color:#e6c17f;border-color:#594a2c;background:#211b10}
+.user-link-note{padding:13px 14px;border:1px solid #283b4c;background:#101821;border-radius:12px;color:#b8cada;font-size:12px;line-height:1.5;margin-bottom:14px}
+.user-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:12px 0 16px}
+.user-summary .card{padding:14px}.user-summary .n{font-size:28px;font-weight:900;margin-top:5px}.user-summary .t{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.user-modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.user-modal-grid .full{grid-column:1/-1}
+.checkline{display:flex;align-items:flex-start;gap:9px;padding:11px;border:1px solid var(--line);border-radius:10px;background:#0f1419}.checkline input{width:auto;margin-top:2px}.checkline label{margin:0;color:#c4cdd5;font-size:12px;line-height:1.4}
+.form-error{color:#ff8b84;font-size:12px;min-height:18px;margin-top:9px}.form-hint{font-size:11px;color:var(--muted);line-height:1.45;margin-top:6px}
+.audit-list{display:flex;flex-direction:column}.audit-row{display:grid;grid-template-columns:130px 150px 1fr 160px;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:11px}.audit-row:last-child{border-bottom:0}.audit-row .muted{color:var(--muted)}
+#userTableBody tr[data-inactive="1"]{opacity:.62}
+@media(max-width:1050px){.user-toolbar{grid-template-columns:repeat(3,minmax(0,1fr))}.user-toolbar #newUserBtn{grid-column:1/-1}.audit-row{grid-template-columns:110px 130px 1fr}}
+@media(max-width:760px){.admin-nav{position:sticky;top:58px;z-index:6;background:rgba(15,20,25,.96);backdrop-filter:blur(10px)}.user-toolbar{grid-template-columns:1fr}.user-summary{grid-template-columns:1fr 1fr}.user-modal-grid{grid-template-columns:1fr}.user-modal-grid .full{grid-column:auto}.audit-row{grid-template-columns:1fr;gap:3px}.audit-row .muted{font-size:10px}.user-actions{min-width:150px}.modalbox.user-editor{max-height:92vh;overflow:auto}}
+@media(max-width:390px){.user-summary{grid-template-columns:1fr 1fr}.admin-nav button{font-size:12px}}
+
+
+/* V7 — importação de usuários */
+.user-head-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.import-help{font-size:12px;color:var(--muted);line-height:1.55;margin:8px 0 14px}
+.import-help b{color:var(--text)}
+.import-drop{border:1px dashed #3d4956;background:#0e1318;border-radius:14px;padding:18px;text-align:center}
+.import-drop input{display:none}
+.import-drop .btn{display:inline-flex;align-items:center;justify-content:center}
+.import-file-name{margin-top:9px;font-size:12px;color:#b8c2cc}
+.import-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:13px 0}
+.import-summary .card{padding:13px}
+.import-summary .n{font-size:26px;font-weight:900;margin-top:5px}
+.import-summary .t{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+.import-preview{max-height:300px;overflow:auto}
+.import-status{display:inline-flex;padding:4px 7px;border-radius:999px;font-size:10px;font-weight:900}
+.import-status.ok{background:#12301e;color:#7fe3a4;border:1px solid #235936}
+.import-status.skip{background:#322613;color:#e7bd76;border:1px solid #62491f}
+.import-status.err{background:#351514;color:#f09a96;border:1px solid #702a26}
+.import-error{color:#ef8a84;font-size:12px;min-height:17px;margin-top:9px}
+@media(max-width:760px){
+  .user-head-actions{width:100%;justify-content:stretch}
+  .user-head-actions .btn{flex:1}
+  .import-summary{grid-template-columns:1fr 1fr 1fr}
+}
+@media(max-width:390px){
+  .import-summary{grid-template-columns:1fr}
+}
+
+
+/* ===== V8 — Atmosfera "Missão Secreta" (Missão Impossível × Top Gun) =====
+   Camada puramente visual: não altera IDs, classes funcionais nem regras do JS. */
+:root{
+  --bg:#050608;--panel:#0b0d11;--panel2:#10131a;--line:#1e232b;--text:#eef1f4;--muted:#7f8b98;
+  --red:#e43b32;--red-dim:#6b1d19;--amber:#e9b45d;--green:#61d394;--steel:#9aa6b2;
+  --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --hud:linear-gradient(var(--red),var(--red));
+}
+body{background:radial-gradient(1100px 520px at 85% -10%,rgba(228,59,50,.07),transparent 60%),var(--bg);font-feature-settings:"tnum" 1}
+:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+h1,h2,h3{font-family:var(--mono)}
+h1{font-size:30px;font-weight:700;letter-spacing:-.02em}
+.section h2,.kicker,th,.stat .l,.pl,.t,.brand b{font-family:var(--mono)}
+.count,.summary,.stat .v,.pv,.user-summary .n,.import-summary .n,.rv,.pos{font-family:var(--mono);font-weight:700;letter-spacing:-.03em}
+
+/* Cartões: cantos de mira (HUD) discretos */
+.card,.authbox{position:relative;border-radius:6px;background:linear-gradient(180deg,rgba(255,255,255,.015),transparent),var(--panel)}
+.card::before,.authbox::before{content:"";position:absolute;inset:-1px;pointer-events:none;border-radius:inherit;opacity:.5;transition:opacity .2s;
+  background:
+   var(--hud) top left/11px 1px no-repeat,var(--hud) top left/1px 11px no-repeat,
+   var(--hud) top right/11px 1px no-repeat,var(--hud) top right/1px 11px no-repeat,
+   var(--hud) bottom left/11px 1px no-repeat,var(--hud) bottom left/1px 11px no-repeat,
+   var(--hud) bottom right/11px 1px no-repeat,var(--hud) bottom right/1px 11px no-repeat}
+.card:hover::before,.card:focus-within::before,.authbox:focus-within::before{opacity:1}
+.stats .card,.personal-highlight .card,.user-summary .card,.import-summary .card{background:var(--panel2)}
+.stats .card::before,.personal-highlight .card::before,.user-summary .card::before,.import-summary .card::before{opacity:.3}
+
+/* Cabeçalho */
+.top{border-bottom:1px solid var(--line)}
+.brand b{letter-spacing:.14em;font-size:13px}
+.brand small{display:flex;align-items:center;gap:7px;font-family:var(--mono)}
+.brand small::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--red);box-shadow:0 0 0 0 rgba(228,59,50,.6);animation:radar 2.8s ease-out infinite}
+.avatar{background:#0d1014;border:1px solid var(--red-dim);font-family:var(--mono);box-shadow:inset 0 0 0 3px #0d1014,inset 0 0 0 4px rgba(228,59,50,.28)}
+.chip{border-radius:3px;font-family:var(--mono);font-size:11px;background:#0a0c10;border-color:var(--line)}
+.chip:first-child{border-color:var(--red-dim);color:#f0b8b4}
+.save{font-family:var(--mono);font-size:11px}
+
+/* Botões táteis (continuam grandes) */
+.btn{border-radius:4px;background:#0d1014;letter-spacing:.04em;transition:border-color .15s,background .15s}
+.btn:hover{border-color:#3a434e}
+.btn.red,.plus{clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px));border-radius:0;letter-spacing:.06em;transition:filter .15s,transform .08s}
+.btn.red:hover,.plus:hover{filter:brightness(1.12)}
+.btn.red:active,.plus:active{filter:brightness(.82);transform:translateY(1px)}
+.minus{border-radius:4px;color:var(--steel)}
+.sales .plus{background:#6a4a2a}
+.sales::before{background:
+   linear-gradient(var(--amber),var(--amber)) top left/11px 1px no-repeat,linear-gradient(var(--amber),var(--amber)) top left/1px 11px no-repeat,
+   linear-gradient(var(--amber),var(--amber)) top right/11px 1px no-repeat,linear-gradient(var(--amber),var(--amber)) top right/1px 11px no-repeat,
+   linear-gradient(var(--amber),var(--amber)) bottom left/11px 1px no-repeat,linear-gradient(var(--amber),var(--amber)) bottom left/1px 11px no-repeat,
+   linear-gradient(var(--amber),var(--amber)) bottom right/11px 1px no-repeat,linear-gradient(var(--amber),var(--amber)) bottom right/1px 11px no-repeat}
+.tab,.admin-nav button,.mobile-collab-nav .modebtn{border-radius:4px;font-family:var(--mono);letter-spacing:.03em}
+.admin-nav,.mobile-collab-nav{border-radius:6px;background:#080a0d}
+.tab.active{background:#1a0b0a;border-color:var(--red);box-shadow:inset 0 -2px 0 var(--red)}
+
+/* Campos */
+textarea,select,input{border-radius:4px;background:#080a0d;border-color:#262d36;transition:border-color .15s,box-shadow .15s}
+textarea:focus,select:focus,input:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(228,59,50,.14)}
+.label{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--steel)}
+
+/* Avisos, tabelas, status */
+.notice{border:1px solid var(--line);border-left:2px solid var(--red);background:#0a0c10;color:#c3cbd3;border-radius:4px}
+.user-link-note{border-radius:4px;border-left:2px solid #3b5a78}
+.table{border-radius:4px}
+th{background:#080a0d;font-size:10px}
+.status-badge,.import-status{border-radius:3px;font-family:var(--mono)}
+.sales-toggle-row{border-radius:4px;border-color:#3d3022;background:#0f0c08}
+.modal{background:rgba(2,3,4,.82);backdrop-filter:blur(3px)}
+.modalbox{border-radius:6px;background:var(--panel);border-color:#2a313a;border-top:2px solid var(--red)}
+.section h2{letter-spacing:.1em}
+.foot{font-family:var(--mono);letter-spacing:.04em}
+
+/* Gráficos e rankings */
+.chart{border-bottom-color:var(--line);background:repeating-linear-gradient(0deg,transparent 0 49px,rgba(255,255,255,.035) 49px 50px)}
+.bar{border-radius:2px 2px 0 0;background:linear-gradient(180deg,var(--red),#8f2722);box-shadow:0 -1px 0 rgba(255,255,255,.35);animation:rise .55s cubic-bezier(.2,.7,.2,1) both}
+.bar:nth-child(2n){animation-delay:.04s}.bar:nth-child(3n){animation-delay:.08s}.bar:nth-child(5n){animation-delay:.12s}
+.bar em,.bar span{font-family:var(--mono)}
+.prog{border-radius:1px;height:4px}
+.prog i{transform-origin:left;animation:fill .7s cubic-bezier(.2,.7,.2,1) both}
+.rankrow:first-child .pos{color:var(--red)}
+.rankrow:first-child .name::after{content:"  ▲ líder";font-family:var(--mono);font-size:10px;color:var(--red);letter-spacing:.06em}
+
+/* Troca de visão e contadores */
+main{animation:fadein .22s ease both}
+.tick{animation:tick .5s ease}
+
+/* Login: um único momento orquestrado — o pavio */
+.login{position:relative}
+.hero{position:relative;overflow:hidden;background:radial-gradient(circle at 22% 18%,rgba(228,59,50,.11),transparent 30%),#050608}
+.hero h1{font-family:var(--mono);font-size:56px;letter-spacing:-.05em;line-height:.98}
+.hero p{max-width:460px}
+.hero .stamp{display:inline-block;margin-top:22px;padding:5px 9px;border:1px solid var(--red);color:var(--red);font-family:var(--mono);font-size:11px;letter-spacing:.22em;transform:rotate(-2deg)}
+.boot{margin-top:26px;font-family:var(--mono);font-size:12px;color:var(--steel);line-height:1.9}
+.boot div{overflow:hidden;white-space:nowrap;width:0;max-width:100%;border-right:1px solid transparent;animation:type .9s steps(var(--n)) forwards}
+.boot div:nth-child(1){animation-delay:.5s}.boot div:nth-child(2){animation-delay:1.5s}.boot div:nth-child(3){animation-delay:2.5s;color:#f1c4c0}
+.boot div::before{content:"> ";color:var(--red)}
+.fuse{position:absolute;left:0;right:0;bottom:58px;height:1px;background:rgba(228,59,50,.16);pointer-events:none}
+.fuse::before{content:"";position:absolute;left:0;top:0;height:1px;width:0;background:linear-gradient(90deg,transparent,var(--red));animation:burn 3.2s cubic-bezier(.5,0,.4,1) .3s forwards}
+.fuse::after{content:"";position:absolute;top:-2px;left:0;width:5px;height:5px;border-radius:50%;background:#ffd9a0;box-shadow:0 0 10px 3px rgba(255,160,60,.8),0 0 26px 8px rgba(228,59,50,.5);opacity:0;animation:spark 3.2s cubic-bezier(.5,0,.4,1) .3s forwards}
+.auth{background:#07090c}
+.authbox{background:var(--panel);border-radius:6px}
+.authbox.deny{animation:deny .38s ease}
+.demo{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.demo b{color:var(--steel)}
+#msg{font-family:var(--mono)}
+
+/* Tela de acesso autorizado (não bloqueia toques) */
+#access{position:fixed;inset:0;z-index:60;display:none;place-items:center;text-align:center;background:rgba(5,6,8,.95);pointer-events:none;font-family:var(--mono)}
+#access.on{display:grid;animation:acc 1.8s ease both}
+#access .acc-t{font-size:15px;letter-spacing:.32em;color:var(--text)}
+#access .acc-s{margin-top:10px;font-size:12px;color:var(--steel);letter-spacing:.06em}
+#access .acc-l{width:0;height:1px;margin:0 auto 16px;background:var(--red);animation:accl .8s ease .15s forwards}
+
+@keyframes radar{0%{box-shadow:0 0 0 0 rgba(228,59,50,.55)}70%,100%{box-shadow:0 0 0 8px rgba(228,59,50,0)}}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes fill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+@keyframes tick{0%{color:var(--red);transform:translateY(3px)}100%{color:inherit;transform:none}}
+@keyframes type{to{width:calc(var(--n) * 1ch)}}
+@keyframes burn{to{width:100%}}
+@keyframes spark{0%{left:0;opacity:1}92%{opacity:1}100%{left:calc(100% - 5px);opacity:0}}
+@keyframes deny{20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+@keyframes acc{0%{opacity:0}18%,72%{opacity:1}100%{opacity:0}}
+@keyframes accl{to{width:120px}}
+
+@media(max-width:960px){.hero h1{font-size:40px}.hero{padding-bottom:76px}.fuse{bottom:60px}}
+@media(max-width:760px){
+  h1{font-size:24px}
+  .top{background:rgba(5,6,8,.94)}
+  .brand small{display:none}
+  .boot{font-size:11px;margin-top:18px}
+  .hero .stamp{margin-top:16px}
+  .rankrow:first-child .name::after{content:""}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition:none!important}
+  .boot div{width:calc(var(--n) * 1ch)}
+  .fuse::after{display:none}.fuse::before{width:100%}
+}
+
+/* ===== V8.2 — Empresas e Unidades/Lojas ===== */
+.org-head-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.org-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0}
+.org-summary .card{padding:15px}
+.org-summary .t{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+.org-summary .n{font-size:29px;font-weight:900;margin-top:5px}
+.org-toolbar{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0}
+.org-toolbar select{min-width:190px}
+.org-grid{display:grid;grid-template-columns:1fr;gap:14px}
+.org-actions{display:flex;gap:6px;flex-wrap:wrap}
+.org-note{border:1px solid #293540;background:#0e141a;border-radius:12px;padding:12px 14px;color:#9eabb7;font-size:12px;line-height:1.5}
+.org-note b{color:#fff}
+.org-modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.org-status{display:inline-flex;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:900}
+.org-status.active{background:#12301e;color:#7fe3a4;border:1px solid #235936}
+.org-status.inactive{background:#311719;color:#ed999c;border:1px solid #64292d}
+.org-status.warning{background:#322613;color:#e7bd76;border:1px solid #62491f}
+@media(max-width:760px){
+  .org-head-actions{width:100%;justify-content:stretch}
+  .org-head-actions .btn{flex:1}
+  .org-summary{grid-template-columns:1fr 1fr}
+  .org-modal-grid{grid-template-columns:1fr}
+  .org-toolbar select{width:100%;min-width:0}
+}
+@media(max-width:390px){
+  .org-summary{grid-template-columns:1fr}
+}
+
+</style>
+</head>
+<body>
+<section class="login" id="login">
+<div class="hero">
+<div>
+<div class="kicker" style="color:#d9a09c">● acesso restrito · uso interno</div>
+<h1>ROTINA<br/>DO SUCESSO</h1>
+<p>Acompanhamento diário da operação comercial do Grupo SOS. Cada ação registrada conta para a missão.</p><div class="stamp">CONFIDENCIAL</div><div class="boot" aria-hidden="true"><div style="--n:28">Identificação necessária</div><div style="--n:29">Canal seguro estabelecido</div><div style="--n:24">Sua missão: executar</div></div>
+</div>
+<div class="kicker">GRUPO SOS · OPERAÇÃO COMERCIAL</div>
+<div class="fuse" aria-hidden="true"></div>
+</div>
+<div class="auth">
+<form class="authbox" id="loginForm">
+<div class="kicker">Identificação</div>
+<h2>Identifique-se, agente</h2>
+<p>O protótipo não mantém a sessão após recarregar a página.</p>
+<label class="label">Usuário</label><input autocomplete="off" id="user" placeholder="seu.usuario"/>
+<div style="height:10px"></div>
+<label class="label">Senha</label><input autocomplete="new-password" id="pass" placeholder="••••••••" type="password"/>
+<button class="btn red" type="submit">ACEITAR MISSÃO</button>
+<div id="msg" style="color:#ff8c85;font-size:12px;margin-top:9px"></div>
+<div class="demo"><b>Acessos de teste (protótipo):</b><br/>dayana.sos / 123 — Colaborador<br/>marcos.rec / 123 — Gerente<br/>performance / 123 — Performance<br/>novo.agente / 123 — Primeiro acesso</div>
+</form>
+</div>
+</section>
+<div id="access" aria-hidden="true"><div><div class="acc-l"></div><div class="acc-t">ACESSO AUTORIZADO</div><div class="acc-s" id="accSub"></div></div></div>
+<section class="hidden" id="app">
+<div class="wrap">
+<header class="top">
+<div class="brand"><div class="slash"></div><div><b>Rotina do Sucesso</b><small id="mode">missão em andamento</small></div></div>
+<div class="actions">
+<button class="btn" id="clearDay">Zerar hoje</button><button class="btn" id="export">Exportar Excel</button>
+<button class="btn" id="history">Histórico</button>
+<button class="btn ghost" id="logout">Sair</button>
+</div>
+</header>
+<div class="head">
+<div>
+<div class="kicker" id="kick">Missão do dia</div>
+<h1 id="title">Minha Rotina</h1>
+<div class="sub" id="subtitle">Execução diária e salvamento automático.</div>
+<div class="chips" id="meta"></div>
+</div>
+<div class="user"><div class="avatar" id="avatar">DS</div><div><b id="uname">Dayana Souza</b><div class="save" id="savestatus">● salvo automaticamente</div></div></div>
+</div>
+<div class="tabs hidden" id="tabs">
+<button class="tab active" data-view="performance">Performance</button>
+<button class="tab" data-view="manager">Gerente</button>
+<button class="tab" data-view="collab">Colaborador</button>
+</div>
+<div class="mobile-collab-nav hidden" id="collabModeNav">
+<button class="modebtn active" data-collab-mode="entry">Registrar atividade</button>
+<button class="modebtn" data-collab-mode="dashboard">Minha Dashboard</button>
+</div>
+<main id="collab">
+<div id="collabEntry">
+<div class="notice"><b>Salvamento automático ativo.</b> Cada alteração fica registrada no dia corrente. O horário de lançamento é usado apenas para auditoria.</div>
+<div class="section"><h2>Objetivos do dia</h2><span>1 toque = 1 ocorrência</span></div>
+<div class="grid g4">
+<article class="card metric"><h3>Abordagem no Salão</h3><p>Captação presencial, aeroporto, loja ou ambiente externo.</p><div class="count" id="c-salao">0</div><button class="plus" data-k="salao">+1 abordagem</button><button class="minus" data-k="salao">Desfazer 1</button></article>
+<article class="card metric"><h3>Captação Online</h3><p>Contato ativo, prospecção e construção de carteira.</p><div class="count" id="c-online">0</div><button class="plus" data-k="online">+1 captação</button><button class="minus" data-k="online">Desfazer 1</button></article>
+<article class="card metric"><h3>Cotações</h3><p>Oportunidades trabalhadas ao longo do dia.</p><div class="count" id="c-cotacoes">0</div><button class="plus" data-k="cotacoes">+1 cotação</button><button class="minus" data-k="cotacoes">Desfazer 1</button></article>
+<article class="card metric sales"><h3>Vendas</h3><p>Registro de apoio operacional. Não compõe os KPIs principais.</p><div class="count" id="c-vendas">0</div><button class="plus" data-k="vendas">+1 venda</button><button class="minus" data-k="vendas">Desfazer 1</button></article>
+</div>
+<div class="grid g2" style="margin-top:14px">
+<section class="card pad"><div class="kicker">Resumo</div><h2 style="margin:4px 0">Total de ações</h2><div class="summary" id="total">0</div><div class="sub">Abordagem + Captação Online + Cotações. Vendas ficam fora deste total gerencial.</div></section>
+<section class="card pad"><label class="label">Observação do dia</label><textarea id="obs" placeholder="Registre alguma observação importante do dia..."></textarea><div class="save" style="margin-top:7px">● alterações salvas automaticamente</div></section>
+</div>
+</div>
+<div class="hidden" id="collabDashboard">
+<div class="personal-filter">
+<select id="personalIndicator">
+<option value="all">Todas as ações</option>
+<option value="salao">Abordagem no Salão</option>
+<option value="online">Captação Online</option>
+<option value="cotacoes">Cotações</option>
+</select>
+<select id="personalPeriod">
+<option value="7">Últimos 7 dias</option>
+<option value="15">Últimos 15 dias</option>
+<option value="month">Mês atual</option>
+</select>
+</div>
+<div class="section"><h2>Minha produção</h2><span id="personalIndicatorLabel">Todas as ações</span></div>
+<div class="personal-highlight">
+<div class="card personal-stat"><div class="pl">Período</div><div class="pv" id="personalTotal">0</div><div class="pd" id="personalDelta">inclui o dia atual</div></div>
+<div class="card personal-stat"><div class="pl">Hoje</div><div class="pv" id="personalToday">0</div><div class="pd">atualização em tempo real</div></div>
+<div class="card personal-stat"><div class="pl">Média por dia</div><div class="pv" id="personalAverage">0,0</div><div class="pd">ritmo de execução</div></div>
+<div class="card personal-stat"><div class="pl">Melhor dia</div><div class="pv" id="personalBest">0</div><div class="pd" id="personalBestDate">—</div></div>
+</div>
+<div class="grid g2" style="margin-top:14px">
+<section class="card pad">
+<div class="section" style="margin:0"><h2>Evolução diária</h2><span id="personalChartLabel">Todas as ações</span></div>
+<div class="chart" id="personalChart"></div>
+</section>
+<section class="card pad">
+<div class="section" style="margin:0"><h2>Composição da rotina</h2><span>Período selecionado</span></div>
+<div id="personalBreakdown"></div>
+</section>
+</div>
+<div class="sales-toggle-row">
+<span><b style="color:#fff">Vendas são apoio operacional.</b><br/>Ficam ocultas da produção principal por padrão.</span>
+<label aria-label="Mostrar vendas" class="switch">
+<input id="showPersonalSales" type="checkbox"/>
+<span class="slider"></span>
+</label>
+</div>
+<section class="card pad hidden" id="personalSalesBox" style="margin-top:12px">
+<div class="section" style="margin:0"><h2>Vendas registradas</h2><span>Não entra nos KPIs principais</span></div>
+<div class="summary" id="personalSalesTotal" style="font-size:42px">12</div>
+</section>
+</div>
+</main>
+<main class="hidden" id="manager">
+<div class="filters">
+<select id="mgrMonth"><option value="2026-10">Outubro/2026</option><option value="2026-09">Setembro/2026</option></select>
+<select id="mgrAgent"><option value="all">Todos os agentes</option><option value="u8">Dayana Souza</option><option value="u9">Renata Costa</option><option value="u10">Bruno Silva</option></select>
+<select id="mgrIndicator"><option value="all">Todos os indicadores</option><option value="salao">Abordagem no Salão</option><option value="online">Captação Online</option><option value="cotacoes">Cotações</option></select>
+<select id="mgrPeriod"><option value="month">Período atual</option><option value="7">Últimos 7 dias</option><option value="15">Últimos 15 dias</option></select>
+<button class="btn" id="mgrApply">Aplicar filtros</button>
+</div>
+<div class="section"><h2>Visão da unidade</h2><span id="mgrUnitLabel">RECIFE · SOS</span></div>
+<div class="stats">
+<div class="card stat"><div class="l">Abordagens</div><div class="v" id="mgrStatSalao">286</div><div class="d" id="mgrStatSalaoDelta">+12% vs período anterior</div></div>
+<div class="card stat"><div class="l">Captação online</div><div class="v" id="mgrStatOnline">198</div><div class="d" id="mgrStatOnlineDelta">+8%</div></div>
+<div class="card stat"><div class="l">Cotações</div><div class="v" id="mgrStatCotacoes">174</div><div class="d" id="mgrStatCotacoesDelta">+4%</div></div>
+<div class="card stat"><div class="l">Ações totais</div><div class="v" id="mgrStatTotal">658</div><div class="d" id="mgrStatTotalDelta">atividade consolidada</div></div>
+</div>
+<div class="grid g2" style="margin-top:14px">
+<section class="card pad"><div class="section" style="margin:0"><h2>Evolução por dia</h2><span id="mgrChartLabel">Todas as ações</span></div><div class="chart" id="mgrchart"></div></section>
+<section class="card pad"><div class="section" style="margin:0"><h2>Ranking de colaboradores</h2><span id="mgrRankLabel">Todas as ações</span></div><div id="mgrrank"></div></section>
+</div>
+<section class="card pad" style="margin-top:14px"><div class="section" style="margin:0"><h2>Ranking de ações</h2><span>Quem executa cada atividade</span></div><div class="table"><table><thead id="mgrActionHead"><tr><th>Agente</th><th>Salão</th><th>Online</th><th>Cotações</th><th>Total</th></tr></thead><tbody id="mgrActionBody"><tr><td><b>Dayana Souza</b></td><td>68</td><td>54</td><td>42</td><td><b>164</b></td></tr><tr><td><b>Marina Alves</b></td><td>61</td><td>49</td><td>46</td><td><b>156</b></td></tr><tr><td><b>João Lima</b></td><td>58</td><td>44</td><td>43</td><td><b>145</b></td></tr><tr><td><b>Renata Costa</b></td><td>52</td><td>39</td><td>43</td><td><b>134</b></td></tr></tbody></table></div></section>
+</main>
+<main class="hidden" id="performance">
+<div class="admin-nav" id="performanceModeNav">
+<button class="active" data-performance-mode="dashboard">Super Dashboard</button>
+<button data-performance-mode="users">Gestão de Usuários</button>
+<button data-performance-mode="org">Empresas e Unidades</button>
+</div>
+<div id="performanceDashboard">
+<div class="filters">
+<select id="pfCompany"><option value="all">Todas as empresas</option><option value="SOS">SOS</option><option value="Universo">Universo</option><option value="Connect">Connect</option><option value="Azul Viagens">Azul Viagens</option></select>
+<select id="pfUnit"><option value="all">Todas as unidades</option></select>
+<select id="pfAgent"><option value="all">Todos os agentes</option></select>
+<select id="pfMonth"><option value="2026-10">Outubro/2026</option><option value="2026-09">Setembro/2026</option><option value="2026-08">Agosto/2026</option></select>
+<select id="pfIndicator"><option value="all">Todos os indicadores</option><option value="salao">Abordagem no Salão</option><option value="online">Captação Online</option><option value="cotacoes">Cotações</option></select>
+<button class="btn" id="pfApply">Aplicar filtros</button></div>
+<div class="section"><h2>Super Dashboard</h2><span>Visão consolidada</span></div>
+<div class="stats">
+<div class="card stat"><div class="l">Unidades ativas</div><div class="v" id="pfStatUnits">0</div><div class="d" id="pfStatUnitsDelta">visão geral</div></div>
+<div class="card stat"><div class="l">Colaboradores</div><div class="v" id="pfStatAgents">0</div><div class="d" id="pfStatAgentsDelta">com registros no período</div></div>
+<div class="card stat"><div class="l">Ações operacionais</div><div class="v" id="pfStatActions">0</div><div class="d" id="pfStatActionsDelta">atividade do período</div></div>
+<div class="card stat"><div class="l">Preenchimento</div><div class="v" id="pfStatFill">0%</div><div class="d" id="pfStatFillDelta">rotinas registradas</div></div>
+</div>
+<div class="grid g2" style="margin-top:14px">
+<section class="card pad"><div class="section" style="margin:0"><h2>Comparação entre unidades</h2><span id="pfChartLabel">Todas as ações</span></div><div class="chart" id="pfchart"></div></section>
+<section class="card pad"><div class="section" style="margin:0"><h2>Ranking de unidades</h2><span id="pfUnitRankLabel">Todas as ações</span></div><div id="unitrank"></div></section>
+</div>
+<div class="grid g2" style="margin-top:14px">
+<section class="card pad"><div class="section" style="margin:0"><h2>Comparação de períodos</h2><span>Período anterior × atual</span></div><div class="stats" style="grid-template-columns:1fr 1fr;margin-top:10px"><div class="card stat"><div class="l" id="pfPrevLabel">—</div><div class="v" id="pfPrevValue">0</div></div><div class="card stat"><div class="l" id="pfCurrLabel">—</div><div class="v" id="pfCurrValue">0</div><div class="d" id="pfPeriodDelta">0%</div></div></div></section>
+<section class="card pad"><div class="section" style="margin:0"><h2>Comparação entre agentes</h2><span id="pfAgentRankLabel">Todas as ações</span></div><div id="agentrank"></div></section>
+</div>
+</div>
+
+<div class="hidden" id="userManagement">
+<div class="section" style="margin-top:0"><div><h2>Gestão de Usuários</h2><div class="sub">Cadastros, perfis, unidades e acesso ao sistema.</div></div><div class="user-head-actions"><button class="btn" id="downloadUserTemplateBtn">Baixar modelo</button><button class="btn" id="importUsersBtn">Importar planilha</button><button class="btn red" id="newUserBtn">+ Novo usuário</button></div></div>
+<div class="user-link-note"><b>Vínculo automático por unidade:</b> o Gerente visualiza todos os colaboradores ativos vinculados à mesma Empresa + Unidade. O Capitão é identificado automaticamente pelo usuário marcado como Gerente daquela unidade. Usuários inativos permanecem no histórico, mas não conseguem entrar.</div>
+<div class="user-summary">
+<div class="card"><div class="t">Usuários ativos</div><div class="n" id="umActiveCount">0</div></div>
+<div class="card"><div class="t">Colaboradores</div><div class="n" id="umCollabCount">0</div></div>
+<div class="card"><div class="t">Gerentes</div><div class="n" id="umManagerCount">0</div></div>
+<div class="card"><div class="t">Primeiro acesso pendente</div><div class="n" id="umPendingCount">0</div></div>
+</div>
+<div class="user-toolbar">
+<input id="umSearch" placeholder="Buscar nome ou usuário..."/>
+<select id="umRole"><option value="all">Todos os perfis</option><option value="colaborador">Colaborador</option><option value="gerente">Gerente</option><option value="performance">Performance</option></select>
+<select id="umStatus"><option value="all">Todos os status</option><option value="active">Ativos</option><option value="inactive">Inativos</option><option value="pending">Primeiro acesso pendente</option></select>
+<select id="umCompany"><option value="all">Todas as empresas</option><option value="SOS">SOS</option><option value="Universo">Universo</option><option value="Connect">Connect</option><option value="Azul Viagens">Azul Viagens</option></select>
+<select id="umUnit"><option value="all">Todas as unidades</option></select>
+<button class="btn" id="umClearFilters">Limpar filtros</button>
+</div>
+<div class="table"><table><thead><tr><th>Usuário</th><th>Nome</th><th>Perfil</th><th>Empresa</th><th>Unidade</th><th>Capitão</th><th>Status</th><th>Último acesso</th><th>Ações</th></tr></thead><tbody id="userTableBody"></tbody></table></div>
+<section class="card pad" style="margin-top:14px"><div class="section" style="margin:0"><h2>Auditoria de usuários</h2><span>Alterações desta sessão</span></div><div class="audit-list" id="userAuditList"></div></section>
+</div>
+</div>
+
+<div class="hidden" id="orgManagement">
+  <div class="section" style="margin-top:0">
+    <div>
+      <h2>Empresas e Unidades/Lojas</h2>
+      <div class="sub">Cadastre a estrutura operacional que alimenta usuários, vínculos e dashboards.</div>
+    </div>
+    <div class="org-head-actions">
+      <button class="btn" id="newCompanyBtn">+ Nova empresa</button>
+      <button class="btn red" id="newUnitBtn">+ Nova unidade/loja</button>
+    </div>
+  </div>
+
+  <div class="org-note">
+    <b>Cadastro central:</b> uma nova unidade ativa passa a aparecer automaticamente no primeiro acesso,
+    na Gestão de Usuários e nos filtros. O Gerente/Capitão pode ser definido aqui e o vínculo é refletido
+    nos usuários da unidade. Empresas e unidades com histórico são inativadas, não excluídas.
+  </div>
+
+  <div class="org-summary">
+    <div class="card"><div class="t">Empresas ativas</div><div class="n" id="orgCompanyCount">0</div></div>
+    <div class="card"><div class="t">Unidades ativas</div><div class="n" id="orgUnitCount">0</div></div>
+    <div class="card"><div class="t">Colaboradores vinculados</div><div class="n" id="orgLinkedCount">0</div></div>
+    <div class="card"><div class="t">Unidades sem gerente</div><div class="n" id="orgNoManagerCount">0</div></div>
+  </div>
+
+  <div class="org-toolbar">
+    <select id="orgCompanyFilter"><option value="all">Todas as empresas</option></select>
+    <select id="orgStatusFilter">
+      <option value="all">Todos os status</option>
+      <option value="active">Ativos</option>
+      <option value="inactive">Inativos</option>
+    </select>
+    <button class="btn" id="orgClearFilters">Limpar filtros</button>
+  </div>
+
+  <div class="org-grid">
+    <section class="card pad">
+      <div class="section" style="margin:0"><h2>Empresas</h2><span>Estrutura corporativa</span></div>
+      <div class="table">
+        <table>
+          <thead><tr><th>Empresa</th><th>Unidades</th><th>Colaboradores</th><th>Status</th><th>Ações</th></tr></thead>
+          <tbody id="companyTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card pad">
+      <div class="section" style="margin:0"><h2>Unidades/Lojas</h2><span>Vínculo operacional</span></div>
+      <div class="table">
+        <table>
+          <thead><tr><th>Empresa</th><th>Unidade/Loja</th><th>Código</th><th>Gerente/Capitão</th><th>Colaboradores</th><th>Status</th><th>Ações</th></tr></thead>
+          <tbody id="unitTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div>
+
+</main>
+<div class="foot">Rotina do Sucesso · Grupo SOS · Esta mensagem não se autodestruirá</div>
+</div>
+</section>
+<div class="modal hidden" id="first"><div class="modalbox"><div class="kicker">Primeiro acesso</div><h2>Complete seu perfil</h2><p class="sub">Ao confirmar, você será vinculado automaticamente à unidade selecionada. Depois disso, Empresa e Unidade só poderão ser alteradas pelo Performance.</p><form id="firstForm"><div class="rows"><div><label class="label">Nome</label><input id="fn"/></div><div><label class="label">Sobrenome</label><input id="ln"/></div></div><div class="rows" style="margin-top:10px"><div><label class="label">Empresa</label><select id="company"><option value="SOS">SOS</option><option value="Universo">Universo</option><option value="Connect">Connect</option><option value="Azul Viagens">Azul Viagens</option></select></div><div><label class="label">Unidade</label><select id="unit"></select></div></div><div style="margin-top:10px"><label class="label">Capitão vinculado automaticamente</label><input disabled id="captain"/></div><div class="form-error" id="firstAccessError"></div><div class="modal-actions"><button class="btn red" type="submit">CONFIRMAR PERFIL</button></div></form></div></div>
+<div class="modal hidden" id="hist"><div class="modalbox"><div class="kicker">Histórico</div><h2>Últimos registros</h2><p class="sub">Dados anteriores ficam bloqueados para edição pelo colaborador.</p><div class="table"><table><thead><tr><th>Data</th><th>Salão</th><th>Online</th><th>Cotações</th><th>Vendas</th></tr></thead><tbody id="historyBody"><tr><td>02/10/2026</td><td>12</td><td>7</td><td>9</td><td>3</td></tr><tr><td>01/10/2026</td><td>9</td><td>11</td><td>8</td><td>2</td></tr><tr><td>30/09/2026</td><td>14</td><td>6</td><td>10</td><td>4</td></tr></tbody></table></div><div class="modal-actions"><button class="btn" id="closeHist">Fechar</button></div></div></div>
+<div class="modal hidden" id="userModal"><div class="modalbox user-editor"><div class="kicker" id="userModalKicker">Novo cadastro</div><h2 id="userModalTitle">Cadastrar usuário</h2><p class="sub">As alterações entram em vigor imediatamente nesta sessão do protótipo.</p><form id="userForm">
+<input type="hidden" id="editUserId"/>
+<div class="user-modal-grid">
+<div><label class="label">Usuário</label><input id="userLogin" autocomplete="off" placeholder="ex.: dayana.sos"/></div>
+<div><label class="label">Senha</label><input id="userPassword" type="password" autocomplete="new-password" placeholder="Defina a senha"/><div class="form-hint" id="passwordHint">Obrigatória para novo usuário.</div></div>
+<div><label class="label">Nome</label><input id="userFirstName" placeholder="Nome"/></div>
+<div><label class="label">Sobrenome</label><input id="userLastName" placeholder="Sobrenome"/></div>
+<div><label class="label">Perfil</label><select id="userRole"><option value="colaborador">Colaborador</option><option value="gerente">Gerente</option><option value="performance">Performance</option></select></div>
+<div><label class="label">Status</label><select id="userStatus"><option value="active">Ativo</option><option value="inactive">Inativo</option></select></div>
+<div><label class="label">Empresa</label><select id="userCompany"><option value="">Definir no primeiro acesso</option><option value="SOS">SOS</option><option value="Universo">Universo</option><option value="Connect">Connect</option><option value="Azul Viagens">Azul Viagens</option></select></div>
+<div><label class="label">Unidade</label><select id="userUnit"><option value="">Definir no primeiro acesso</option></select></div>
+<div class="full"><div class="checkline"><input id="userProfileComplete" type="checkbox"/><label for="userProfileComplete"><b>Cadastro já concluído.</b><br/>Se desmarcado, o usuário será direcionado para Nome, Sobrenome, Empresa e Unidade no primeiro acesso.</label></div></div>
+<div class="full"><label class="label">Capitão / vínculo</label><input id="userCaptainPreview" disabled value="Definido automaticamente pela unidade"/></div>
+</div>
+<div class="form-error" id="userFormError"></div>
+<div class="modal-actions"><button class="btn" id="cancelUserEdit" type="button">Cancelar</button><button class="btn red" type="submit">SALVAR USUÁRIO</button></div>
+</form></div></div>
+
+
+<div class="modal hidden" id="companyModal">
+  <div class="modalbox" style="width:min(520px,100%)">
+    <div class="kicker" id="companyModalKicker">Nova empresa</div>
+    <h2 id="companyModalTitle">Cadastrar empresa</h2>
+    <form id="companyForm">
+      <input type="hidden" id="companyOriginalName"/>
+      <label class="label">Nome da empresa</label>
+      <input id="companyNameInput" placeholder="Ex.: SOS" autocomplete="off"/>
+      <div style="margin-top:10px">
+        <label class="label">Status</label>
+        <select id="companyStatusInput"><option value="active">Ativa</option><option value="inactive">Inativa</option></select>
+      </div>
+      <div class="form-error" id="companyFormError"></div>
+      <div class="modal-actions">
+        <button class="btn" id="cancelCompanyEdit" type="button">Cancelar</button>
+        <button class="btn red" type="submit">SALVAR EMPRESA</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal hidden" id="unitModal">
+  <div class="modalbox" style="width:min(650px,100%)">
+    <div class="kicker" id="unitModalKicker">Nova unidade</div>
+    <h2 id="unitModalTitle">Cadastrar unidade/loja</h2>
+    <form id="unitForm">
+      <input type="hidden" id="unitEditId"/>
+      <div class="org-modal-grid">
+        <div><label class="label">Empresa</label><select id="orgUnitCompany"></select></div>
+        <div><label class="label">Nome da unidade/loja</label><input id="orgUnitName" placeholder="Ex.: Manaus"/></div>
+        <div><label class="label">Código curto</label><input id="orgUnitShort" placeholder="Ex.: MAO SOS" maxlength="20"/></div>
+        <div><label class="label">Status</label><select id="orgUnitStatus"><option value="active">Ativa</option><option value="inactive">Inativa</option></select></div>
+      </div>
+      <div style="margin-top:10px">
+        <label class="label">Gerente / Capitão responsável</label>
+        <select id="orgUnitManager"><option value="">Sem gerente definido</option></select>
+        <div class="sub" style="margin-top:6px">Ao trocar o gerente aqui, o vínculo Empresa + Unidade do gerente selecionado é atualizado automaticamente.</div>
+      </div>
+      <div class="form-error" id="unitFormError"></div>
+      <div class="modal-actions">
+        <button class="btn" id="cancelUnitEdit" type="button">Cancelar</button>
+        <button class="btn red" type="submit">SALVAR UNIDADE</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal hidden" id="importUsersModal">
+  <div class="modalbox user-editor" style="width:min(760px,100%)">
+    <div class="kicker">Importação em lote</div>
+    <h2>Importar usuários</h2>
+    <p class="import-help">A planilha precisa ter apenas as colunas <b>usuario</b> e <b>senha</b>. Os novos registros entram como <b>Colaborador ativo</b> e ficam com <b>primeiro acesso pendente</b>, para que Nome, Sobrenome, Empresa e Unidade sejam definidos no primeiro login.</p>
+
+    <div class="import-drop">
+      <input id="importUsersFile" type="file" accept=".xlsx,.xls,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"/>
+      <button class="btn red" id="chooseImportFileBtn" type="button">Selecionar planilha</button>
+      <div class="import-file-name" id="importFileName">Nenhum arquivo selecionado.</div>
+    </div>
+
+    <div class="import-summary">
+      <div class="card"><div class="t">Linhas lidas</div><div class="n" id="importReadCount">0</div></div>
+      <div class="card"><div class="t">Prontas para importar</div><div class="n" id="importReadyCount">0</div></div>
+      <div class="card"><div class="t">Ignoradas</div><div class="n" id="importSkipCount">0</div></div>
+    </div>
+
+    <div class="table import-preview">
+      <table style="min-width:620px">
+        <thead><tr><th>Linha</th><th>Usuário</th><th>Senha</th><th>Status</th><th>Motivo</th></tr></thead>
+        <tbody id="importPreviewBody"><tr><td colspan="5">Selecione uma planilha para visualizar os usuários.</td></tr></tbody>
+      </table>
+    </div>
+    <div class="import-error" id="importUsersError"></div>
+    <div class="modal-actions">
+      <button class="btn" id="cancelImportUsersBtn" type="button">Cancelar</button>
+      <button class="btn red" id="confirmImportUsersBtn" type="button" disabled>IMPORTAR USUÁRIOS</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const DEMO_TODAY='2026-10-03';
+const COMPANY_CATALOG=[
+  {name:'SOS',active:true},
+  {name:'Universo',active:true},
+  {name:'Connect',active:true},
+  {name:'Azul Viagens',active:true}
+];
+const UNIT_CATALOG=[
+  {id:'un1',company:'SOS',unit:'Recife',short:'REC SOS',active:true,managerId:'u2'},
+  {id:'un2',company:'SOS',unit:'Fortaleza',short:'FOR SOS',active:true,managerId:'u3'},
+  {id:'un3',company:'Universo',unit:'Belém',short:'BEL UNI',active:true,managerId:'u4'},
+  {id:'un4',company:'Universo',unit:'Teresina',short:'THE UNI',active:true,managerId:'u5'},
+  {id:'un5',company:'Connect',unit:'Guarulhos',short:'GRU CON',active:true,managerId:'u6'},
+  {id:'un6',company:'Azul Viagens',unit:'Salvador',short:'SSA AZUL',active:true,managerId:'u7'}
+];
+const indicatorNames={all:'Todas as ações',salao:'Abordagem no Salão',online:'Captação Online',cotacoes:'Cotações'};
+const indicatorShort={all:'Ações',salao:'Salão',online:'Online',cotacoes:'Cotações'};
+
+let currentUser=null, role=null, state={salao:0,online:0,cotacoes:0,vendas:0,obs:''}, editingUserId=null, performanceMode='dashboard';
+const liveStates=new Map();
+const auditLog=[];
+let idCounter=100, orgCounter=100;
+
+const userStore=[
+  {id:'u1',username:'performance',password:'123',firstName:'Equipe',lastName:'Performance',role:'performance',company:'',unit:'',active:true,profileComplete:true,lastLogin:null},
+  {id:'u2',username:'marcos.rec',password:'123',firstName:'Marcos',lastName:'Lima',role:'gerente',company:'SOS',unit:'Recife',active:true,profileComplete:true,lastLogin:null},
+  {id:'u3',username:'paula.for',password:'123',firstName:'Paula',lastName:'Reis',role:'gerente',company:'SOS',unit:'Fortaleza',active:true,profileComplete:true,lastLogin:null},
+  {id:'u4',username:'sandra.bel',password:'123',firstName:'Sandra',lastName:'Melo',role:'gerente',company:'Universo',unit:'Belém',active:true,profileComplete:true,lastLogin:null},
+  {id:'u5',username:'carlos.the',password:'123',firstName:'Carlos',lastName:'Nunes',role:'gerente',company:'Universo',unit:'Teresina',active:true,profileComplete:true,lastLogin:null},
+  {id:'u6',username:'emanuel.gru',password:'123',firstName:'Emanuel',lastName:'Silva',role:'gerente',company:'Connect',unit:'Guarulhos',active:true,profileComplete:true,lastLogin:null},
+  {id:'u7',username:'vitor.ssa',password:'123',firstName:'Vitor',lastName:'Souza',role:'gerente',company:'Azul Viagens',unit:'Salvador',active:true,profileComplete:true,lastLogin:null},
+  {id:'u8',username:'dayana.sos',password:'123',firstName:'Dayana',lastName:'Souza',role:'colaborador',company:'SOS',unit:'Recife',active:true,profileComplete:true,lastLogin:null},
+  {id:'u9',username:'renata.rec',password:'123',firstName:'Renata',lastName:'Costa',role:'colaborador',company:'SOS',unit:'Recife',active:true,profileComplete:true,lastLogin:null},
+  {id:'u10',username:'bruno.rec',password:'123',firstName:'Bruno',lastName:'Silva',role:'colaborador',company:'SOS',unit:'Recife',active:true,profileComplete:true,lastLogin:null},
+  {id:'u11',username:'marina.for',password:'123',firstName:'Marina',lastName:'Alves',role:'colaborador',company:'SOS',unit:'Fortaleza',active:true,profileComplete:true,lastLogin:null},
+  {id:'u12',username:'lucas.for',password:'123',firstName:'Lucas',lastName:'Rocha',role:'colaborador',company:'SOS',unit:'Fortaleza',active:true,profileComplete:true,lastLogin:null},
+  {id:'u13',username:'aline.for',password:'123',firstName:'Aline',lastName:'Freitas',role:'colaborador',company:'SOS',unit:'Fortaleza',active:true,profileComplete:true,lastLogin:null},
+  {id:'u14',username:'joao.bel',password:'123',firstName:'João',lastName:'Lima',role:'colaborador',company:'Universo',unit:'Belém',active:true,profileComplete:true,lastLogin:null},
+  {id:'u15',username:'carla.bel',password:'123',firstName:'Carla',lastName:'Dias',role:'colaborador',company:'Universo',unit:'Belém',active:true,profileComplete:true,lastLogin:null},
+  {id:'u16',username:'rafael.bel',password:'123',firstName:'Rafael',lastName:'Nunes',role:'colaborador',company:'Universo',unit:'Belém',active:true,profileComplete:true,lastLogin:null},
+  {id:'u17',username:'camila.the',password:'123',firstName:'Camila',lastName:'Sousa',role:'colaborador',company:'Universo',unit:'Teresina',active:true,profileComplete:true,lastLogin:null},
+  {id:'u18',username:'pedro.the',password:'123',firstName:'Pedro',lastName:'Matos',role:'colaborador',company:'Universo',unit:'Teresina',active:true,profileComplete:true,lastLogin:null},
+  {id:'u19',username:'ana.the',password:'123',firstName:'Ana',lastName:'Lima',role:'colaborador',company:'Universo',unit:'Teresina',active:true,profileComplete:true,lastLogin:null},
+  {id:'u20',username:'luandra.gru',password:'123',firstName:'Luandra',lastName:'Melo',role:'colaborador',company:'Connect',unit:'Guarulhos',active:true,profileComplete:true,lastLogin:null},
+  {id:'u21',username:'neto.gru',password:'123',firstName:'Neto',lastName:'Alves',role:'colaborador',company:'Connect',unit:'Guarulhos',active:true,profileComplete:true,lastLogin:null},
+  {id:'u22',username:'felipe.ssa',password:'123',firstName:'Felipe',lastName:'Costa',role:'colaborador',company:'Azul Viagens',unit:'Salvador',active:true,profileComplete:true,lastLogin:null},
+  {id:'u23',username:'bianca.ssa',password:'123',firstName:'Bianca',lastName:'Reis',role:'colaborador',company:'Azul Viagens',unit:'Salvador',active:true,profileComplete:true,lastLogin:null},
+  {id:'u24',username:'novo.agente',password:'123',firstName:'',lastName:'',role:'colaborador',company:'',unit:'',active:true,profileComplete:false,lastLogin:null},
+  {id:'u25',username:'ana.for',password:'123',firstName:'Ana',lastName:'Ferreira',role:'colaborador',company:'SOS',unit:'Fortaleza',active:false,profileComplete:true,lastLogin:null}
+];
+
+function fullName(u){return `${u?.firstName||''} ${u?.lastName||''}`.trim()||u?.username||'Usuário'}
+function initials(n){return String(n||'').split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase()||'US'}
+function companyRecord(name){return COMPANY_CATALOG.find(x=>x.name===name)||null}
+function unitRecord(company,unit){return UNIT_CATALOG.find(x=>x.company===company&&x.unit===unit)||null}
+function getUnitById(id){return UNIT_CATALOG.find(x=>x.id===id)||null}
+function managerFor(company,unit){
+  const ur=unitRecord(company,unit);
+  if(ur?.managerId){
+    const linked=getUser(ur.managerId);
+    if(linked&&linked.role==='gerente'&&linked.active&&linked.profileComplete)return linked;
+  }
+  return userStore.find(u=>u.role==='gerente'&&u.active&&u.profileComplete&&u.company===company&&u.unit===unit)||null
+}
+function collaboratorsFor(company,unit,{activeOnly=true}={}){return userStore.filter(u=>u.role==='colaborador'&&u.profileComplete&&u.company===company&&u.unit===unit&&(!activeOnly||u.active))}
+function unitShort(company,unit){return unitRecord(company,unit)?.short||`${unit||'—'} ${company||''}`.trim()}
+function getUser(id){return userStore.find(u=>u.id===id)}
+function nextId(){idCounter++;return 'u'+idCounter}
+function nextOrgId(prefix='org'){orgCounter++;return prefix+orgCounter}
+function nowLabel(){return new Intl.DateTimeFormat('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date())}
+function audit(action,target,details=''){auditLog.unshift({time:nowLabel(),action,target,details,by:currentUser?fullName(currentUser):'Sistema'});renderAudit()}
+function unique(a){return [...new Set(a)]}
+function formatInt(n){return Number(n||0).toLocaleString('pt-BR')}
+function format1(n){return Number(n||0).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})}
+function pctDelta(curr,prev){if(prev===0)return curr>0?'+100%':'0%';const p=((curr-prev)/prev)*100;return `${p>=0?'+':''}${p.toLocaleString('pt-BR',{maximumFractionDigits:1})}%`}
+function addDays(dateStr,delta){const d=new Date(dateStr+'T12:00:00');d.setDate(d.getDate()+delta);return d.toISOString().slice(0,10)}
+function monthLabel(m){return m==='2026-10'?'Outubro/2026':m==='2026-09'?'Setembro/2026':m==='2026-08'?'Agosto/2026':m}
+function demoMonthDays(month){return month==='2026-10'?3:month==='2026-09'?30:31}
+function metricValue(r,key){return key==='all'?r.salao+r.online+r.cotacoes:r[key]||0}
+function sum(rows,key){return rows.reduce((a,r)=>a+metricValue(r,key),0)}
+function bars(el,data){const m=Math.max(1,...data.map(x=>x.v));el.innerHTML=data.length?data.map(x=>`<div class="bar" style="height:${Math.max(12,x.v/m*190)}px"><em>${formatInt(x.v)}</em><span>${x.l}</span></div>`).join(''):'<div class="sub">Sem dados para os filtros selecionados.</div>'}
+function rank(el,data){const sorted=[...data].sort((a,b)=>b.v-a.v);const m=Math.max(1,...sorted.map(x=>x.v));el.innerHTML=sorted.length?sorted.map((x,i)=>`<div class="rankrow"><div class="pos">${String(i+1).padStart(2,'0')}</div><div><div class="name">${x.n}</div><div class="rs">${x.s||''}</div><div class="prog"><i style="width:${x.v/m*100}%"></i></div></div><div class="rv">${formatInt(x.v)}</div></div>`).join(''):'<div class="sub" style="padding:12px 0">Sem dados para os filtros selecionados.</div>'}
+function aggregateByDate(rows,key){const m=new Map();rows.forEach(r=>m.set(r.date,(m.get(r.date)||0)+metricValue(r,key)));return [...m.entries()].map(([n,v])=>({n,v}))}
+function getDateRangeLabel(rows){if(!rows.length)return 'Sem dados';const ds=rows.map(r=>r.date).sort();return `${ds[0].slice(8,10)}/${ds[0].slice(5,7)} a ${ds.at(-1).slice(8,10)}/${ds.at(-1).slice(5,7)}`}
+
+function generateRows(){
+  const seeded=userStore.filter(u=>u.role==='colaborador'&&u.profileComplete&&u.company&&u.unit&&u.id!=='u25');
+  const out=[];
+  ['2026-08','2026-09','2026-10'].forEach((month,mi)=>{
+    const days=demoMonthDays(month);
+    seeded.forEach((u,ai)=>{
+      const ur=unitRecord(u.company,u.unit); if(!ur)return;
+      for(let d=1;d<=days;d++){
+        if((d+ai*5+mi)%19===0)continue;
+        out.push({userId:u.id,date:`${month}-${String(d).padStart(2,'0')}`,company:u.company,unit:u.unit,short:ur.short,agent:fullName(u),salao:5+((d*3+ai*2+mi)%11),online:4+((d*2+ai+mi)%9),cotacoes:5+((d+ai*3+mi)%8),vendas:(d+ai+mi)%4});
+      }
+    });
+  });
+  return out;
+}
+const BASE_ROWS=generateRows();
+function ensureLiveState(user){if(!liveStates.has(user.id))liveStates.set(user.id,{salao:0,online:0,cotacoes:0,vendas:0,obs:''});return liveStates.get(user.id)}
+function rowsWithLive(){
+  let rows=BASE_ROWS.map(r=>({...r}));
+  for(const [userId,s] of liveStates.entries()){
+    const u=getUser(userId); if(!u||u.role!=='colaborador'||!u.profileComplete||!u.company||!u.unit)continue;
+    rows=rows.filter(r=>!(r.userId===u.id&&r.date===DEMO_TODAY));
+    rows.push({userId:u.id,date:DEMO_TODAY,company:u.company,unit:u.unit,short:unitShort(u.company,u.unit),agent:fullName(u),salao:s.salao,online:s.online,cotacoes:s.cotacoes,vendas:s.vendas});
+  }
+  return rows;
+}
+function rowsForWindow(rows,month,period){if(period==='month')return rows.filter(r=>r.date.startsWith(month));const n=Number(period)||7,start=addDays(DEMO_TODAY,-(n-1));return rows.filter(r=>r.date>=start&&r.date<=DEMO_TODAY)}
+function userRows(user){return rowsWithLive().filter(r=>r.userId===user.id)}
+
+function pulse(){const el=$('#savestatus');if(!el)return;el.textContent='● salvando...';el.style.color='var(--amber)';clearTimeout(pulse.t);pulse.t=setTimeout(()=>{el.textContent='● salvo automaticamente';el.style.color='var(--green)'},280)}
+function setMetaForUser(u){
+  $('#uname').textContent=fullName(u);$('#avatar').textContent=initials(fullName(u));
+  if(u.role==='performance')$('#meta').innerHTML='<span class="chip">Administrador</span><span class="chip">Todas as empresas</span><span class="chip">Todas as unidades</span>';
+  else if(u.role==='gerente')$('#meta').innerHTML=`<span class="chip">Gerente</span><span class="chip">${u.company||'—'}</span><span class="chip">${u.unit||'—'}</span>`;
+  else {const mgr=managerFor(u.company,u.unit);$('#meta').innerHTML=`<span class="chip">${u.company||'Não definido'}</span><span class="chip">${u.unit||'Não definido'}</span><span class="chip">Capitão: ${mgr?fullName(mgr):'Não definido'}</span>`}
+}
+function renderEntry(){if(!currentUser||currentUser.role!=='colaborador')return;['salao','online','cotacoes','vendas'].forEach(k=>{const el=$('#c-'+k);if(el)el.textContent=state[k]});$('#total').textContent=state.salao+state.online+state.cotacoes;$('#obs').value=state.obs||''}
+function render(){renderEntry();if(currentUser?.role==='colaborador')renderPersonalDashboard();if(!$('#manager').classList.contains('hidden'))renderManager();if(!$('#performance').classList.contains('hidden')){renderPerformance();renderUserManagement();renderOrgManagement()}}
+
+function setTopForView(v){
+  if(v==='collab'){$('#kick').textContent='Missão do dia';$('#title').textContent='Minha Rotina';$('#subtitle').textContent='Execução diária e salvamento automático.';$('#mode').textContent='missão em andamento';$('#history').classList.remove('hidden');$('#clearDay').classList.remove('hidden');if(currentUser?.role==='colaborador')$('#collabModeNav').classList.remove('hidden')}
+  else if(v==='manager'){const c=managerContext();$('#kick').textContent='Comando da unidade';$('#title').textContent='Dashboard do Gerente';$('#subtitle').textContent=c?`${c.unit} · ${c.company} · acompanhamento da equipe`:'Selecione uma unidade';$('#mode').textContent='comando da unidade';$('#history').classList.add('hidden');$('#clearDay').classList.add('hidden');$('#collabModeNav').classList.add('hidden')}
+  else{
+    $('#kick').textContent='Central de comando';
+    const org=performanceMode==='org',users=performanceMode==='users';
+    $('#title').textContent=org?'Empresas e Unidades':users?'Gestão de Usuários':'Performance';
+    $('#subtitle').textContent=org?'Estrutura de empresas, lojas, unidades e responsáveis.':users?'Cadastros, acessos e vínculos por unidade.':'Todas as lojas, agentes e períodos em uma única visão.';
+    $('#mode').textContent='central de comando';$('#history').classList.add('hidden');$('#clearDay').classList.add('hidden');$('#collabModeNav').classList.add('hidden')
+  }
+}
+function view(v){['collab','manager','performance'].forEach(x=>$('#'+x).classList.add('hidden'));$('#'+v).classList.remove('hidden');$$('.tab').forEach(x=>x.classList.toggle('active',x.dataset.view===v));setTopForView(v);if(v==='manager'){rebuildManagerAgentOptions();renderManager()}if(v==='performance'){renderPerformance();renderUserManagement();renderOrgManagement()}if(v==='collab')renderPersonalDashboard()}
+
+function showLogin(){currentUser=null;role=null;$('#app').classList.add('hidden');$('#login').classList.remove('hidden');$('#user').value='';$('#pass').value='';$('#msg').textContent='';['first','hist','userModal','importUsersModal','companyModal','unitModal'].forEach(id=>$('#'+id)?.classList.add('hidden'))}
+function authenticate(username,password){const alias={colaborador:'dayana.sos',gerente:'marcos.rec'};const login=(alias[username.toLowerCase()]||username).toLowerCase();return userStore.find(u=>u.username.toLowerCase()===login&&u.password===password)||null}
+function loginAsUser(u){currentUser=u;role=u.role;u.lastLogin=nowLabel();audit('Login',u.username,'Acesso realizado');$('#login').classList.add('hidden');$('#app').classList.remove('hidden');setMetaForUser(u);
+  if(u.role==='colaborador'){state=ensureLiveState(u);$('#tabs').classList.add('hidden');view('collab');setCollabMode('entry');if(!u.profileComplete)openFirstAccess()}
+  else if(u.role==='gerente'){$('#tabs').classList.add('hidden');view('manager')}
+  else{$('#tabs').classList.remove('hidden');setPerformanceMode('dashboard');view('performance')}
+}
+$('#loginForm').addEventListener('submit',e=>{e.preventDefault();const name=$('#user').value.trim(),pass=$('#pass').value;const exact=userStore.find(u=>u.username.toLowerCase()===({colaborador:'dayana.sos',gerente:'marcos.rec'}[name.toLowerCase()]||name.toLowerCase()));if(exact&&!exact.active){$('#msg').textContent='Usuário inativo. Procure o setor de Performance.';return}const u=authenticate(name,pass);if(!u){$('#msg').textContent='Usuário ou senha inválidos.';return}if(!u.active){$('#msg').textContent='Usuário inativo.';return}$('#msg').textContent='';loginAsUser(u)});
+$('#logout').addEventListener('click',showLogin);
+
+function fillSelectUnits(companyEl,unitEl,allowBlank=false,blankLabel='Definir no primeiro acesso',includeInactive=false){
+  const company=companyEl.value,current=unitEl.value,opts=company?UNIT_CATALOG.filter(x=>x.company===company&&(includeInactive||x.active!==false)):[];
+  unitEl.innerHTML=(allowBlank?`<option value="">${blankLabel}</option>`:'')+opts.map(x=>`<option value="${x.unit}">${x.unit}${x.active===false?' (Inativa)':''}</option>`).join('');
+  if(opts.some(x=>x.unit===current))unitEl.value=current;else if(allowBlank)unitEl.value='';
+}
+function openFirstAccess(){if(!currentUser)return;$('#fn').value=currentUser.firstName||'';$('#ln').value=currentUser.lastName||'';$('#company').value=currentUser.company||'SOS';fillSelectUnits($('#company'),$('#unit'),false);if(currentUser.unit&&UNIT_CATALOG.some(x=>x.company===$('#company').value&&x.unit===currentUser.unit))$('#unit').value=currentUser.unit;updateFirstCaptain();$('#firstAccessError').textContent='';$('#first').classList.remove('hidden')}
+function updateFirstCaptain(){const m=managerFor($('#company').value,$('#unit').value);$('#captain').value=m?fullName(m):'Nenhum gerente ativo definido'}
+$('#company').addEventListener('change',()=>{fillSelectUnits($('#company'),$('#unit'),false);updateFirstCaptain()});$('#unit').addEventListener('change',updateFirstCaptain);
+$('#firstForm').addEventListener('submit',e=>{e.preventDefault();if(!currentUser)return;const fn=$('#fn').value.trim(),ln=$('#ln').value.trim(),company=$('#company').value,unit=$('#unit').value;if(!fn||!ln||!company||!unit){$('#firstAccessError').textContent='Preencha Nome, Sobrenome, Empresa e Unidade.';return}if(currentUser.role==='gerente'){const existing=managerFor(company,unit);if(existing&&existing.id!==currentUser.id){$('#firstAccessError').textContent=`A unidade já possui o gerente ${fullName(existing)}.`;return}}
+  const before=`${currentUser.company||'—'} / ${currentUser.unit||'—'}`;currentUser.firstName=fn;currentUser.lastName=ln;currentUser.company=company;currentUser.unit=unit;currentUser.profileComplete=true;state=ensureLiveState(currentUser);audit('Primeiro acesso',currentUser.username,`${before} → ${company} / ${unit}`);setMetaForUser(currentUser);$('#first').classList.add('hidden');render();
+});
+
+$$('.plus').forEach(b=>b.addEventListener('click',()=>{if(currentUser?.role!=='colaborador')return;state[b.dataset.k]++;render();pulse()}));
+$$('.minus').forEach(b=>b.addEventListener('click',()=>{if(currentUser?.role!=='colaborador')return;state[b.dataset.k]=Math.max(0,state[b.dataset.k]-1);render();pulse()}));
+$('#obs').addEventListener('input',e=>{if(currentUser?.role!=='colaborador')return;state.obs=e.target.value;pulse()});
+$('#clearDay').addEventListener('click',()=>{if(currentUser?.role!=='colaborador')return;if(!confirm('Zerar todas as contagens e a observação do dia atual?'))return;state.salao=state.online=state.cotacoes=state.vendas=0;state.obs='';audit('Rotina zerada',currentUser.username,'Dados do dia atual zerados');render();pulse()});
+
+function personalRows(period){if(!currentUser)return[];return rowsForWindow(userRows(currentUser),$('#personalPeriod').value==='month'?DEMO_TODAY.slice(0,7):DEMO_TODAY.slice(0,7),period)}
+function renderPersonalDashboard(){if(!currentUser||currentUser.role!=='colaborador'||!currentUser.profileComplete)return;const key=$('#personalIndicator').value,period=$('#personalPeriod').value,rows=rowsForWindow(userRows(currentUser),DEMO_TODAY.slice(0,7),period),label=indicatorNames[key];const total=sum(rows,key),byDate=aggregateByDate(rows,key).sort((a,b)=>a.n.localeCompare(b.n)),todayRow=rows.find(r=>r.date===DEMO_TODAY),today=todayRow?metricValue(todayRow,key):0,best=byDate.length?Math.max(...byDate.map(x=>x.v)):0,bestRow=byDate.find(x=>x.v===best);$('#personalIndicatorLabel').textContent=label;$('#personalChartLabel').textContent=label;$('#personalTotal').textContent=formatInt(total);$('#personalToday').textContent=formatInt(today);$('#personalAverage').textContent=format1(byDate.length?total/byDate.length:0);$('#personalBest').textContent=formatInt(best);$('#personalBestDate').textContent=bestRow?(bestRow.n===DEMO_TODAY?'Hoje':bestRow.n.slice(8,10)+'/'+bestRow.n.slice(5,7)):'—';bars($('#personalChart'),byDate.map(x=>({l:x.n===DEMO_TODAY?'Hoje':x.n.slice(8,10),v:x.v})));rank($('#personalBreakdown'),[{n:'Abordagem no Salão',s:'captação presencial',v:sum(rows,'salao')},{n:'Captação Online',s:'prospecção e carteira',v:sum(rows,'online')},{n:'Cotações',s:'oportunidades trabalhadas',v:sum(rows,'cotacoes')}]);$('#personalSalesTotal').textContent=formatInt(rows.reduce((a,r)=>a+r.vendas,0))}
+function setCollabMode(mode){const dash=mode==='dashboard';$('#collabEntry').classList.toggle('hidden',dash);$('#collabDashboard').classList.toggle('hidden',!dash);$$('.modebtn').forEach(b=>b.classList.toggle('active',b.dataset.collabMode===mode));if(dash){$('#kick').textContent='Relatório de missão';$('#title').textContent='Minha Dashboard';$('#subtitle').textContent='Sua produção, evolução e composição da rotina.';$('#history').classList.add('hidden');$('#clearDay').classList.add('hidden');renderPersonalDashboard()}else setTopForView('collab')}
+$$('.modebtn').forEach(b=>b.addEventListener('click',()=>setCollabMode(b.dataset.collabMode)));$('#personalIndicator').addEventListener('change',renderPersonalDashboard);$('#personalPeriod').addEventListener('change',renderPersonalDashboard);$('#showPersonalSales').addEventListener('change',e=>$('#personalSalesBox').classList.toggle('hidden',!e.target.checked));
+function renderHistory(){if(!currentUser)return;const rows=userRows(currentUser).filter(r=>r.date<=DEMO_TODAY).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);$('#historyBody').innerHTML=rows.map(r=>`<tr><td>${r.date.split('-').reverse().join('/')}</td><td>${r.salao}</td><td>${r.online}</td><td>${r.cotacoes}</td><td>${r.vendas}</td></tr>`).join('')||'<tr><td colspan="5">Sem registros.</td></tr>'}
+$('#history').addEventListener('click',()=>{renderHistory();$('#hist').classList.remove('hidden')});$('#closeHist').addEventListener('click',()=>$('#hist').classList.add('hidden'));$$('.tab').forEach(t=>t.addEventListener('click',()=>view(t.dataset.view)));
+
+function managerContext(){if(currentUser?.role==='gerente')return currentUser;if(currentUser?.role==='performance'){let company=$('#pfCompany')?.value,unit=$('#pfUnit')?.value;if(company&&company!=='all'&&unit&&unit!=='all'){const m=managerFor(company,unit);return m||{role:'gerente',company,unit}}return managerFor('SOS','Recife')||{role:'gerente',company:'SOS',unit:'Recife'}}return null}
+function rebuildManagerAgentOptions(){const c=managerContext();if(!c)return;const current=$('#mgrAgent').value;const historicalIds=unique(rowsWithLive().filter(r=>r.company===c.company&&r.unit===c.unit).map(r=>r.userId));const currentIds=collaboratorsFor(c.company,c.unit,{activeOnly:false}).map(u=>u.id);const ids=unique([...historicalIds,...currentIds]);const eligible=ids.map(getUser).filter(Boolean).sort((a,b)=>fullName(a).localeCompare(fullName(b),'pt-BR'));$('#mgrAgent').innerHTML='<option value="all">Todos os agentes</option>'+eligible.map(u=>`<option value="${u.id}">${fullName(u)}${u.active?'':' (Inativo)'}</option>`).join('');if(ids.includes(current))$('#mgrAgent').value=current;else $('#mgrAgent').value='all';setTopForView('manager')}
+function managerFilteredRows(){const c=managerContext();if(!c)return[];let rows=rowsWithLive().filter(r=>r.company===c.company&&r.unit===c.unit);rows=rowsForWindow(rows,$('#mgrMonth').value,$('#mgrPeriod').value);const agent=$('#mgrAgent').value;if(agent!=='all')rows=rows.filter(r=>r.userId===agent);return rows}
+function renderManagerActionTable(rows,key){const ids=unique(rows.map(r=>r.userId));if(key==='all'){$('#mgrActionHead').innerHTML='<tr><th>Agente</th><th>Salão</th><th>Online</th><th>Cotações</th><th>Total</th></tr>';$('#mgrActionBody').innerHTML=ids.map(id=>{const ar=rows.filter(r=>r.userId===id),u=getUser(id);return `<tr><td><b>${u?fullName(u):ar[0]?.agent||'—'}</b></td><td>${formatInt(sum(ar,'salao'))}</td><td>${formatInt(sum(ar,'online'))}</td><td>${formatInt(sum(ar,'cotacoes'))}</td><td><b>${formatInt(sum(ar,'all'))}</b></td></tr>`}).join('')}else{$('#mgrActionHead').innerHTML=`<tr><th>Agente</th><th>${indicatorShort[key]}</th><th>Participação</th></tr>`;const total=sum(rows,key)||1;$('#mgrActionBody').innerHTML=ids.map(id=>{const ar=rows.filter(r=>r.userId===id),u=getUser(id),v=sum(ar,key);return `<tr><td><b>${u?fullName(u):ar[0]?.agent||'—'}</b></td><td><b>${formatInt(v)}</b></td><td>${format1(v/total*100)}%</td></tr>`}).join('')}}
+function renderManager(){if(!$('#mgrMonth'))return;const c=managerContext();if(!c)return;const key=$('#mgrIndicator').value,rows=managerFilteredRows(),label=indicatorNames[key];$('#mgrUnitLabel').textContent=`${c.unit.toUpperCase()} · ${c.company} · ${getDateRangeLabel(rows)}`;const vals={salao:sum(rows,'salao'),online:sum(rows,'online'),cotacoes:sum(rows,'cotacoes'),all:sum(rows,'all')};$('#mgrStatSalao').textContent=formatInt(vals.salao);$('#mgrStatOnline').textContent=formatInt(vals.online);$('#mgrStatCotacoes').textContent=formatInt(vals.cotacoes);$('#mgrStatTotal').textContent=formatInt(vals[key]??vals.all);$('#mgrStatTotal').parentElement.querySelector('.l').textContent=key==='all'?'Ações totais':indicatorShort[key];['mgrStatSalao','mgrStatOnline','mgrStatCotacoes','mgrStatTotal'].forEach(id=>$('#'+id).parentElement.classList.remove('metric-focus'));const focus={salao:'mgrStatSalao',online:'mgrStatOnline',cotacoes:'mgrStatCotacoes',all:'mgrStatTotal'}[key];$('#'+focus).parentElement.classList.add('metric-focus');const byDate=aggregateByDate(rows,key).sort((a,b)=>a.n.localeCompare(b.n));bars($('#mgrchart'),byDate.map(x=>({l:x.n.slice(8,10),v:x.v})));const byAgent=unique(rows.map(r=>r.userId)).map(id=>{const ar=rows.filter(r=>r.userId===id),u=getUser(id);return {n:u?fullName(u):ar[0]?.agent||'—',s:label,v:sum(ar,key)}});rank($('#mgrrank'),byAgent);$('#mgrChartLabel').textContent=label;$('#mgrRankLabel').textContent=label;renderManagerActionTable(rows,key)}
+['mgrMonth','mgrAgent','mgrIndicator','mgrPeriod'].forEach(id=>$('#'+id).addEventListener('change',renderManager));$('#mgrApply').addEventListener('click',renderManager);
+
+function eligiblePerformanceUsers({activeOnly=true}={}){return userStore.filter(u=>u.role==='colaborador'&&u.profileComplete&&u.company&&u.unit&&(!activeOnly||u.active))}
+function rebuildPerformanceOptions(){const company=$('#pfCompany').value,currentUnit=$('#pfUnit').value,currentAgent=$('#pfAgent').value,us=UNIT_CATALOG.filter(u=>company==='all'||u.company===company);$('#pfUnit').innerHTML='<option value="all">Todas as unidades</option>'+us.map(u=>`<option value="${u.unit}">${u.unit}${effectiveUnitActive(u)?'':' (Inativa)'}</option>`).join('');if(us.some(u=>u.unit===currentUnit))$('#pfUnit').value=currentUnit;else $('#pfUnit').value='all';const selectedUnit=$('#pfUnit').value,agents=eligiblePerformanceUsers({activeOnly:false}).filter(u=>(company==='all'||u.company===company)&&(selectedUnit==='all'||u.unit===selectedUnit)).sort((a,b)=>fullName(a).localeCompare(fullName(b),'pt-BR'));$('#pfAgent').innerHTML='<option value="all">Todos os agentes</option>'+agents.map(u=>`<option value="${u.id}">${fullName(u)}${u.active?'':' (Inativo)'}</option>`).join('');if(agents.some(u=>u.id===currentAgent))$('#pfAgent').value=currentAgent;else $('#pfAgent').value='all'}
+function performanceFilteredRows(monthOverride=null){const month=monthOverride||$('#pfMonth').value,company=$('#pfCompany').value,unit=$('#pfUnit').value,agent=$('#pfAgent').value;return rowsWithLive().filter(r=>r.date.startsWith(month)&&(company==='all'||r.company===company)&&(unit==='all'||r.unit===unit)&&(agent==='all'||r.userId===agent))}
+function expectedRowsForFilter(month){const company=$('#pfCompany').value,unit=$('#pfUnit').value,agent=$('#pfAgent').value;const agents=eligiblePerformanceUsers().filter(u=>(company==='all'||u.company===company)&&(unit==='all'||u.unit===unit)&&(agent==='all'||u.id===agent));return agents.length*demoMonthDays(month)}
+function previousMonth(month){return month==='2026-10'?'2026-09':month==='2026-09'?'2026-08':'2026-08'}
+function renderPerformance(){if(!$('#pfCompany'))return;const key=$('#pfIndicator').value,month=$('#pfMonth').value,rows=performanceFilteredRows(),label=indicatorNames[key],uniqueUnits=unique(rows.map(r=>r.short)),uniqueAgents=unique(rows.map(r=>r.userId)),actions=sum(rows,key),expected=expectedRowsForFilter(month),fill=expected?Math.round(rows.length/expected*100):0;$('#pfStatUnits').textContent=formatInt(uniqueUnits.length);$('#pfStatAgents').textContent=formatInt(uniqueAgents.length);$('#pfStatActions').textContent=formatInt(actions);$('#pfStatFill').textContent=fill+'%';$('#pfStatActions').parentElement.querySelector('.l').textContent=key==='all'?'Ações operacionais':indicatorShort[key];const byUnit=unique(rows.map(r=>r.short)).map(s=>({n:s,l:s.split(' ')[0],v:sum(rows.filter(r=>r.short===s),key)}));bars($('#pfchart'),byUnit.map(x=>({l:x.l,v:x.v})));rank($('#unitrank'),byUnit.map(x=>({n:x.n,s:label,v:x.v})));const byAgent=unique(rows.map(r=>r.userId)).map(id=>{const ar=rows.filter(r=>r.userId===id),u=getUser(id);return {n:u?fullName(u):ar[0]?.agent||'—',s:ar[0]?.short||'',v:sum(ar,key)}});rank($('#agentrank'),byAgent.slice().sort((a,b)=>b.v-a.v).slice(0,8));$('#pfChartLabel').textContent=label;$('#pfUnitRankLabel').textContent=label;$('#pfAgentRankLabel').textContent=label;const prevMonth=previousMonth(month),prev=sum(performanceFilteredRows(prevMonth),key);$('#pfPrevLabel').textContent=monthLabel(prevMonth);$('#pfPrevValue').textContent=formatInt(prev);$('#pfCurrLabel').textContent=monthLabel(month);$('#pfCurrValue').textContent=formatInt(actions);$('#pfPeriodDelta').textContent=pctDelta(actions,prev)}
+$('#pfCompany').addEventListener('change',()=>{rebuildPerformanceOptions();renderPerformance()});$('#pfUnit').addEventListener('change',()=>{rebuildPerformanceOptions();renderPerformance()});['pfAgent','pfMonth','pfIndicator'].forEach(id=>$('#'+id).addEventListener('change',renderPerformance));$('#pfApply').addEventListener('click',renderPerformance);
+
+function setPerformanceMode(mode){
+  performanceMode=mode;
+  const users=mode==='users',org=mode==='org',dashboard=mode==='dashboard';
+  $('#performanceDashboard').classList.toggle('hidden',!dashboard);
+  $('#userManagement').classList.toggle('hidden',!users);
+  $('#orgManagement').classList.toggle('hidden',!org);
+  $$('[data-performance-mode]').forEach(b=>b.classList.toggle('active',b.dataset.performanceMode===mode));
+  if(currentUser?.role==='performance'){
+    setTopForView('performance');
+    if(users)renderUserManagement();
+    else if(org)renderOrgManagement();
+    else renderPerformance();
+  }
+}
+$$('[data-performance-mode]').forEach(b=>b.addEventListener('click',()=>setPerformanceMode(b.dataset.performanceMode)));
+
+function activeCompanies(){return COMPANY_CATALOG.filter(c=>c.active!==false)}
+function companyOptionMarkup({includeAll=false,includeInactive=false,blank=false}={}){
+  const arr=COMPANY_CATALOG.filter(c=>includeInactive||c.active!==false);
+  return (includeAll?'<option value="all">Todas as empresas</option>':'')+
+         (blank?'<option value="">Definir no primeiro acesso</option>':'')+
+         arr.map(c=>`<option value="${c.name}">${c.name}${c.active===false?' (Inativa)':''}</option>`).join('');
+}
+function preserveSelectOptions(el,markup,fallback=''){
+  if(!el)return;
+  const old=el.value;
+  el.innerHTML=markup;
+  if([...el.options].some(o=>o.value===old))el.value=old;
+  else if([...el.options].some(o=>o.value===fallback))el.value=fallback;
+}
+function syncCompanySelects(){
+  preserveSelectOptions($('#company'),companyOptionMarkup(),'SOS');
+  preserveSelectOptions($('#userCompany'),companyOptionMarkup({blank:true}),'');
+  preserveSelectOptions($('#pfCompany'),companyOptionMarkup({includeAll:true,includeInactive:true}),'all');
+  preserveSelectOptions($('#umCompany'),companyOptionMarkup({includeAll:true,includeInactive:true}),'all');
+  preserveSelectOptions($('#orgCompanyFilter'),companyOptionMarkup({includeAll:true,includeInactive:true}),'all');
+  preserveSelectOptions($('#orgUnitCompany'),companyOptionMarkup(),'');
+}
+
+function effectiveUnitActive(u){
+  return u.active!==false && companyRecord(u.company)?.active!==false;
+}
+function orgStatusMarkup(active,labelActive='Ativa',labelInactive='Inativa'){
+  return active?`<span class="org-status active">${labelActive}</span>`:`<span class="org-status inactive">${labelInactive}</span>`;
+}
+function renderOrgManagement(){
+  if(!$('#companyTableBody'))return;
+  syncCompanySelects();
+  const filterCompany=$('#orgCompanyFilter')?.value||'all', status=$('#orgStatusFilter')?.value||'all';
+
+  const activeCompaniesCount=COMPANY_CATALOG.filter(c=>c.active!==false).length;
+  const activeUnits=UNIT_CATALOG.filter(effectiveUnitActive);
+  $('#orgCompanyCount').textContent=activeCompaniesCount;
+  $('#orgUnitCount').textContent=activeUnits.length;
+  $('#orgLinkedCount').textContent=userStore.filter(u=>u.role==='colaborador'&&u.active&&u.profileComplete&&u.company&&u.unit).length;
+  $('#orgNoManagerCount').textContent=activeUnits.filter(u=>!managerFor(u.company,u.unit)).length;
+
+  let companies=COMPANY_CATALOG.filter(c=>{
+    if(filterCompany!=='all'&&c.name!==filterCompany)return false;
+    if(status==='active'&&c.active===false)return false;
+    if(status==='inactive'&&c.active!==false)return false;
+    return true;
+  });
+  $('#companyTableBody').innerHTML=companies.map(c=>{
+    const units=UNIT_CATALOG.filter(u=>u.company===c.name);
+    const linked=userStore.filter(u=>u.role==='colaborador'&&u.company===c.name).length;
+    return `<tr data-inactive="${c.active===false?1:0}">
+      <td><b>${c.name}</b></td>
+      <td>${units.length}</td>
+      <td>${linked}</td>
+      <td>${orgStatusMarkup(c.active!==false)}</td>
+      <td><div class="org-actions">
+        <button class="btn" data-edit-company="${c.name}">Editar</button>
+        <button class="btn ghost" data-toggle-company="${c.name}">${c.active===false?'Ativar':'Inativar'}</button>
+      </div></td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="5">Nenhuma empresa encontrada.</td></tr>';
+
+  let units=UNIT_CATALOG.filter(u=>{
+    if(filterCompany!=='all'&&u.company!==filterCompany)return false;
+    const active=effectiveUnitActive(u);
+    if(status==='active'&&!active)return false;
+    if(status==='inactive'&&active)return false;
+    return true;
+  }).sort((a,b)=>`${a.company} ${a.unit}`.localeCompare(`${b.company} ${b.unit}`,'pt-BR'));
+
+  $('#unitTableBody').innerHTML=units.map(u=>{
+    const m=managerFor(u.company,u.unit),linked=collaboratorsFor(u.company,u.unit,{activeOnly:false}).length;
+    const companyActive=companyRecord(u.company)?.active!==false;
+    const statusCell=!companyActive?'<span class="org-status warning">Empresa inativa</span>':orgStatusMarkup(u.active!==false);
+    return `<tr data-inactive="${effectiveUnitActive(u)?0:1}">
+      <td>${u.company}</td>
+      <td><b>${u.unit}</b></td>
+      <td>${u.short||'—'}</td>
+      <td>${m?fullName(m):'<span class="muted">Não definido</span>'}</td>
+      <td>${linked}</td>
+      <td>${statusCell}</td>
+      <td><div class="org-actions">
+        <button class="btn" data-edit-unit="${u.id}">Editar</button>
+        <button class="btn ghost" data-toggle-unit="${u.id}">${u.active===false?'Ativar':'Inativar'}</button>
+      </div></td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="7">Nenhuma unidade encontrada.</td></tr>';
+}
+
+function openCompanyEditor(name=''){
+  const c=name?companyRecord(name):null;
+  $('#companyOriginalName').value=c?.name||'';
+  $('#companyModalKicker').textContent=c?'Editar empresa':'Nova empresa';
+  $('#companyModalTitle').textContent=c?'Editar empresa':'Cadastrar empresa';
+  $('#companyNameInput').value=c?.name||'';
+  $('#companyStatusInput').value=c?.active===false?'inactive':'active';
+  $('#companyFormError').textContent='';
+  $('#companyModal').classList.remove('hidden');
+}
+function openUnitEditor(id=''){
+  syncCompanySelects();
+  const u=id?getUnitById(id):null;
+  $('#unitEditId').value=u?.id||'';
+  $('#unitModalKicker').textContent=u?'Editar unidade':'Nova unidade';
+  $('#unitModalTitle').textContent=u?'Editar unidade/loja':'Cadastrar unidade/loja';
+  if(u&&[...$('#orgUnitCompany').options].some(o=>o.value===u.company))$('#orgUnitCompany').value=u.company;
+  else if(!$('#orgUnitCompany').value&&activeCompanies()[0])$('#orgUnitCompany').value=activeCompanies()[0].name;
+  $('#orgUnitName').value=u?.unit||'';
+  $('#orgUnitShort').value=u?.short||'';
+  $('#orgUnitStatus').value=u?.active===false?'inactive':'active';
+  rebuildOrgManagerOptions(u?.managerId||managerFor(u?.company,u?.unit)?.id||'');
+  $('#unitFormError').textContent='';
+  $('#unitModal').classList.remove('hidden');
+}
+function rebuildOrgManagerOptions(selected=''){
+  const el=$('#orgUnitManager'); if(!el)return;
+  const managers=userStore.filter(u=>u.role==='gerente'&&u.active).sort((a,b)=>fullName(a).localeCompare(fullName(b),'pt-BR'));
+  el.innerHTML='<option value="">Sem gerente definido</option>'+managers.map(m=>`<option value="${m.id}">${fullName(m)}${m.company&&m.unit?` · ${m.company} / ${m.unit}`:''}</option>`).join('');
+  if(managers.some(m=>m.id===selected))el.value=selected;
+}
+function cascadeCompanyRename(oldName,newName){
+  UNIT_CATALOG.filter(u=>u.company===oldName).forEach(u=>u.company=newName);
+  userStore.filter(u=>u.company===oldName).forEach(u=>u.company=newName);
+  if(typeof BASE_ROWS!=='undefined')BASE_ROWS.filter(r=>r.company===oldName).forEach(r=>r.company=newName);
+}
+function cascadeUnitRename(oldCompany,oldUnit,newCompany,newUnit,newShort){
+  userStore.filter(u=>u.company===oldCompany&&u.unit===oldUnit).forEach(u=>{u.company=newCompany;u.unit=newUnit});
+  if(typeof BASE_ROWS!=='undefined')BASE_ROWS.filter(r=>r.company===oldCompany&&r.unit===oldUnit).forEach(r=>{r.company=newCompany;r.unit=newUnit;r.short=newShort});
+}
+function assignManagerToUnit(unitRec,managerId,previousManager){
+  const selected=managerId?getUser(managerId):null;
+  if(previousManager&&previousManager.id!==managerId){
+    previousManager.company='';previousManager.unit='';previousManager.profileComplete=false;
+  }
+  // If the selected manager was responsible for another unit, release that previous link.
+  if(selected){
+    UNIT_CATALOG.forEach(u=>{if(u.id!==unitRec.id&&u.managerId===selected.id)u.managerId=''});
+    selected.role='gerente';
+    selected.company=unitRec.company;
+    selected.unit=unitRec.unit;
+    selected.profileComplete=true;
+    unitRec.managerId=selected.id;
+  }else{
+    unitRec.managerId='';
+  }
+}
+function refreshOrganization(){
+  syncCompanySelects();
+  rebuildPerformanceOptions();
+  rebuildUserMgmtUnits();
+  rebuildManagerAgentOptions();
+  renderPerformance();
+  renderManager();
+  renderUserManagement();
+  renderOrgManagement();
+  if(currentUser)setMetaForUser(currentUser);
+}
+
+$('#newCompanyBtn').addEventListener('click',()=>openCompanyEditor());
+$('#newUnitBtn').addEventListener('click',()=>openUnitEditor());
+$('#cancelCompanyEdit').addEventListener('click',()=>$('#companyModal').classList.add('hidden'));
+$('#cancelUnitEdit').addEventListener('click',()=>$('#unitModal').classList.add('hidden'));
+$('#orgCompanyFilter').addEventListener('change',renderOrgManagement);
+$('#orgStatusFilter').addEventListener('change',renderOrgManagement);
+$('#orgClearFilters').addEventListener('click',()=>{$('#orgCompanyFilter').value='all';$('#orgStatusFilter').value='all';renderOrgManagement()});
+
+$('#companyTableBody').addEventListener('click',e=>{
+  const edit=e.target.closest('[data-edit-company]'),toggle=e.target.closest('[data-toggle-company]');
+  if(edit){openCompanyEditor(edit.dataset.editCompany);return}
+  if(toggle){
+    const c=companyRecord(toggle.dataset.toggleCompany);if(!c)return;
+    c.active=!c.active;
+    audit(c.active?'Empresa ativada':'Empresa inativada',c.name,`${UNIT_CATALOG.filter(u=>u.company===c.name).length} unidade(s) vinculada(s)`);
+    refreshOrganization();
+  }
+});
+$('#unitTableBody').addEventListener('click',e=>{
+  const edit=e.target.closest('[data-edit-unit]'),toggle=e.target.closest('[data-toggle-unit]');
+  if(edit){openUnitEditor(edit.dataset.editUnit);return}
+  if(toggle){
+    const u=getUnitById(toggle.dataset.toggleUnit);if(!u)return;
+    u.active=!u.active;
+    audit(u.active?'Unidade ativada':'Unidade inativada',`${u.company} / ${u.unit}`,u.short||'');
+    refreshOrganization();
+  }
+});
+
+$('#companyForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const old=$('#companyOriginalName').value.trim(),name=$('#companyNameInput').value.trim(),active=$('#companyStatusInput').value==='active';
+  if(!name){$('#companyFormError').textContent='Informe o nome da empresa.';return}
+  const duplicate=COMPANY_CATALOG.find(c=>c.name.toLowerCase()===name.toLowerCase()&&c.name!==old);
+  if(duplicate){$('#companyFormError').textContent='Já existe uma empresa com esse nome.';return}
+  if(old){
+    const c=companyRecord(old);if(!c)return;
+    if(old!==name)cascadeCompanyRename(old,name);
+    c.name=name;c.active=active;
+    audit('Empresa editada',name,old!==name?`${old} → ${name}`:`Status: ${active?'Ativa':'Inativa'}`);
+  }else{
+    COMPANY_CATALOG.push({name,active});
+    audit('Empresa criada',name,`Status: ${active?'Ativa':'Inativa'}`);
+  }
+  $('#companyModal').classList.add('hidden');
+  refreshOrganization();
+});
+
+$('#unitForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const id=$('#unitEditId').value,company=$('#orgUnitCompany').value,unitName=$('#orgUnitName').value.trim(),short=$('#orgUnitShort').value.trim().toUpperCase(),active=$('#orgUnitStatus').value==='active',managerId=$('#orgUnitManager').value;
+  if(!company||!unitName){$('#unitFormError').textContent='Informe Empresa e Nome da unidade/loja.';return}
+  if(!companyRecord(company)||companyRecord(company).active===false){$('#unitFormError').textContent='Selecione uma empresa ativa.';return}
+  const duplicate=UNIT_CATALOG.find(u=>u.id!==id&&u.company===company&&u.unit.toLowerCase()===unitName.toLowerCase());
+  if(duplicate){$('#unitFormError').textContent='Essa unidade já existe nessa empresa.';return}
+  if(id){
+    const u=getUnitById(id);if(!u)return;
+    const oldCompany=u.company,oldUnit=u.unit,oldManager=managerFor(oldCompany,oldUnit);
+    u.company=company;u.unit=unitName;u.short=short||unitName.toUpperCase();u.active=active;
+    cascadeUnitRename(oldCompany,oldUnit,company,unitName,u.short);
+    assignManagerToUnit(u,managerId,oldManager);
+    audit('Unidade editada',`${company} / ${unitName}`,`${oldCompany} / ${oldUnit} → ${company} / ${unitName}`);
+  }else{
+    const u={id:nextOrgId('un'),company,unit:unitName,short:short||unitName.toUpperCase(),active,managerId:''};
+    UNIT_CATALOG.push(u);
+    assignManagerToUnit(u,managerId,null);
+    audit('Unidade criada',`${company} / ${unitName}`,u.short);
+  }
+  $('#unitModal').classList.add('hidden');
+  refreshOrganization();
+});
+
+function rebuildUserMgmtUnits(){const company=$('#umCompany').value,current=$('#umUnit').value,opts=UNIT_CATALOG.filter(x=>company==='all'||x.company===company);$('#umUnit').innerHTML='<option value="all">Todas as unidades</option>'+opts.map(x=>`<option value="${x.unit}">${x.unit}${effectiveUnitActive(x)?'':' (Inativa)'}</option>`).join('');if(opts.some(x=>x.unit===current))$('#umUnit').value=current;else $('#umUnit').value='all'}
+function filteredUsers(){const q=$('#umSearch').value.trim().toLowerCase(),r=$('#umRole').value,s=$('#umStatus').value,c=$('#umCompany').value,u=$('#umUnit').value;return userStore.filter(x=>{const text=`${x.username} ${fullName(x)}`.toLowerCase();if(q&&!text.includes(q))return false;if(r!=='all'&&x.role!==r)return false;if(s==='active'&&!x.active)return false;if(s==='inactive'&&x.active)return false;if(s==='pending'&&x.profileComplete)return false;if(c!=='all'&&x.company!==c)return false;if(u!=='all'&&x.unit!==u)return false;return true})}
+function roleLabel(r){return r==='performance'?'Performance':r==='gerente'?'Gerente':'Colaborador'}
+function statusMarkup(u){if(!u.active)return '<span class="status-badge inactive">Inativo</span>';if(!u.profileComplete)return '<span class="status-badge pending">1º acesso</span>';return '<span class="status-badge active">Ativo</span>'}
+function renderUserManagement(){if(!$('#userTableBody'))return;const rows=filteredUsers();$('#umActiveCount').textContent=userStore.filter(u=>u.active).length;$('#umCollabCount').textContent=userStore.filter(u=>u.active&&u.role==='colaborador').length;$('#umManagerCount').textContent=userStore.filter(u=>u.active&&u.role==='gerente').length;$('#umPendingCount').textContent=userStore.filter(u=>u.active&&!u.profileComplete).length;$('#userTableBody').innerHTML=rows.map(u=>{const m=u.role==='colaborador'&&u.company&&u.unit?managerFor(u.company,u.unit):null;return `<tr data-inactive="${u.active?0:1}"><td><b>${u.username}</b></td><td>${fullName(u)}</td><td>${roleLabel(u.role)}</td><td>${u.company||'—'}</td><td>${u.unit||'—'}</td><td>${u.role==='colaborador'?(m?fullName(m):'Não definido'):'—'}</td><td>${statusMarkup(u)}</td><td>${u.lastLogin||'—'}</td><td><div class="user-actions"><button class="btn" data-edit-user="${u.id}">Editar</button><button class="btn ghost" data-toggle-user="${u.id}">${u.active?'Inativar':'Ativar'}</button></div></td></tr>`}).join('')||'<tr><td colspan="9">Nenhum usuário encontrado.</td></tr>';renderAudit()}
+function renderAudit(){const el=$('#userAuditList');if(!el)return;el.innerHTML=auditLog.slice(0,10).map(a=>`<div class="audit-row"><div class="muted">${a.time}</div><div><b>${a.action}</b><br><span class="muted">${a.target}</span></div><div>${a.details||'—'}</div><div class="muted">por ${a.by}</div></div>`).join('')||'<div class="sub" style="padding:10px 0">Nenhuma alteração de usuário nesta sessão.</div>'}
+
+['umSearch','umRole','umStatus','umUnit'].forEach(id=>$('#'+id).addEventListener(id==='umSearch'?'input':'change',renderUserManagement));$('#umCompany').addEventListener('change',()=>{rebuildUserMgmtUnits();renderUserManagement()});$('#umClearFilters').addEventListener('click',()=>{$('#umSearch').value='';$('#umRole').value=$('#umStatus').value=$('#umCompany').value='all';rebuildUserMgmtUnits();$('#umUnit').value='all';renderUserManagement()});
+
+// Importação em lote de usuários
+let pendingUserImport=[];
+
+function normalizeImportHeader(v){
+  return String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
+}
+function importEsc(v){
+  return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function resetUserImport(){
+  pendingUserImport=[];
+  $('#importUsersFile').value='';
+  $('#importFileName').textContent='Nenhum arquivo selecionado.';
+  $('#importReadCount').textContent='0';
+  $('#importReadyCount').textContent='0';
+  $('#importSkipCount').textContent='0';
+  $('#importPreviewBody').innerHTML='<tr><td colspan="5">Selecione uma planilha para visualizar os usuários.</td></tr>';
+  $('#importUsersError').textContent='';
+  $('#confirmImportUsersBtn').disabled=true;
+}
+function openUserImport(){
+  resetUserImport();
+  $('#importUsersModal').classList.remove('hidden');
+}
+function downloadUserTemplate(){
+  const csv='\ufeffusuario;senha\r\nagente.exemplo;Senha123\r\noutro.usuario;Senha456\r\n';
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='modelo_importacao_usuarios.csv';
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),300);
+}
+function detectDelimiter(line){
+  const semi=(line.match(/;/g)||[]).length, comma=(line.match(/,/g)||[]).length, tab=(line.match(/\t/g)||[]).length;
+  return tab>semi&&tab>comma?'\t':semi>=comma?';':',';
+}
+function parseDelimited(text){
+  const lines=String(text||'').replace(/^\uFEFF/,'').split(/\r?\n/).filter(x=>x.trim().length);
+  if(!lines.length)return [];
+  const delim=detectDelimiter(lines[0]);
+  function parseLine(line){
+    const out=[];let cur='',quoted=false;
+    for(let i=0;i<line.length;i++){
+      const c=line[i];
+      if(c==='"'){
+        if(quoted&&line[i+1]==='"'){cur+='"';i++}
+        else quoted=!quoted;
+      }else if(c===delim&&!quoted){out.push(cur);cur=''}
+      else cur+=c;
+    }
+    out.push(cur);return out;
+  }
+  const rows=lines.map(parseLine);
+  const headers=rows.shift()||[];
+  return rows.map(r=>Object.fromEntries(headers.map((h,i)=>[h,r[i]??''])));
+}
+function rowsFromWorkbook(arrayBuffer){
+  if(typeof XLSX==='undefined')throw new Error('Leitor de Excel indisponível. Salve a planilha como CSV ou verifique sua conexão com a internet.');
+  const wb=XLSX.read(arrayBuffer,{type:'array',raw:false});
+  const ws=wb.Sheets[wb.SheetNames[0]];
+  return XLSX.utils.sheet_to_json(ws,{defval:'',raw:false});
+}
+function mapImportRows(rawRows){
+  if(!rawRows.length)return [];
+  const originalHeaders=Object.keys(rawRows[0]||{});
+  const headerMap=new Map(originalHeaders.map(h=>[normalizeImportHeader(h),h]));
+  const userHeader=headerMap.get('usuario')||headerMap.get('user')||headerMap.get('username')||headerMap.get('login');
+  const passHeader=headerMap.get('senha')||headerMap.get('password')||headerMap.get('pass');
+  if(!userHeader||!passHeader)throw new Error('A planilha precisa conter as colunas "usuario" e "senha".');
+
+  const fileSeen=new Set();
+  return rawRows.map((r,i)=>{
+    const username=String(r[userHeader]??'').trim();
+    const password=String(r[passHeader]??'').trim();
+    let status='ready',reason='Pronto para importar';
+    const key=username.toLowerCase();
+
+    if(!username||!password){status='error';reason='Usuário ou senha em branco.'}
+    else if(!/^[A-Za-z0-9._-]{3,80}$/.test(username)){status='error';reason='Usuário deve usar apenas letras, números, ponto, hífen ou underline.'}
+    else if(fileSeen.has(key)){status='skip';reason='Usuário duplicado dentro da planilha.'}
+    else if(userStore.some(u=>u.username.toLowerCase()===key)){status='skip';reason='Usuário já cadastrado no sistema.'}
+
+    if(username)fileSeen.add(key);
+    return {line:i+2,username,password,status,reason};
+  });
+}
+function renderUserImportPreview(){
+  const rows=pendingUserImport,ready=rows.filter(x=>x.status==='ready').length,skip=rows.length-ready;
+  $('#importReadCount').textContent=String(rows.length);
+  $('#importReadyCount').textContent=String(ready);
+  $('#importSkipCount').textContent=String(skip);
+  $('#confirmImportUsersBtn').disabled=ready===0;
+  $('#importPreviewBody').innerHTML=rows.length?rows.map(x=>`<tr>
+    <td>${x.line}</td>
+    <td><b>${importEsc(x.username||'—')}</b></td>
+    <td>${x.password?'••••••••':'—'}</td>
+    <td><span class="import-status ${x.status==='ready'?'ok':x.status==='skip'?'skip':'err'}">${x.status==='ready'?'IMPORTAR':x.status==='skip'?'IGNORAR':'ERRO'}</span></td>
+    <td>${importEsc(x.reason)}</td>
+  </tr>`).join(''):'<tr><td colspan="5">Nenhum registro encontrado.</td></tr>';
+}
+async function handleUserImportFile(file){
+  resetUserImport();
+  if(!file)return;
+  $('#importFileName').textContent=file.name;
+  $('#importUsersError').textContent='Lendo planilha...';
+  try{
+    let rawRows=[];
+    const lower=file.name.toLowerCase();
+    if(lower.endsWith('.csv')){
+      rawRows=parseDelimited(await file.text());
+    }else if(lower.endsWith('.xlsx')||lower.endsWith('.xls')){
+      rawRows=rowsFromWorkbook(await file.arrayBuffer());
+    }else{
+      throw new Error('Formato não suportado. Use XLSX, XLS ou CSV.');
+    }
+    pendingUserImport=mapImportRows(rawRows);
+    renderUserImportPreview();
+    $('#importUsersError').textContent=pendingUserImport.length?'':'A planilha está vazia.';
+  }catch(err){
+    pendingUserImport=[];
+    renderUserImportPreview();
+    $('#importUsersError').textContent=err?.message||'Não foi possível ler a planilha.';
+  }
+}
+function confirmUserImport(){
+  const ready=pendingUserImport.filter(x=>x.status==='ready');
+  if(!ready.length)return;
+  ready.forEach(x=>{
+    userStore.push({
+      id:nextId(),
+      username:x.username,
+      password:x.password,
+      firstName:'',
+      lastName:'',
+      role:'colaborador',
+      company:'',
+      unit:'',
+      active:true,
+      profileComplete:false,
+      lastLogin:null
+    });
+  });
+  audit('Importação de usuários','Planilha',`${ready.length} usuário(s) criado(s) com primeiro acesso pendente.`);
+  $('#importUsersModal').classList.add('hidden');
+  refreshAfterUserChange();
+  alert(`${ready.length} usuário(s) importado(s) com sucesso.`);
+}
+
+$('#importUsersBtn').addEventListener('click',openUserImport);
+$('#downloadUserTemplateBtn').addEventListener('click',downloadUserTemplate);
+$('#chooseImportFileBtn').addEventListener('click',()=>$('#importUsersFile').click());
+$('#importUsersFile').addEventListener('change',e=>handleUserImportFile(e.target.files?.[0]));
+$('#cancelImportUsersBtn').addEventListener('click',()=>$('#importUsersModal').classList.add('hidden'));
+$('#confirmImportUsersBtn').addEventListener('click',confirmUserImport);
+
+
+function fillUserEditorUnits(){fillSelectUnits($('#userCompany'),$('#userUnit'),true);updateUserCaptainPreview()}
+function updateUserCaptainPreview(){const role=$('#userRole').value,company=$('#userCompany').value,unit=$('#userUnit').value;if(role==='performance'){$('#userCaptainPreview').value='Acesso global';return}if(role==='gerente'){$('#userCaptainPreview').value=unit?`Será o gerente de ${unit}`:'Defina uma unidade';return}const m=managerFor(company,unit);$('#userCaptainPreview').value=m?fullName(m):'Nenhum gerente ativo definido'}
+function syncUserRoleFields(){const role=$('#userRole').value;if(role==='performance'){$('#userCompany').value='';fillUserEditorUnits();$('#userProfileComplete').checked=true}else updateUserCaptainPreview()}
+function openUserEditor(user=null){editingUserId=user?.id||null;$('#editUserId').value=editingUserId||'';$('#userModalKicker').textContent=user?'Editar cadastro':'Novo cadastro';$('#userModalTitle').textContent=user?'Editar usuário':'Cadastrar usuário';$('#userLogin').value=user?.username||'';$('#userPassword').value='';$('#passwordHint').textContent=user?'Deixe em branco para manter a senha atual.':'Obrigatória para novo usuário.';$('#userFirstName').value=user?.firstName||'';$('#userLastName').value=user?.lastName||'';$('#userRole').value=user?.role||'colaborador';$('#userStatus').value=user?.active===false?'inactive':'active';$('#userCompany').value=user?.company||'';fillUserEditorUnits();if(user?.unit&&[...$('#userUnit').options].some(o=>o.value===user.unit))$('#userUnit').value=user.unit;$('#userProfileComplete').checked=user?.profileComplete??false;updateUserCaptainPreview();$('#userFormError').textContent='';$('#userModal').classList.remove('hidden')}
+$('#newUserBtn').addEventListener('click',()=>openUserEditor());$('#cancelUserEdit').addEventListener('click',()=>$('#userModal').classList.add('hidden'));$('#userCompany').addEventListener('change',fillUserEditorUnits);$('#userUnit').addEventListener('change',updateUserCaptainPreview);$('#userRole').addEventListener('change',syncUserRoleFields);
+$('#userTableBody').addEventListener('click',e=>{const edit=e.target.closest('[data-edit-user]'),toggle=e.target.closest('[data-toggle-user]');if(edit){openUserEditor(getUser(edit.dataset.editUser));return}if(toggle){const u=getUser(toggle.dataset.toggleUser);if(!u)return;if(currentUser&&u.id===currentUser.id){alert('Não é possível inativar o usuário que está logado.');return}u.active=!u.active;audit(u.active?'Usuário ativado':'Usuário inativado',u.username,`${fullName(u)} · ${u.company||'sem empresa'} / ${u.unit||'sem unidade'}`);refreshAfterUserChange();}});
+function validateUserForm(existing){const username=$('#userLogin').value.trim(),password=$('#userPassword').value,first=$('#userFirstName').value.trim(),last=$('#userLastName').value.trim(),r=$('#userRole').value,active=$('#userStatus').value==='active',complete=$('#userProfileComplete').checked,company=r==='performance'?'':$('#userCompany').value,unit=r==='performance'?'':$('#userUnit').value;if(!username)return 'Informe um usuário.';if(userStore.some(u=>u.id!==existing?.id&&u.username.toLowerCase()===username.toLowerCase()))return 'Esse usuário já existe.';if(!existing&&!password)return 'Defina uma senha para o novo usuário.';if(complete&&r!=='performance'&&(!first||!last||!company||!unit))return 'Cadastro concluído exige Nome, Sobrenome, Empresa e Unidade.';if(r==='gerente'&&(!company||!unit))return 'Gerente precisa estar vinculado a uma Empresa e Unidade.';if(r==='gerente'&&active){const other=managerFor(company,unit);if(other&&other.id!==existing?.id)return `A unidade ${unit} já possui o gerente ${fullName(other)}.`}return null}
+$('#userForm').addEventListener('submit',e=>{e.preventDefault();const existing=editingUserId?getUser(editingUserId):null,err=validateUserForm(existing);if(err){$('#userFormError').textContent=err;return}const old=existing?{...existing}:null;const target=existing||{id:nextId(),lastLogin:null};target.username=$('#userLogin').value.trim();if($('#userPassword').value)target.password=$('#userPassword').value;target.firstName=$('#userFirstName').value.trim();target.lastName=$('#userLastName').value.trim();target.role=$('#userRole').value;target.active=$('#userStatus').value==='active';target.profileComplete=$('#userProfileComplete').checked;target.company=target.role==='performance'?'':$('#userCompany').value;target.unit=target.role==='performance'||!target.company?'':$('#userUnit').value;if(!existing)userStore.push(target);if(currentUser&&currentUser.id===target.id){currentUser=target;role=target.role;setMetaForUser(target)}const details=old?`${old.role}/${old.company||'—'}/${old.unit||'—'} → ${target.role}/${target.company||'—'}/${target.unit||'—'}`:`${target.role} · ${target.company||'sem empresa'} / ${target.unit||'sem unidade'}`;audit(existing?'Usuário editado':'Usuário criado',target.username,details);$('#userModal').classList.add('hidden');refreshAfterUserChange()});
+function refreshAfterUserChange(){syncCompanySelects();rebuildPerformanceOptions();rebuildUserMgmtUnits();rebuildManagerAgentOptions();renderPerformance();renderManager();renderUserManagement();renderOrgManagement();if(currentUser)setMetaForUser(currentUser)}
+
+function downloadExcel(rows,filename){const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');const table=`<table><thead><tr><th>Data</th><th>Empresa</th><th>Unidade</th><th>Agente</th><th>Abordagem no Salão</th><th>Captação Online</th><th>Cotações</th><th>Vendas</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.date)}</td><td>${esc(r.company)}</td><td>${esc(r.unit)}</td><td>${esc(r.agent)}</td><td>${r.salao}</td><td>${r.online}</td><td>${r.cotacoes}</td><td>${r.vendas}</td></tr>`).join('')}</tbody></table>`;const blob=new Blob(['\ufeff<html><meta charset="utf-8"><body>'+table+'</body></html>'],{type:'application/vnd.ms-excel;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),200)}
+$('#export').addEventListener('click',()=>{if(!currentUser)return;if(!$('#collab').classList.contains('hidden'))downloadExcel(userRows(currentUser).filter(r=>r.date===DEMO_TODAY),'rotina_do_sucesso_colaborador.xls');else if(!$('#manager').classList.contains('hidden'))downloadExcel(managerFilteredRows(),'rotina_do_sucesso_gerente.xls');else downloadExcel(performanceFilteredRows(),'rotina_do_sucesso_performance.xls')});
+
+// Inicialização
+syncCompanySelects();fillSelectUnits($('#company'),$('#unit'),false);updateFirstCaptain();rebuildPerformanceOptions();rebuildUserMgmtUnits();renderPerformance();renderUserManagement();renderOrgManagement();
+
+/* ===== V8 — atmosfera visual (não altera regras de negócio) ===== */
+(function(){try{
+  var access=document.getElementById('access');
+  /* contador "tick" só quando o valor realmente muda */
+  var SEL='.count,.summary,.stat .v,.personal-stat .pv';
+  function tick(el){var v=el.textContent;if(el.dataset.p===undefined){el.dataset.p=v;return}if(el.dataset.p!==v){el.dataset.p=v;el.classList.remove('tick');void el.offsetWidth;el.classList.add('tick')}}
+  new MutationObserver(function(ms){ms.forEach(function(m){var t=m.target.nodeType===3?m.target.parentElement:m.target;if(t&&t.matches&&t.matches(SEL))tick(t)})}).observe(document.getElementById('app'),{subtree:true,childList:true,characterData:true});
+  /* acesso autorizado ao entrar no app */
+  var app=document.getElementById('app');
+  new MutationObserver(function(){if(!app.classList.contains('hidden')&&!app.dataset.in){app.dataset.in='1';var n=(document.getElementById('uname').textContent||'').trim().split(' ')[0];document.getElementById('accSub').textContent=n?'Bem-vindo, agente '+n+'.':'';access.classList.remove('on');void access.offsetWidth;access.classList.add('on')}else if(app.classList.contains('hidden')){delete app.dataset.in}}).observe(app,{attributes:true,attributeFilter:['class']});
+  access.addEventListener('animationend',function(e){if(e.target===access)access.classList.remove('on')});
+  /* credencial recusada: a caixa balança uma vez */
+  var msg=document.getElementById('msg'),box=document.getElementById('loginForm');
+  new MutationObserver(function(){if(msg.textContent.trim()){box.classList.remove('deny');void box.offsetWidth;box.classList.add('deny')}}).observe(msg,{childList:true,characterData:true,subtree:true});
+}catch(e){console.warn('V8 visual layer:',e)}})();
+</script>
+</body></html>
