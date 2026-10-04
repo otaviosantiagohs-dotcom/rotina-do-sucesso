@@ -1,0 +1,14 @@
+ROTINA DO SUCESSO — V8.8.1 PERFIS ISOLADOS
+
+Correção:
+- remove os antigos botões Performance / Gerente / Colaborador que eram resquício do protótipo;
+- cada login agora só pode abrir a interface correspondente ao próprio perfil;
+- Performance não consegue entrar na tela de Colaborador;
+- Gerente não consegue entrar na tela de Performance ou Colaborador;
+- Colaborador continua restrito à própria rotina e dashboard pessoal;
+- proteção também existe na função de navegação, não apenas visualmente.
+
+Não precisa executar SQL novo.
+
+PUBLICAÇÃO:
+Substitua somente index.html no GitHub e faça commit.

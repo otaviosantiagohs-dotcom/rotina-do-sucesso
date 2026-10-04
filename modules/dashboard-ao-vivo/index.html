@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#050608" />
+<title>Rotina do Sucesso — Dashboard Ao Vivo</title>
+<style>
+  :root{
+    --bg:#090a0c;
+    --panel:#111318;
+    --panel-2:#151820;
+    --panel-3:#0d0f13;
+    --border:#252a33;
+    --text:#f3f4f6;
+    --muted:#9097a3;
+    --soft:#c7cbd1;
+    --red:#e23b3b;
+    --green:#5bc47b;
+    --amber:#e4b955;
+    --blue:#6ea8ff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  body{min-height:100vh;overflow:hidden}
+  button{font:inherit}
+  .app{
+    height:100vh;
+    min-height:620px;
+    padding:18px;
+    display:grid;
+    grid-template-rows:auto auto auto 1fr;
+    gap:14px;
+    background:
+      radial-gradient(circle at 82% 5%,rgba(226,59,59,.08),transparent 24%),
+      linear-gradient(180deg,#0b0d10 0%,#090a0c 100%);
+  }
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    min-width:0;
+  }
+  .brand{display:flex;align-items:center;gap:12px;min-width:0}
+  .mark{
+    width:42px;height:42px;border:1px solid #3c414c;border-radius:12px;
+    display:grid;place-items:center;background:#101217;font-weight:800;letter-spacing:.04em
+  }
+  .title-wrap{min-width:0}
+  .eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:var(--muted)}
+  h1{margin:3px 0 0;font-size:22px;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .live-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+  .live-pill,.meta-pill{
+    height:36px;border:1px solid var(--border);border-radius:10px;padding:0 12px;
+    display:flex;align-items:center;gap:8px;background:rgba(17,19,24,.86);font-size:12px;color:var(--soft)
+  }
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px rgba(91,196,123,.55)}
+  .controls{display:flex;gap:8px}
+  .filters{
+    display:grid;
+    grid-template-columns:auto minmax(150px,190px) minmax(170px,220px);
+    gap:8px;
+    align-items:center;
+  }
+  .period-switch{
+    display:flex;
+    gap:5px;
+    padding:4px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    background:#0f1115;
+  }
+  .period-btn{
+    height:30px;
+    border:0;
+    border-radius:7px;
+    padding:0 11px;
+    background:transparent;
+    color:var(--muted);
+    cursor:pointer;
+    font-size:11px;
+    font-weight:700;
+  }
+  .period-btn.active{background:#20242c;color:#fff}
+  .select{
+    width:100%;
+    height:38px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    background:#11141a;
+    color:var(--text);
+    padding:0 10px;
+    font:inherit;
+    font-size:12px;
+    outline:none;
+  }
+  .select:focus{border-color:#5a606b}
+  .btn{
+    height:36px;border-radius:10px;border:1px solid var(--border);background:#12151b;color:var(--text);
+    padding:0 12px;cursor:pointer;transition:.18s ease
+  }
+  .btn:hover{border-color:#3c434f;background:#171b22}
+  .btn.active{border-color:#5a606b;background:#1a1f27}
+  .btn:focus-visible{outline:2px solid #fff;outline-offset:2px}
+  .status-strip{
+    display:grid;grid-template-columns:1.1fr repeat(4,1fr);gap:10px;min-width:0;
+  }
+  .metric{
+    min-width:0;border:1px solid var(--border);border-radius:14px;background:linear-gradient(180deg,#12151a,#0f1115);
+    padding:13px 14px;
+  }
+  .metric .label{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .metric .value{font-size:30px;font-weight:800;line-height:1;margin-top:8px}
+  .metric .sub{margin-top:7px;color:var(--muted);font-size:11px;display:flex;gap:7px;align-items:center}
+  .metric.primary{border-color:#3a3030;background:linear-gradient(180deg,#171315,#101114)}
+  .metric.primary .value{font-size:34px}
+  .up{color:var(--green)}
+  .down{color:var(--red)}
+  .main-grid{
+    min-height:0;
+    display:grid;
+    grid-template-columns:1.45fr .92fr;
+    gap:14px;
+  }
+  .left-col,.right-col{min-height:0;display:grid;gap:14px}
+  .left-col{grid-template-rows:1.18fr .82fr}
+  .right-col{grid-template-rows:1.08fr .92fr}
+  .panel{
+    min-height:0;border:1px solid var(--border);border-radius:16px;background:rgba(17,19,24,.9);
+    padding:14px;overflow:hidden;
+  }
+  .panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px}
+  .panel-title{font-size:13px;font-weight:700;letter-spacing:.04em}
+  .panel-sub{font-size:11px;color:var(--muted)}
+  .action-tabs{display:flex;gap:6px;flex-wrap:wrap}
+  .tab{
+    border:1px solid var(--border);background:#101218;color:var(--muted);border-radius:8px;padding:7px 10px;
+    font-size:11px;cursor:pointer
+  }
+  .tab.active{color:#fff;border-color:#5a606b;background:#1b1f27}
+  .chart-wrap{height:calc(100% - 38px);min-height:0}
+  svg{width:100%;height:100%;display:block}
+  .gridline{stroke:#272b33;stroke-width:1}
+  .axis-label{fill:#777f8c;font-size:10px}
+  .line{fill:none;stroke:#d8dde5;stroke-width:2.2}
+  .area{fill:url(#areaFill)}
+  .point{fill:#f0f3f7;stroke:#0d0f13;stroke-width:2}
+  .cards3{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:10px;height:100%
+  }
+  .action-card{
+    min-width:0;border:1px solid var(--border);border-radius:13px;background:#0e1014;padding:13px;
+    display:flex;flex-direction:column;justify-content:space-between
+  }
+  .action-name{font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.08em}
+  .action-total{font-size:28px;font-weight:800;margin:5px 0 2px}
+  .leader{font-size:12px;color:var(--soft);margin-top:8px}
+  .leader b{color:#fff}
+  .mini-track{height:6px;background:#242933;border-radius:99px;overflow:hidden;margin-top:10px}
+  .mini-track span{display:block;height:100%;background:#d7dbe1;border-radius:99px}
+  .mini-foot{font-size:10px;color:var(--muted);margin-top:7px}
+  .ranking{
+    display:grid;gap:8px;align-content:start
+  }
+  .rank-row{
+    display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;
+    border-bottom:1px solid #20242c;padding:7px 0
+  }
+  .rank-row:last-child{border-bottom:0}
+  .rank-pos{font-size:12px;color:var(--muted);font-weight:700}
+  .rank-name{min-width:0;font-size:12px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rank-company{display:block;color:var(--muted);font-size:10px;font-weight:500;margin-top:2px}
+  .rank-value{font-size:18px;font-weight:800}
+  .pulse-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;height:calc(100% - 34px)}
+  .pulse-card{border:1px solid var(--border);border-radius:12px;background:#0f1115;padding:12px;min-width:0}
+  .pulse-card .big{font-size:28px;font-weight:800;margin-top:5px}
+  .pulse-card .small{font-size:10px;color:var(--muted);margin-top:5px}
+  .spark{height:44px;margin-top:7px}
+  .spark svg polyline{fill:none;stroke:#bfc5ce;stroke-width:2}
+  .changed{animation:flash .75s ease}
+  @keyframes flash{0%{color:#fff}40%{color:var(--green)}100%{color:inherit}}
+  .offline .dot{background:var(--red);box-shadow:none}
+  @media (prefers-reduced-motion: reduce){.changed{animation:none}}
+  @media (max-width:1050px){
+    .app{padding:12px;gap:10px}
+    .status-strip{grid-template-columns:repeat(5,1fr)}
+    .metric{padding:10px}
+    .metric .value{font-size:25px}
+    .metric.primary .value{font-size:28px}
+    h1{font-size:19px}
+  }
+  @media (max-width:820px){
+    body{overflow:auto}
+    .app{height:auto;min-height:100vh;overflow:visible}
+    .topbar{align-items:flex-start}
+    .live-meta{justify-content:flex-start}
+    .filters{grid-template-columns:1fr}
+    .status-strip{grid-template-columns:repeat(2,1fr)}
+    .status-strip .primary{grid-column:span 2}
+    .main-grid{grid-template-columns:1fr}
+    .left-col,.right-col{grid-template-rows:auto}
+    .panel{min-height:280px}
+    .cards3{grid-template-columns:1fr}
+  }
+
+/* ===== V8 LIVE — Sala de Operações (Missão Impossível × Top Gun, minimalista) =====
+   Camada visual: não altera dados, filtros, timers nem regras do script original. */
+:root{
+  --bg:#050608;--panel:#0b0d11;--panel-2:#0f1217;--panel-3:#080a0d;--border:#1e232b;
+  --text:#eef1f4;--muted:#7f8b98;--soft:#b9c2cb;--red:#e43b32;--red-dim:#6b1d19;--green:#61d394;--amber:#e9b45d;--steel:#9aa6b2;
+  --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --hud:linear-gradient(var(--red),var(--red));
+}
+html,body{background:var(--bg)}
+:focus-visible{outline:2px solid var(--red)!important;outline-offset:2px}
+.app{background:radial-gradient(1000px 480px at 88% -8%,rgba(228,59,50,.08),transparent 62%),var(--bg);
+  padding:16px 18px;gap:12px;padding-left:max(18px,env(safe-area-inset-left));padding-right:max(18px,env(safe-area-inset-right));padding-bottom:max(16px,env(safe-area-inset-bottom))}
+
+/* Linha global de contagem (30 min): a "mecha" que consome até a próxima leitura */
+.cd-line{position:fixed;top:0;left:0;right:0;height:2px;z-index:50;background:rgba(228,59,50,.12);pointer-events:none}
+.cd-line i{position:absolute;inset:0;background:linear-gradient(90deg,transparent,var(--red) 35%);transform-origin:left;transform:scaleX(1);transition:transform 1s linear}
+.cd-line i::after{content:"";position:absolute;right:0;top:-2px;width:6px;height:6px;border-radius:50%;background:#ffd9a0;box-shadow:0 0 10px 3px rgba(255,160,60,.75),0 0 22px 7px rgba(228,59,50,.45)}
+.cd-line.paused i{background:var(--steel);opacity:.35;transform:scaleX(1)!important;transition:none}
+.cd-line.paused i::after{display:none}
+
+/* Cabeçalho */
+.mark{width:40px;height:40px;border:1px solid var(--red-dim);border-radius:0;background:#0a0c10;font-family:var(--mono);font-size:14px;color:var(--text);
+  clip-path:polygon(0 0,calc(100% - 9px) 0,100% 9px,100% 100%,9px 100%,0 calc(100% - 9px));box-shadow:inset 0 0 0 1px rgba(228,59,50,.2)}
+.eyebrow{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--muted)}
+h1{font-family:var(--mono);font-size:22px;letter-spacing:-.02em}
+.live-meta{gap:8px}
+.live-pill,.meta-pill{height:34px;border-radius:4px;background:#080a0d;font-family:var(--mono);font-size:11px;color:var(--muted);padding:0 11px}
+.meta-pill strong{color:var(--text)}
+.live-pill{border-color:var(--red-dim);color:#f0b8b4;letter-spacing:.12em;position:relative}
+.live-pill strong{color:#f6d6d3}
+.dot{width:7px;height:7px;background:var(--red);box-shadow:0 0 0 0 rgba(228,59,50,.6);animation:radar 2.6s ease-out infinite}
+.live-pill.sync{animation:sync .7s ease}
+.offline{border-color:#2a313a;color:var(--muted)}
+.offline strong{color:var(--steel)}
+.offline .dot{background:var(--steel);box-shadow:none;animation:none}
+
+/* Filtros + controles na mesma faixa */
+.filters{grid-template-columns:auto minmax(150px,200px) minmax(170px,220px) 1fr;gap:8px}
+.controls{justify-self:end}
+.period-switch{border-radius:4px;background:#080a0d;padding:3px}
+.period-btn{border-radius:3px;font-family:var(--mono);letter-spacing:.06em;height:30px;transition:color .15s,background .15s}
+.period-btn.active{background:#1a0b0a;color:#fff;box-shadow:inset 0 -2px 0 var(--red)}
+.select{border-radius:4px;background:#080a0d;font-family:var(--mono);font-size:12px;transition:border-color .15s}
+.select:focus{border-color:var(--red)}
+.btn{border-radius:4px;background:#0b0d11;font-family:var(--mono);font-size:12px;letter-spacing:.04em;transition:border-color .15s,background .15s}
+.btn:hover{border-color:#3a434e}
+.btn.active{border-color:var(--red-dim);background:#150909;color:#f6d6d3}
+
+/* Cartões com cantos de mira (HUD) */
+.panel,.metric,.pulse-card,.action-card{position:relative;border-radius:6px}
+.panel::before,.metric::before{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;opacity:.45;transition:opacity .2s;
+  background:
+   var(--hud) top left/11px 1px no-repeat,var(--hud) top left/1px 11px no-repeat,
+   var(--hud) top right/11px 1px no-repeat,var(--hud) top right/1px 11px no-repeat,
+   var(--hud) bottom left/11px 1px no-repeat,var(--hud) bottom left/1px 11px no-repeat,
+   var(--hud) bottom right/11px 1px no-repeat,var(--hud) bottom right/1px 11px no-repeat}
+.panel:hover::before,.metric:hover::before{opacity:.9}
+.panel{background:linear-gradient(180deg,rgba(255,255,255,.012),transparent),var(--panel);padding:14px}
+.panel-title{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+.panel-sub{font-size:11px;color:var(--muted)}
+.tab{border-radius:4px;font-family:var(--mono);letter-spacing:.03em;min-height:30px;transition:color .15s,border-color .15s,background .15s}
+.tab:hover{border-color:#3a434e}
+.tab.active{background:#1a0b0a;border-color:var(--red);box-shadow:inset 0 -2px 0 var(--red)}
+
+/* Indicadores */
+.metric{background:linear-gradient(180deg,#0e1116,#0a0c10);border-color:var(--border);padding:12px 14px}
+.metric.primary{border-color:var(--red-dim);background:linear-gradient(180deg,#160c0c,#0a0c10)}
+.metric .label{font-family:var(--mono);font-size:10px;letter-spacing:.14em}
+.metric .value,.action-total,.pulse-card .big,.rank-value,.rank-pos{font-family:var(--mono);letter-spacing:-.03em}
+.metric .value{font-size:30px}
+.metric.primary .value{font-size:34px}
+.metric .sub{font-size:11px}
+.up{color:var(--green)}
+@keyframes flash{0%{color:var(--red);transform:translateY(3px)}100%{color:inherit;transform:none}}
+
+/* Gráfico */
+.chart-wrap{position:relative}
+.gridline{stroke:#1b2027;stroke-dasharray:2 5}
+.axis-label{fill:#6f7b88;font-size:11px;font-family:var(--mono)}
+.line{stroke:var(--red);stroke-width:2;filter:drop-shadow(0 0 4px rgba(228,59,50,.45));stroke-linejoin:round}
+.point{fill:#0b0d11;stroke:var(--steel);stroke-width:1.5;r:2.8}
+#chartPoints circle:last-child{fill:var(--red);stroke:#ffd9a0;stroke-width:1.5;r:4.2}
+.wipe{animation:wipe .9s cubic-bezier(.3,.7,.2,1) both}
+
+/* Ações do dia */
+.action-card{background:var(--panel-3);border-color:var(--border);padding:13px}
+.action-name{font-family:var(--mono);font-size:10px;letter-spacing:.14em}
+.leader b{font-family:var(--mono);color:var(--text)}
+.mini-track{height:4px;border-radius:1px;background:#1a1f26}
+.mini-track span{border-radius:1px;background:linear-gradient(90deg,#8f2722,var(--red));transition:width .7s cubic-bezier(.2,.7,.2,1)}
+.mini-foot{font-family:var(--mono)}
+
+/* Ranking + detector de ultrapassagem */
+.p-rank{display:flex;flex-direction:column}
+.p-rank .panel-head{flex-direction:column;align-items:stretch;gap:9px;margin-bottom:8px}
+.p-rank .action-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.ov-status{display:flex;align-items:center;gap:8px;min-height:26px;padding:4px 9px;margin-bottom:4px;border:1px solid var(--border);border-left:2px solid #2d3641;background:var(--panel-3);border-radius:3px;
+  font-family:var(--mono);font-size:11px;color:var(--muted);overflow:hidden}
+.ov-dot{width:6px;height:6px;border-radius:50%;background:#2d3641;flex:none}
+#ovText{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ov-status.alert{border-color:var(--red-dim);border-left-color:var(--red);color:#ffdcd8;background:linear-gradient(90deg,rgba(228,59,50,.2),var(--panel-3) 85%);animation:slidein .4s cubic-bezier(.2,.8,.2,1)}
+.ov-status.alert .ov-dot{background:var(--red);animation:radar 1.5s ease-out infinite}
+.ranking{gap:0;align-content:start}
+.rank-row{position:relative;grid-template-columns:30px 1fr auto;gap:10px;padding:7px 8px 8px;border-bottom:1px solid #161a20;background:transparent}
+.rank-row::after{content:"";position:absolute;left:0;bottom:-1px;height:1px;width:var(--w,0%);background:#3a434e}
+.rank-row:first-child::after{height:2px;background:var(--red)}
+.rank-pos{font-size:12px;color:var(--muted)}
+.rank-row:first-child .rank-pos{color:var(--red)}
+.rank-name{font-size:13px;font-weight:700;letter-spacing:.01em}
+.rank-company{font-family:var(--mono);font-size:10px;letter-spacing:.04em}
+.rank-value{font-size:19px}
+.ov-tag{display:none;margin-top:2px;color:var(--red);font:700 10px/1.25 var(--mono);letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rank-row.ov-up{background:linear-gradient(90deg,rgba(228,59,50,.18),transparent 75%);box-shadow:inset 2px 0 0 var(--red);z-index:2}
+.rank-row.ov-up .rank-company{display:none}
+.rank-row.ov-up .ov-tag{display:block}
+.rank-row.ov-up .rank-pos{color:var(--red)}
+.rank-row.ov-up .rank-pos::after{content:"▲";display:block;font-size:8px;line-height:1;margin-top:2px}
+.rank-row.ov-down{opacity:.82}
+.rank-row.ov-down .rank-pos::after{content:"▼";display:block;font-size:8px;line-height:1;margin-top:2px;color:var(--muted)}
+.rank-row.ov-hit{animation:ovhit 1.6s ease-out}
+.p-rank.ov-flash{animation:panelflash 1.3s ease-out}
+
+/* Ritmo */
+.pulse-card{background:var(--panel-3);border-color:var(--border)}
+.pulse-card .big{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:clamp(20px,2.2vw,34px)}
+/* "Ações do dia" fica oculto: os totais já aparecem na faixa de indicadores. Os elementos seguem no HTML para o script original continuar funcionando. */
+.p-actions{display:none!important}
+.pulse-card .panel-sub{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+.spark svg polyline{stroke:var(--steel);vector-effect:non-scaling-stroke;stroke-width:1.6}
+.pulse-card:nth-child(2) .spark svg polyline{stroke:var(--red)}
+.spark{animation:wipe 1.1s cubic-bezier(.3,.7,.2,1) .5s both}
+
+
+.app{grid-template-columns:minmax(0,1fr)}
+.main-grid,.left-col,.right-col,.topbar,.filters,.status-strip{min-width:0}
+
+/* Painéis em coluna: o corpo ocupa exatamente o espaço restante (sem cortes) */
+.p-chart,.p-actions,.p-pace,.p-rank{display:flex;flex-direction:column;min-width:0}
+.panel-head{flex:none}
+.p-chart .chart-wrap{flex:1;height:auto;min-height:0}
+.p-pace .pulse-grid{flex:none;height:auto}
+.p-rank .ranking{flex:1;min-height:0}
+
+/* Entrada orquestrada (uma vez) */
+.metric,.panel{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+.metric:nth-child(2){animation-delay:.05s}.metric:nth-child(3){animation-delay:.1s}.metric:nth-child(4){animation-delay:.15s}.metric:nth-child(5){animation-delay:.2s}
+.p-chart{animation-delay:.2s}.p-rank{animation-delay:.28s}.p-actions{animation-delay:.34s}.p-pace{animation-delay:.4s}
+#boot{position:fixed;inset:0;z-index:60;display:grid;place-items:center;text-align:center;background:var(--bg);pointer-events:none;font-family:var(--mono);animation:bootout 1.7s ease both}
+#boot .b-l{width:0;height:1px;margin:0 auto 16px;background:var(--red);animation:accl .8s ease .15s forwards}
+#boot .b-t{font-size:13px;letter-spacing:.3em;color:var(--text)}
+#boot .b-s{margin-top:10px;font-size:11px;letter-spacing:.08em;color:var(--steel)}
+
+@keyframes radar{0%{box-shadow:0 0 0 0 rgba(228,59,50,.55)}70%,100%{box-shadow:0 0 0 8px rgba(228,59,50,0)}}
+@keyframes sync{0%{box-shadow:0 0 0 0 rgba(228,59,50,.5)}100%{box-shadow:0 0 0 10px rgba(228,59,50,0)}}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes wipe{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+@keyframes slidein{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
+@keyframes ovhit{0%{background-color:rgba(228,59,50,.5)}100%{background-color:transparent}}
+@keyframes panelflash{0%{border-color:var(--red);box-shadow:0 0 0 1px var(--red),0 0 28px rgba(228,59,50,.35)}100%{border-color:var(--border);box-shadow:none}}
+@keyframes bootout{0%,70%{opacity:1;visibility:visible}100%{opacity:0;visibility:hidden}}
+@keyframes accl{to{width:120px}}
+
+/* ---------- PC: tudo cabe na tela, sem cortes ---------- */
+@media(min-width:821px){
+  .main-grid{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)}
+  .left-col{grid-template-rows:minmax(0,1fr) auto}
+  .right-col{grid-template-rows:minmax(0,1fr)}
+  .p-pace .pulse-grid{flex:none;height:auto;grid-template-columns:repeat(2,1fr)}
+  .p-rank .ranking{grid-auto-rows:minmax(44px,1fr);align-content:stretch}
+}
+@media(min-width:1100px){.p-pace .pulse-grid{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:821px) and (max-height:860px){
+  .app{padding-top:14px;padding-bottom:14px;gap:10px}
+  .metric{padding:9px 12px}.metric .value{font-size:26px;margin-top:6px}.metric.primary .value{font-size:30px}
+  .panel{padding:12px}
+  .spark{display:none}
+  .pulse-grid{gap:8px}.pulse-card{padding:9px 11px}.pulse-card .big{font-size:22px;margin-top:3px}
+  .rank-row{padding:5px 8px 6px}
+  .pulse-card .small{margin-top:3px}
+  .pulse-card{padding:8px 10px}
+}
+@media(min-width:1600px){
+  .app{padding:22px 28px;gap:16px}
+  h1{font-size:28px}.mark{width:48px;height:48px;font-size:16px}
+  .live-pill,.meta-pill{height:40px;font-size:13px}
+  .metric{padding:16px 18px}.metric .value{font-size:42px}.metric.primary .value{font-size:48px}.metric .label{font-size:12px}.metric .sub{font-size:13px}
+  .panel{padding:18px}.panel-title{font-size:14px}.panel-sub{font-size:12px}
+  .tab{font-size:12px;min-height:34px}
+  .rank-name{font-size:16px}.rank-value{font-size:26px}.rank-pos{font-size:14px}.rank-row{padding:10px 10px 11px;grid-template-columns:38px 1fr auto}
+  .ov-status{font-size:13px;min-height:32px}.ov-tag{font-size:12px}
+  .pulse-card .big{font-size:clamp(26px,2.3vw,44px)}.pulse-card{padding:16px 18px}
+  .axis-label{font-size:11px}
+}
+@media(max-width:1050px) and (min-width:821px){
+  .filters{grid-template-columns:auto minmax(130px,1fr) minmax(130px,1fr) auto}
+  .live-meta{gap:6px}.live-pill,.meta-pill{padding:0 9px}
+}
+@media(max-height:700px) and (min-width:821px){
+  body{overflow:auto}.app{height:auto}
+  .main-grid{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)}
+  .left-col,.right-col{grid-template-rows:auto}
+  .panel{min-height:300px}
+}
+
+@media(min-width:821px){
+  .p-rank .rank-name{font-size:clamp(14px,2.3vh,24px)}
+  .p-rank .rank-value{font-size:clamp(20px,3.5vh,38px)}
+  .p-rank .rank-pos{font-size:clamp(12px,1.9vh,18px)}
+  .p-rank .rank-company{font-size:clamp(10px,1.4vh,13px)}
+  .p-rank .ov-tag{font-size:clamp(10px,1.5vh,14px)}
+}
+
+/* ---------- Celular: ranking primeiro, gráfico legível, toques grandes ---------- */
+@media(max-width:820px){
+  .app{padding:calc(14px + env(safe-area-inset-top)) max(12px,env(safe-area-inset-left)) calc(20px + env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-right));gap:10px}
+  .topbar{display:flex;flex-direction:column;align-items:stretch;gap:10px;position:relative}
+  .live-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;justify-content:stretch}
+  .live-pill{position:absolute;top:4px;right:0;height:32px}
+  .meta-pill{font-size:0;height:42px;padding:0 6px;flex-direction:column;justify-content:center;align-items:flex-start;gap:3px}
+  .meta-pill strong{font-size:10.5px;white-space:nowrap}
+  .meta-pill::before{font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--muted)}
+  h1{font-size:19px}
+  .brand{padding-right:104px}
+  .filters{grid-template-columns:1fr 1fr;gap:8px}
+  .period-switch{grid-column:1 / -1}
+  .period-btn{flex:1;height:38px;font-size:12px}
+  .select{height:44px;font-size:13px}
+  .controls{grid-column:1 / -1;justify-self:stretch;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .btn{height:44px;font-size:13px}
+  .status-strip{grid-template-columns:repeat(2,1fr);gap:8px}
+  .status-strip .primary{grid-column:span 2}
+  .metric{padding:11px 12px}.metric .value{font-size:26px}.metric.primary .value{font-size:34px}
+  .main-grid{display:flex;flex-direction:column;gap:12px}
+  .left-col,.right-col{display:contents}
+  .p-rank{order:1}.p-chart{order:2}.p-pace{order:3}
+  .panel{min-height:0;padding:13px}
+  .tab{min-height:38px;font-size:12px}
+  .p-chart .panel-head{flex-direction:column;align-items:stretch;gap:9px}
+  .p-chart .action-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+  .p-chart .chart-wrap{flex:none;height:auto;overflow-x:auto;overflow-y:hidden;margin:0 -4px;padding:0 4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .p-chart .chart-wrap::-webkit-scrollbar{display:none}
+  .p-chart svg#mainChart{width:auto;min-width:580px;height:auto;aspect-ratio:760/250}
+  .axis-label{font-size:13px}
+  .rank-row{padding:10px 8px 11px;grid-template-columns:30px 1fr auto}
+  .rank-name{font-size:14px}.rank-value{font-size:21px}
+  #ovText{white-space:normal}
+  .ov-tag{white-space:normal}
+  .cards3{grid-template-columns:1fr;gap:8px}
+  .action-card{padding:12px}
+  .spark{height:36px}
+  .main-grid>*,.left-col>*,.right-col>*{min-width:0;max-width:100%}
+}
+@media(max-width:380px){.metric .value{font-size:23px}.metric.primary .value{font-size:30px}.rank-value{font-size:19px}}
+@media(max-width:820px){
+  .meta-date::before{content:"DATA"}
+  .meta-upd::before{content:"ATUALIZADO"}
+  .meta-next::before{content:"PRÓXIMA"}
+}
+
+/* ---------- Aviso grande de ultrapassagem ---------- */
+#ovBig{position:fixed;inset:0;z-index:55;display:grid;place-items:center;padding:16px;pointer-events:none;visibility:hidden;opacity:0;
+  background:radial-gradient(ellipse at center,rgba(5,6,8,.78),rgba(5,6,8,.9));backdrop-filter:blur(2px);transition:opacity .25s ease,visibility 0s linear .25s}
+#ovBig.on{visibility:visible;opacity:1;transition:opacity .25s ease}
+.ovb-card{position:relative;pointer-events:auto;cursor:pointer;width:min(720px,100%);padding:22px 26px 28px;background:#07090c;border:1px solid var(--red-dim);border-radius:6px;
+  box-shadow:0 0 70px rgba(228,59,50,.2);
+  background-image:
+   var(--hud),var(--hud),var(--hud),var(--hud),var(--hud),var(--hud),var(--hud),var(--hud);
+  background-size:16px 2px,2px 16px,16px 2px,2px 16px,16px 2px,2px 16px,16px 2px,2px 16px;
+  background-position:left top,left top,right top,right top,left bottom,left bottom,right bottom,right bottom;background-repeat:no-repeat;background-color:#07090c}
+#ovBig.on .ovb-card{animation:ovbin .5s cubic-bezier(.2,.8,.2,1) both}
+.ovb-kick{font-family:var(--mono);font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:var(--red);padding-bottom:14px}
+.ovb-card.lead .ovb-kick{font-size:15px;text-shadow:0 0 18px rgba(228,59,50,.6)}
+.ovb-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:16px;padding:16px 14px;border-top:1px solid var(--border)}
+.ovb-arrow{font-family:var(--mono);font-size:40px;line-height:1;width:44px;text-align:center}
+.ovb-name{font-family:var(--mono);font-weight:700;letter-spacing:-.03em;font-size:clamp(24px,5.4vw,44px);line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ovb-sub{margin-top:5px;font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--muted)}
+.ovb-pos{font-family:var(--mono);font-weight:700;font-size:clamp(15px,3.6vw,24px);letter-spacing:.02em;white-space:nowrap;text-align:right}
+.ovb-row.ovb-up{background:linear-gradient(90deg,rgba(228,59,50,.2),transparent 80%);box-shadow:inset 3px 0 0 var(--red)}
+.ovb-row.ovb-up .ovb-arrow{color:var(--red);text-shadow:0 0 22px rgba(228,59,50,.7)}
+.ovb-row.ovb-up .ovb-sub{color:#f0b8b4}
+.ovb-row.ovb-down{opacity:.9}
+.ovb-row.ovb-down .ovb-arrow{color:var(--steel)}
+.ovb-row.ovb-down .ovb-name{color:var(--soft);font-size:clamp(20px,4.4vw,32px)}
+.ovb-row.ovb-down .ovb-pos{color:var(--muted);font-size:clamp(14px,3.2vw,20px)}
+#ovBig.on .ovb-row.ovb-up .ovb-arrow{animation:arrup .8s cubic-bezier(.2,.8,.2,1) .15s both}
+#ovBig.on .ovb-row.ovb-down .ovb-arrow{animation:arrdown .8s cubic-bezier(.2,.8,.2,1) .35s both}
+#ovBig.on .ovb-row.ovb-down{animation:slidein .5s cubic-bezier(.2,.8,.2,1) .3s both}
+.ovb-more{padding-top:12px;border-top:1px solid var(--border);font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
+.ovb-bar{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(228,59,50,.12);overflow:hidden}
+.ovb-bar i{display:block;height:100%;background:var(--red);transform-origin:left}
+#ovBig.on .ovb-bar i{animation:drain 6s linear forwards}
+@keyframes ovbin{from{opacity:0;transform:translateY(14px) scale(.965)}to{opacity:1;transform:none}}
+@keyframes arrup{0%{transform:translateY(16px);opacity:0}60%{transform:translateY(-5px);opacity:1}100%{transform:none}}
+@keyframes arrdown{0%{transform:translateY(-16px);opacity:0}60%{transform:translateY(5px);opacity:1}100%{transform:none}}
+@keyframes drain{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+@media(min-width:1600px){.ovb-card{width:min(900px,100%);padding:30px 36px 36px}.ovb-kick{font-size:15px}.ovb-name{font-size:56px}.ovb-row.ovb-down .ovb-name{font-size:40px}.ovb-pos{font-size:30px}.ovb-row.ovb-down .ovb-pos{font-size:24px}.ovb-arrow{font-size:52px;width:56px}.ovb-sub{font-size:13px}}
+@media(max-width:820px){
+  #ovBig{align-items:start;padding:calc(72px + env(safe-area-inset-top)) 12px 12px}
+  .ovb-card{padding:16px 14px 22px}
+  .ovb-row{grid-template-columns:auto minmax(0,1fr);gap:10px;padding:13px 6px}
+  .ovb-pos{grid-column:2;text-align:left;margin-top:-2px}
+  .ovb-arrow{font-size:32px;width:34px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition:none!important}
+  #boot{display:none}
+}
+</style>
+</head>
+<body>
+<div class="cd-line" aria-hidden="true"><i></i></div>
+<div id="ovBig" role="alert" aria-live="assertive"><div class="ovb-card" title="Toque para fechar"></div></div>
+<div id="boot" aria-hidden="true"><div><div class="b-l"></div><div class="b-t">LINK SEGURO ESTABELECIDO</div><div class="b-s">Sincronizando operação…</div></div></div>
+<div class="app" id="liveApp">
+  <header class="topbar">
+    <div class="brand">
+      <div class="mark">RS</div>
+      <div class="title-wrap">
+        <div class="eyebrow">Rotina do Sucesso · Sala de Operações</div>
+        <h1>Dashboard Ao Vivo</h1>
+      </div>
+    </div>
+
+    <div class="live-meta">
+      <div class="live-pill" id="livePill"><span class="dot"></span><strong>AO VIVO</strong></div>
+      <div class="meta-pill meta-date">Data atual: <strong id="currentDateLive">--/--/----</strong></div>
+      <div class="meta-pill meta-upd">Última atualização: <strong id="lastUpdate">--:--:--</strong></div>
+      <div class="meta-pill meta-next">Próxima em <strong id="countdown">30m</strong></div>
+    </div>
+  </header>
+
+  <section class="filters" aria-label="Filtros do dashboard">
+    <div class="period-switch" aria-label="Período">
+      <button class="period-btn active" id="periodDay" type="button">Hoje</button>
+      <button class="period-btn" id="periodMonth" type="button">Mês atual</button>
+    </div>
+
+    <select class="select" id="companyFilter" aria-label="Empresa">
+      <option value="all">Todas as empresas</option>
+    </select>
+
+    <select class="select" id="unitFilter" aria-label="Unidade">
+      <option value="all">Todas as lojas</option>
+    </select>
+
+    <div class="controls">
+        <button class="btn active" id="autoBtn" type="button">Auto: ON</button>
+        <button class="btn" id="refreshBtn" type="button">Atualizar agora</button>
+      </div>
+  </section>
+
+  <section class="status-strip">
+    <article class="metric primary">
+      <div class="label"><span id="totalActionsLabel">Ações totais hoje</span></div>
+      <div class="value" id="totalActions">1.248</div>
+      <div class="sub"><span class="up" id="totalDelta">—</span> desde atualização anterior</div>
+    </article>
+
+    <article class="metric">
+      <div class="label">Abordagem no salão</div>
+      <div class="value" id="metricSalao">524</div>
+      <div class="sub"><span class="up" id="deltaSalao">▲ 6,9%</span> ritmo do dia</div>
+    </article>
+
+    <article class="metric">
+      <div class="label">Captação online</div>
+      <div class="value" id="metricOnline">318</div>
+      <div class="sub"><span class="up" id="deltaOnline">▲ 11,2%</span> ritmo do dia</div>
+    </article>
+
+    <article class="metric">
+      <div class="label">Cotações</div>
+      <div class="value" id="metricCotacoes">406</div>
+      <div class="sub"><span class="up" id="deltaCotacoes">▲ 7,3%</span> ritmo do dia</div>
+    </article>
+
+    <article class="metric">
+      <div class="label"><span id="activeAgentsLabel">Colaboradores ativos hoje</span></div>
+      <div class="value" id="activeAgents">87</div>
+      <div class="sub"><span id="activeCoverage">87%</span> com lançamento hoje</div>
+    </article>
+  </section>
+
+  <main class="main-grid">
+    <div class="left-col">
+      <section class="panel p-chart">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title" id="evolutionTitle">Evolução do dia</div>
+            <div class="panel-sub" id="chartLegend">Todas as ações · acumulado</div>
+          </div>
+          <div class="action-tabs" id="chartTabs">
+            <button class="tab active" type="button" data-action="all">Todas</button>
+            <button class="tab" type="button" data-action="salao">Abordagem</button>
+            <button class="tab" type="button" data-action="online">Captação</button>
+            <button class="tab" type="button" data-action="cotacoes">Cotações</button>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <svg id="mainChart" viewBox="0 0 760 250" preserveAspectRatio="xMidYMid meet" aria-label="Evolução acumulada do dia">
+            <defs>
+              <linearGradient id="areaFill" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="#c9ced6" stop-opacity=".20"/>
+                <stop offset="100%" stop-color="#c9ced6" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <g id="chartGrid"></g>
+            <path id="areaPath" class="area"></path>
+            <path id="linePath" class="line"></path>
+            <g id="chartPoints"></g>
+            <g id="chartLabels"></g>
+          </svg>
+        </div>
+      </section>
+
+      <section class="panel p-pace">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title"><span id="paceTitle">Ritmo da operação</span></div>
+            <div class="panel-sub">Leitura rápida do momento</div>
+          </div>
+        </div>
+
+        <div class="pulse-grid">
+          <article class="pulse-card">
+            <div class="panel-sub" id="recentActionsLabel">Ações desde abertura</div>
+            <div class="big" id="last30">146</div>
+            <div class="small" id="last30Text">+12% acima da média</div>
+            <div class="spark">
+              <svg viewBox="0 0 120 42" preserveAspectRatio="none">
+                <polyline id="spark30" points="0,35 15,31 30,33 45,22 60,24 75,16 90,18 105,9 120,12"></polyline>
+              </svg>
+            </div>
+          </article>
+
+          <article class="pulse-card">
+            <div class="panel-sub">Loja mais acelerada</div>
+            <div class="big" id="fastestStore">REC SOS</div>
+            <div class="small" id="fastestText">+38 ações na última atualização</div>
+            <div class="spark">
+              <svg viewBox="0 0 120 42" preserveAspectRatio="none">
+                <polyline id="sparkFast" points="0,34 15,30 30,29 45,25 60,20 75,22 90,13 105,11 120,6"></polyline>
+              </svg>
+            </div>
+          </article>
+
+          <article class="pulse-card">
+            <div class="panel-sub">Média por loja</div>
+            <div class="big" id="avgStore">39</div>
+            <div class="small">ações registradas hoje</div>
+          </article>
+
+          <article class="pulse-card">
+            <div class="panel-sub">Cobertura operacional</div>
+            <div class="big" id="coverage">91%</div>
+            <div class="small" id="coverageText">29 de 32 lojas com atividade</div>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel p-actions" hidden aria-hidden="true">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title"><span id="actionsTitle">Ações do dia</span></div>
+            <div class="panel-sub">Volume, liderança e participação</div>
+          </div>
+        </div>
+        <div class="cards3">
+          <article class="action-card">
+            <div>
+              <div class="action-name">Abordagem no salão</div>
+              <div class="action-total" id="cardSalao">524</div>
+              <div class="leader">Líder: <b id="leaderSalao">REC SOS</b></div>
+            </div>
+            <div>
+              <div class="mini-track"><span id="barSalao" style="width:82%"></span></div>
+              <div class="mini-foot" id="footSalao">42% das ações do dia</div>
+            </div>
+          </article>
+
+          <article class="action-card">
+            <div>
+              <div class="action-name">Captação online</div>
+              <div class="action-total" id="cardOnline">318</div>
+              <div class="leader">Líder: <b id="leaderOnline">SOS 1</b></div>
+            </div>
+            <div>
+              <div class="mini-track"><span id="barOnline" style="width:64%"></span></div>
+              <div class="mini-foot" id="footOnline">25% das ações do dia</div>
+            </div>
+          </article>
+
+          <article class="action-card">
+            <div>
+              <div class="action-name">Cotações</div>
+              <div class="action-total" id="cardCotacoes">406</div>
+              <div class="leader">Líder: <b id="leaderCotacoes">SDU SOS</b></div>
+            </div>
+            <div>
+              <div class="mini-track"><span id="barCotacoes" style="width:71%"></span></div>
+              <div class="mini-foot" id="footCotacoes">33% das ações do dia</div>
+            </div>
+          </article>
+        </div>
+      </section>
+    </div>
+
+    <div class="right-col">
+      <section class="panel p-rank">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title"><span id="rankingTitle">Top 5 lojas do dia</span></div>
+            <div class="panel-sub"><span id="rankingSubtitle">Ranking por volume de ações</span></div>
+          </div>
+          <div class="action-tabs" id="rankingTabs">
+            <button class="tab active" type="button" data-action="all">Geral</button>
+            <button class="tab" type="button" data-action="salao">Abord.</button>
+            <button class="tab" type="button" data-action="online">Online</button>
+            <button class="tab" type="button" data-action="cotacoes">Cotação</button>
+          </div>
+        </div>
+        <div class="ov-status" id="ovStatus" role="status" aria-live="polite"><span class="ov-dot"></span><span id="ovText">Monitorando ultrapassagens</span></div>
+        <div class="ranking" id="ranking"></div>
+      </section>
+
+      
+    </div>
+  </main>
+</div>
+
+
+<script>
+(() => {
+  const root = document.getElementById('liveApp');
+  if (!root || root.dataset.ready === '1') return;
+  root.dataset.ready = '1';
+
+  const fmt = new Intl.NumberFormat('pt-BR');
+  const $ = id => document.getElementById(id);
+
+  let period = 'day';
+  let activeAction = 'all';
+  let auto = true;
+  let hostActive = (window.parent === window);
+  let seconds = 1800;
+  let timer = null;
+  let realMode = false;
+  let currentDay = Math.max(1, new Date().getDate());
+  let liveSnapshots = [];
+
+  // Fallback somente para abrir o HTML isolado fora do sistema principal.
+  let stores = [
+    {id:'demo1',name:'REC SOS',unitName:'Recife',company:'SOS',capacity:10,dayActiveAgents:9,monthActiveAgents:10,day:{salao:72,online:41,cotacoes:59},month:{salao:824,online:471,cotacoes:672},daily:{}},
+    {id:'demo2',name:'SDU SOS',unitName:'SDU',company:'SOS',capacity:10,dayActiveAgents:8,monthActiveAgents:10,day:{salao:61,online:34,cotacoes:62},month:{salao:705,online:390,cotacoes:712},daily:{}},
+    {id:'demo3',name:'SOS 1',unitName:'SOS 1',company:'SOS',capacity:10,dayActiveAgents:9,monthActiveAgents:10,day:{salao:55,online:48,cotacoes:51},month:{salao:640,online:552,cotacoes:590},daily:{}},
+    {id:'demo4',name:'FOR CONNECT',unitName:'Fortaleza',company:'Connect',capacity:10,dayActiveAgents:8,monthActiveAgents:9,day:{salao:49,online:42,cotacoes:47},month:{salao:570,online:488,cotacoes:545},daily:{}},
+    {id:'demo5',name:'VIX SOS',unitName:'Vitória',company:'SOS',capacity:10,dayActiveAgents:8,monthActiveAgents:9,day:{salao:46,online:37,cotacoes:44},month:{salao:528,online:425,cotacoes:505},daily:{}},
+    {id:'demo6',name:'UNI REC',unitName:'Recife',company:'Universo',capacity:10,dayActiveAgents:8,monthActiveAgents:9,day:{salao:43,online:31,cotacoes:40},month:{salao:494,online:356,cotacoes:460},daily:{}},
+    {id:'demo7',name:'BEL CONNECT',unitName:'Belém',company:'Connect',capacity:10,dayActiveAgents:7,monthActiveAgents:9,day:{salao:39,online:33,cotacoes:36},month:{salao:448,online:379,cotacoes:414},daily:{}},
+    {id:'demo8',name:'SOS THE',unitName:'Teresina',company:'SOS',capacity:10,dayActiveAgents:7,monthActiveAgents:9,day:{salao:37,online:27,cotacoes:32},month:{salao:425,online:310,cotacoes:368},daily:{}},
+    {id:'demo9',name:'AZUL',unitName:'Azul',company:'Azul Viagens',capacity:10,dayActiveAgents:7,monthActiveAgents:8,day:{salao:35,online:25,cotacoes:31},month:{salao:402,online:287,cotacoes:356},daily:{}},
+    {id:'demo10',name:'UNI BEL',unitName:'Belém',company:'Universo',capacity:10,dayActiveAgents:7,monthActiveAgents:8,day:{salao:34,online:20,cotacoes:29},month:{salao:390,online:230,cotacoes:333},daily:{}}
+  ];
+
+  const demoDaySeries = {
+    salao:[34,71,112,158,211,263,316,371,426,478,524],
+    online:[19,40,67,96,128,161,195,230,260,290,318],
+    cotacoes:[29,60,94,132,169,208,245,282,329,369,406]
+  };
+
+  
+  function formatCountdown(totalSeconds){
+    const s=Math.max(0,Math.floor(totalSeconds));
+    const h=Math.floor(s/1800);
+    const m=Math.floor((s%3600)/60);
+    const sec=s%60;
+    if(h>0)return `${h}h ${String(m).padStart(2,'0')}m`;
+    if(m>0)return `${m}m ${String(sec).padStart(2,'0')}s`;
+    return `${sec}s`;
+  }
+
+function formatCurrentDate(){
+    const parts=new Intl.DateTimeFormat('pt-BR',{
+      timeZone:'America/Sao_Paulo',
+      weekday:'short',
+      day:'2-digit',
+      month:'2-digit',
+      year:'numeric'
+    }).formatToParts(new Date());
+    const map=Object.fromEntries(parts.map(p=>[p.type,p.value]));
+    const weekday=(map.weekday||'').replace('.','');
+    return `${weekday.charAt(0).toUpperCase()+weekday.slice(1)} · ${map.day}/${map.month}/${map.year}`;
+  }
+
+  function blankMetric(){ return {salao:0,online:0,cotacoes:0}; }
+
+  function metricValue(obj,key){
+    if(!obj) return 0;
+    if(key==='all') return Number(obj.salao||0)+Number(obj.online||0)+Number(obj.cotacoes||0);
+    return Number(obj[key]||0);
+  }
+
+  function storeMetric(store,key,whichPeriod=period){
+    return metricValue(whichPeriod==='day'?store.day:store.month,key);
+  }
+
+  function selectedStores(source=stores){
+    const company=$('companyFilter').value;
+    const unit=$('unitFilter').value;
+    return source.filter(s=>
+      (company==='all'||s.company===company) &&
+      (unit==='all'||s.id===unit)
+    );
+  }
+
+  function sumMetric(key,source=stores,whichPeriod=period){
+    return selectedStores(source).reduce((acc,s)=>acc+storeMetric(s,key,whichPeriod),0);
+  }
+
+  function scopeLabel(){
+    const company=$('companyFilter').value;
+    const unitId=$('unitFilter').value;
+    if(unitId!=='all'){
+      const s=stores.find(x=>x.id===unitId);
+      return s?.name||s?.unitName||'Unidade';
+    }
+    if(company!=='all') return company;
+    return 'Todas as lojas';
+  }
+
+  function populateCompanies(preserve=true){
+    const current=preserve?$('companyFilter').value:'all';
+    const companies=[...new Set(stores.map(s=>s.company).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+    $('companyFilter').innerHTML='<option value="all">Todas as empresas</option>'+
+      companies.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+    $('companyFilter').value=companies.includes(current)?current:'all';
+  }
+
+  function populateUnits(preserve=true){
+    const company=$('companyFilter').value;
+    const current=preserve?$('unitFilter').value:'all';
+    const units=stores
+      .filter(s=>company==='all'||s.company===company)
+      .slice()
+      .sort((a,b)=>(a.name||a.unitName).localeCompare((b.name||b.unitName),'pt-BR'));
+
+    $('unitFilter').innerHTML='<option value="all">Todas as lojas</option>'+
+      units.map(s=>`<option value="${escapeHtml(s.id)}">${escapeHtml(s.name||s.unitName)}</option>`).join('');
+
+    $('unitFilter').value=units.some(s=>s.id===current)?current:'all';
+  }
+
+  function escapeHtml(v){
+    return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  function metricDelta(key){
+    if(liveSnapshots.length<2) return null;
+    const prev=liveSnapshots[liveSnapshots.length-2].stores;
+    return sumMetric(key,stores,period)-sumMetric(key,prev,period);
+  }
+
+  function formatDelta(v){
+    if(v==null) return '—';
+    return `${v>0?'+':''}${fmt.format(v)}`;
+  }
+
+  function updateLabels(){
+    const monthName=new Intl.DateTimeFormat('pt-BR',{month:'long',timeZone:'America/Sao_Paulo'}).format(new Date());
+    const periodName=period==='day'?'Hoje':`Mês atual · ${monthName}`;
+    $('totalActionsLabel').textContent=period==='day'?'Ações totais hoje':'Ações no mês atual';
+    $('activeAgentsLabel').textContent=period==='day'?'Colaboradores ativos hoje':'Colaboradores ativos no mês';
+    $('rankingTitle').textContent=period==='day'?'Top 5 lojas do dia':'Top 5 lojas do mês';
+    $('rankingSubtitle').textContent=`${scopeLabel()} · ranking por volume de ações`;
+    $('actionsTitle').textContent=period==='day'?'Ações do dia':'Ações do mês';
+    $('paceTitle').textContent=period==='day'?'Ritmo da operação':'Competição do mês';
+    if($('evolutionTitle')) $('evolutionTitle').textContent=period==='day'?'Evolução do dia':'Evolução do mês';
+    $('chartLegend').textContent=`${periodName} · ${scopeLabel()}`;
+  }
+
+  function previousSnapshotStoreDelta(storeId){
+    if(liveSnapshots.length<2) return 0;
+    const prev=liveSnapshots[liveSnapshots.length-2].stores.find(s=>s.id===storeId);
+    const curr=stores.find(s=>s.id===storeId);
+    if(!curr) return 0;
+    return storeMetric(curr,'all','day')-(prev?storeMetric(prev,'all','day'):0);
+  }
+
+  function updateRecentActivity(scoped){
+    if(!realMode){
+      const total=sumMetric('all');
+      $('last30').textContent=fmt.format(Math.max(0,Math.round(total*.11)));
+      $('last30Text').textContent='+12% acima da média';
+      return;
+    }
+
+    if(liveSnapshots.length<2){
+      $('recentActionsLabel').textContent='Ações desde abertura';
+      $('last30').textContent='0';
+      $('last30Text').textContent='aguardando próxima leitura';
+      return;
+    }
+
+    const nowTs=liveSnapshots.at(-1).ts;
+    const target=nowTs-(30*60*1000);
+    let base=liveSnapshots[0];
+    for(const snap of liveSnapshots){
+      if(snap.ts<=target) base=snap;
+      else break;
+    }
+
+    const currentTotal=sumMetric('all',stores,'day');
+    const baseTotal=sumMetric('all',base.stores,'day');
+    const elapsed=Math.max(0,nowTs-base.ts);
+
+    if(elapsed>=29*60*1000){
+      $('recentActionsLabel').textContent='Ações nos últimos 30 min';
+      $('last30Text').textContent='variação real da operação';
+    }else{
+      const mins=Math.max(1,Math.round(elapsed/60000));
+      $('recentActionsLabel').textContent='Ações desde abertura';
+      $('last30Text').textContent=`janela disponível: ${mins} min`;
+    }
+    $('last30').textContent=fmt.format(Math.max(0,currentTotal-baseTotal));
+  }
+
+  function updateSummary(){
+    const salao=sumMetric('salao');
+    const online=sumMetric('online');
+    const cotacoes=sumMetric('cotacoes');
+    const total=salao+online+cotacoes;
+
+    [
+      ['metricSalao',salao],['metricOnline',online],['metricCotacoes',cotacoes],
+      ['cardSalao',salao],['cardOnline',online],['cardCotacoes',cotacoes],['totalActions',total]
+    ].forEach(([id,v])=>{
+      const el=$(id);
+      const old=el.textContent;
+      el.textContent=fmt.format(v);
+      if(old!==el.textContent){
+        el.classList.remove('changed');
+        void el.offsetWidth;
+        el.classList.add('changed');
+      }
+    });
+
+    const scoped=selectedStores();
+    const activeAgents=scoped.reduce((a,s)=>a+Number(period==='day'?s.dayActiveAgents||0:s.monthActiveAgents||0),0);
+    const capacity=scoped.reduce((a,s)=>a+Number(s.capacity||0),0);
+    $('activeAgents').textContent=fmt.format(activeAgents);
+    $('activeCoverage').textContent=(capacity?Math.round(activeAgents/capacity*100):0)+'%';
+
+    const leaders={};
+    ['salao','online','cotacoes'].forEach(key=>{
+      leaders[key]=[...scoped].sort((a,b)=>storeMetric(b,key)-storeMetric(a,key))[0];
+    });
+    $('leaderSalao').textContent=leaders.salao?.name||'—';
+    $('leaderOnline').textContent=leaders.online?.name||'—';
+    $('leaderCotacoes').textContent=leaders.cotacoes?.name||'—';
+
+    const shareSalao=total?Math.round(salao/total*100):0;
+    const shareOnline=total?Math.round(online/total*100):0;
+    const shareCotacoes=total?Math.round(cotacoes/total*100):0;
+
+    $('footSalao').textContent=shareSalao+'% das ações';
+    $('footOnline').textContent=shareOnline+'% das ações';
+    $('footCotacoes').textContent=shareCotacoes+'% das ações';
+    $('barSalao').style.width=Math.min(100,shareSalao*2)+'%';
+    $('barOnline').style.width=Math.min(100,shareOnline*2)+'%';
+    $('barCotacoes').style.width=Math.min(100,shareCotacoes*2)+'%';
+
+    $('avgStore').textContent=fmt.format(scoped.length?Math.round(total/scoped.length):0);
+
+    $('totalDelta').textContent=formatDelta(metricDelta('all'));
+    $('deltaSalao').textContent=formatDelta(metricDelta('salao'));
+    $('deltaOnline').textContent=formatDelta(metricDelta('online'));
+    $('deltaCotacoes').textContent=formatDelta(metricDelta('cotacoes'));
+
+    updateRecentActivity(scoped);
+
+    let fastest=null, fastestDelta=-Infinity;
+    scoped.forEach(s=>{
+      const d=realMode?previousSnapshotStoreDelta(s.id):storeMetric(s,'all');
+      if(d>fastestDelta){fastest=s;fastestDelta=d}
+    });
+    $('fastestStore').textContent=fastest?.name||'—';
+    $('fastestText').textContent=realMode
+      ? `${fastestDelta>0?'+':''}${fmt.format(Math.max(0,fastestDelta))} ações na última atualização`
+      : `${fmt.format(fastest?storeMetric(fastest,'all'):0)} ações`;
+
+    const activeStores=scoped.filter(s=>storeMetric(s,'all')>0).length;
+    const coveragePct=scoped.length?Math.round(activeStores/scoped.length*100):0;
+    $('coverage').textContent=coveragePct+'%';
+    $('coverageText').textContent=`${activeStores} de ${scoped.length} lojas com atividade`;
+  }
+
+  function renderRanking(){
+    const top=[...selectedStores()]
+      .sort((a,b)=>storeMetric(b,activeAction)-storeMetric(a,activeAction))
+      .slice(0,5);
+
+    $('ranking').innerHTML=top.length?top.map((s,i)=>`
+      <div class="rank-row">
+        <div class="rank-pos">${String(i+1).padStart(2,'0')}</div>
+        <div class="rank-name">${escapeHtml(s.name)}<span class="rank-company">${escapeHtml(s.company)}</span></div>
+        <div class="rank-value">${fmt.format(storeMetric(s,activeAction))}</div>
+      </div>
+    `).join(''):'<div class="panel-sub">Nenhuma loja para este filtro.</div>';
+  }
+
+  function snapshotMetric(snap,key){
+    const company=$('companyFilter').value;
+    const unit=$('unitFilter').value;
+    return snap.stores
+      .filter(s=>(company==='all'||s.company===company)&&(unit==='all'||s.id===unit))
+      .reduce((acc,s)=>acc+storeMetric(s,key,'day'),0);
+  }
+
+  function realDayChart(){
+    const snaps=liveSnapshots.slice(-40);
+    return {
+      values:snaps.map(s=>snapshotMetric(s,activeAction)),
+      labels:snaps.map(s=>new Date(s.ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}))
+    };
+  }
+
+  function realMonthChart(){
+    const scoped=selectedStores();
+    const values=[],labels=[];
+    let cumulative=0;
+    for(let d=1;d<=currentDay;d++){
+      const date=`${String(d).padStart(2,'0')}`;
+      let dayValue=0;
+      scoped.forEach(s=>{
+        const row=s.daily?.[date]||blankMetric();
+        dayValue+=metricValue(row,activeAction);
+      });
+      cumulative+=dayValue;
+      values.push(cumulative);
+      labels.push(date);
+    }
+    return {values,labels};
+  }
+
+  function fallbackChart(){
+    if(period==='day'){
+      let values;
+      if(activeAction==='all'){
+        values=demoDaySeries.salao.map((_,i)=>demoDaySeries.salao[i]+demoDaySeries.online[i]+demoDaySeries.cotacoes[i]);
+      }else values=demoDaySeries[activeAction].slice();
+      return {values,labels:['08h','09h','10h','11h','12h','13h','14h','15h','16h','17h','18h']};
+    }
+    const values=[],labels=[];
+    let cumulative=0;
+    const target=sumMetric(activeAction);
+    for(let d=1;d<=currentDay;d++){
+      cumulative+=target/currentDay;
+      values.push(Math.round(cumulative));
+      labels.push(String(d).padStart(2,'0'));
+    }
+    if(values.length)values[values.length-1]=target;
+    return {values,labels};
+  }
+
+  function renderChart(){
+    const data=realMode?(period==='day'?realDayChart():realMonthChart()):fallbackChart();
+    const values=data.values.length?data.values:[0];
+    const labels=data.labels.length?data.labels:['agora'];
+
+    const W=760,H=250,padX=34,padY=24;
+    const max=Math.max(...values,1);
+    const step=(W-padX*2)/Math.max(1,values.length-1);
+
+    const pts=values.map((v,i)=>{
+      const x=values.length===1?W/2:padX+i*step;
+      const y=H-padY-(v/max)*(H-padY*2);
+      return [x,y];
+    });
+
+    let line='';
+    pts.forEach((p,i)=>line+=(i?' L ':'M ')+p[0].toFixed(1)+' '+p[1].toFixed(1));
+    const area=pts.length>1?line+` L ${pts.at(-1)[0].toFixed(1)} ${H-padY} L ${pts[0][0].toFixed(1)} ${H-padY} Z`:'';
+
+    $('linePath').setAttribute('d',line);
+    $('areaPath').setAttribute('d',area);
+    $('chartPoints').innerHTML=pts.map(p=>`<circle class="point" cx="${p[0]}" cy="${p[1]}" r="3.6"></circle>`).join('');
+
+    const showEvery=Math.max(1,Math.ceil(labels.length/8));
+    $('chartLabels').innerHTML=pts.map((p,i)=>{
+      const show=labels.length<=11||i===0||i===pts.length-1||i%showEvery===0;
+      return show?`<text class="axis-label" x="${p[0]}" y="${H-5}" text-anchor="middle">${escapeHtml(labels[i])}</text>`:'';
+    }).join('');
+
+    $('chartGrid').innerHTML=[0.2,0.4,0.6,0.8].map(f=>{
+      const y=H-padY-(H-padY*2)*f;
+      return `<line class="gridline" x1="${padX}" y1="${y}" x2="${W-padX}" y2="${y}"></line>`;
+    }).join('');
+
+    const names={all:'Todas as ações',salao:'Abordagem no salão',online:'Captação online',cotacoes:'Cotações'};
+    $('chartLegend').textContent=`${names[activeAction]} · ${scopeLabel()} · ${period==='day'?'Hoje':'Mês atual'}`;
+  }
+
+  function syncActionTabs(){
+    ['chartTabs','rankingTabs'].forEach(id=>{
+      [...$(id).querySelectorAll('.tab')].forEach(btn=>{
+        btn.classList.toggle('active',btn.dataset.action===activeAction);
+      });
+    });
+  }
+
+  function setAction(action){
+    activeAction=action;
+    syncActionTabs();
+    renderChart();
+    renderRanking();
+  }
+
+  function refreshView(){
+    updateLabels();
+    updateSummary();
+    renderRanking();
+    renderChart();
+  }
+
+  function cloneStoresForSnapshot(source){
+    return source.map(s=>({
+      id:s.id,name:s.name,unitName:s.unitName,company:s.company,capacity:s.capacity,
+      dayActiveAgents:s.dayActiveAgents,monthActiveAgents:s.monthActiveAgents,
+      day:{...s.day},month:{...s.month},daily:s.daily?JSON.parse(JSON.stringify(s.daily)):{}
+    }));
+  }
+
+  function applyRealPayload(payload){
+    realMode=true;
+    if(payload.today){
+      currentDay=Math.max(1,Number(payload.today.slice(8,10))||currentDay);
+    }
+    stores=(payload.stores||[]).map(s=>({
+      id:String(s.id),
+      name:s.name||s.unitName||'Unidade',
+      unitName:s.unitName||s.name||'Unidade',
+      company:s.company||'',
+      capacity:Number(s.capacity||0),
+      dayActiveAgents:Number(s.dayActiveAgents||0),
+      monthActiveAgents:Number(s.monthActiveAgents||0),
+      day:{...blankMetric(),...(s.day||{})},
+      month:{...blankMetric(),...(s.month||{})},
+      daily:s.daily||{}
+    }));
+
+    const ts=payload.generatedAt?new Date(payload.generatedAt).getTime():Date.now();
+    liveSnapshots.push({ts,stores:cloneStoresForSnapshot(stores)});
+    if(liveSnapshots.length>121)liveSnapshots=liveSnapshots.slice(-121);
+
+    populateCompanies(true);
+    populateUnits(true);
+    refreshView();
+    $('lastUpdate').textContent=new Date(ts).toLocaleTimeString('pt-BR');
+    $('currentDateLive').textContent=formatCurrentDate();
+    seconds=3600;
+    $('countdown').textContent='1h';
+  }
+
+  function requestRealData(reason='manual'){
+    if(window.parent!==window){
+      if(!hostActive)return true;
+      window.parent.postMessage({type:'rotina-live-request',reason},window.location.origin);
+      return true;
+    }
+    return false;
+  }
+
+  function fallbackUpdate(){
+    stores.forEach(s=>{
+      s.day.salao+=Math.floor(Math.random()*3);
+      s.day.online+=Math.floor(Math.random()*3);
+      s.day.cotacoes+=Math.floor(Math.random()*3);
+      s.month.salao+=Math.floor(Math.random()*3);
+      s.month.online+=Math.floor(Math.random()*3);
+      s.month.cotacoes+=Math.floor(Math.random()*3);
+    });
+    refreshView();
+    $('lastUpdate').textContent=new Date().toLocaleTimeString('pt-BR');
+    seconds=1800;
+  }
+
+  function refreshData(reason='manual'){
+    seconds=1800;
+    $('countdown').textContent=formatCountdown(seconds);
+    if(!requestRealData(reason)) fallbackUpdate();
+  }
+
+  function setPeriod(next){
+    period=next;
+    $('periodDay').classList.toggle('active',period==='day');
+    $('periodMonth').classList.toggle('active',period==='month');
+    refreshView();
+  }
+
+  function startTimer(){
+    if(timer)clearInterval(timer);
+    timer=setInterval(()=>{
+      $('currentDateLive').textContent=formatCurrentDate();
+      if(!auto||!hostActive||document.hidden)return;
+      seconds--;
+      if(seconds<=0)refreshData('auto');
+      $('countdown').textContent=formatCountdown(seconds);
+    },1000);
+  }
+
+  window.addEventListener('message',event=>{
+    if(event.origin!==window.location.origin)return;
+
+    if(event.data?.type==='rotina-live-visibility'){
+      hostActive=event.data.active===true;
+      if(hostActive){
+        seconds=1800;
+        $('countdown').textContent=formatCountdown(seconds);
+        requestRealData('initial');
+      }
+      return;
+    }
+
+    if(event.data?.type==='rotina-live-data')applyRealPayload(event.data.payload||{});
+    if(event.data?.type==='rotina-live-error'){
+      $('last30Text').textContent='falha na atualização · tentando novamente';
+      seconds=3600;
+    }
+  });
+
+  document.addEventListener('visibilitychange',()=>{
+    if(!document.hidden && auto && hostActive){
+      refreshData('resume');
+    }
+  });
+
+  $('periodDay').addEventListener('click',()=>setPeriod('day'));
+  $('periodMonth').addEventListener('click',()=>setPeriod('month'));
+
+  $('companyFilter').addEventListener('change',()=>{
+    populateUnits(false);
+    refreshView();
+  });
+  $('unitFilter').addEventListener('change',refreshView);
+
+  // UMA ÚNICA SELEÇÃO LÓGICA: os dois blocos respondem juntos.
+  ['chartTabs','rankingTabs'].forEach(id=>{
+    $(id).addEventListener('click',e=>{
+      const btn=e.target.closest('button[data-action]');
+      if(!btn)return;
+      setAction(btn.dataset.action);
+    });
+  });
+
+  $('autoBtn').addEventListener('click',()=>{
+    auto=!auto;
+    $('autoBtn').textContent='Auto: '+(auto?'ON':'OFF');
+    $('autoBtn').classList.toggle('active',auto);
+    $('livePill').classList.toggle('offline',!auto);
+    if(auto)seconds=1800;
+    $('countdown').textContent=auto?formatCountdown(seconds):'pausado';
+  });
+
+  $('refreshBtn').addEventListener('click',()=>refreshData('manual'));
+
+  populateCompanies(false);
+  populateUnits(false);
+  syncActionTabs();
+  $('currentDateLive').textContent=formatCurrentDate();
+  $('lastUpdate').textContent=new Date().toLocaleTimeString('pt-BR');
+  refreshView();
+  startTimer();
+  if(hostActive)requestRealData('initial');
+})();
+</script>
+<script>
+/* ===== V8 LIVE — camada visual e detector de ultrapassagem =====
+   Somente LÊ o DOM já renderizado pelo script original. Não altera dados, filtros ou timers. */
+(function(){try{
+  var $=function(id){return document.getElementById(id)};
+  var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* 1. Abertura curta */
+  var boot=$('boot'); if(boot) boot.addEventListener('animationend',function(e){if(e.target===boot)boot.remove()});
+
+  /* 2. Linha de contagem acompanha o "Próxima em" */
+  var cd=$('countdown'), line=document.querySelector('.cd-line'), fill=line&&line.firstElementChild, lastSec=1800;
+  function cdSync(){
+    var t=cd.textContent.trim(), m=/^(\d+)s$/.exec(t);
+    if(!m){line.classList.add('paused');return}
+    line.classList.remove('paused');
+    var s=+m[1];
+    if(s>lastSec){fill.style.transition='none';fill.style.transform='scaleX('+(s/1800)+')';void fill.offsetWidth;fill.style.transition=''}
+    else fill.style.transform='scaleX('+(s/1800)+')';
+    lastSec=s;
+  }
+  if(cd&&fill){new MutationObserver(cdSync).observe(cd,{childList:true,characterData:true,subtree:true});cdSync()}
+
+  /* 3. Pulso no "AO VIVO" a cada atualização */
+  var pill=$('livePill'), lu=$('lastUpdate');
+  if(lu&&pill) new MutationObserver(function(){pill.classList.remove('sync');void pill.offsetWidth;pill.classList.add('sync')}).observe(lu,{childList:true,characterData:true,subtree:true});
+
+  /* 4. Gráfico: revela da esquerda p/ direita ao trocar aba, período ou filtro; no celular mantém o "agora" visível */
+  var wrap=document.querySelector('.chart-wrap'), stick=true;
+  function wipe(){if(reduce||!wrap)return;wrap.classList.remove('wipe');void wrap.offsetWidth;wrap.classList.add('wipe')}
+  function toEnd(){if(wrap&&stick)wrap.scrollLeft=wrap.scrollWidth}
+  if(wrap){
+    wrap.addEventListener('scroll',function(){stick=wrap.scrollLeft+wrap.clientWidth>=wrap.scrollWidth-8},{passive:true});
+    var lp=$('linePath'); if(lp) new MutationObserver(toEnd).observe(lp,{attributes:true,attributeFilter:['d']});
+    ['chartTabs','periodDay','periodMonth'].forEach(function(id){$(id).addEventListener('click',function(){stick=true;wipe();setTimeout(toEnd,0)})});
+    ['companyFilter','unitFilter'].forEach(function(id){$(id).addEventListener('change',function(){stick=true;wipe();setTimeout(toEnd,0)})});
+    wipe();setTimeout(toEnd,0);
+  }
+
+  /* 5. Ranking: detector de ultrapassagem no módulo selecionado */
+  var rk=$('ranking'), panel=rk.closest('.panel'), st=$('ovStatus'), stTxt=$('ovText');
+  var MOD={all:'Geral',salao:'Abordagem no salão',online:'Captação online',cotacoes:'Cotações'};
+  var HL=9000, prevKey=null, prevList=[], prevTop=new Map(), hl=new Map(), stTimer=null, flashTimer=null;
+
+  function activeTab(){var t=document.querySelector('#rankingTabs .tab.active');return t?t.dataset.action:'all'}
+  function keyNow(){return [activeTab(),$('periodMonth').classList.contains('active')?'m':'d',$('companyFilter').value,$('unitFilter').value].join('|')}
+  function clearRows(){hl.clear();Array.prototype.forEach.call(rk.querySelectorAll('.rank-row'),function(r){r.classList.remove('ov-up','ov-down','ov-hit');var t=r.querySelector('.ov-tag');if(t)t.remove()})}
+  function idle(){st.classList.remove('alert');stTxt.textContent='Monitorando ultrapassagens · '+(MOD[activeTab()]||'')}
+  function read(){
+    return Array.prototype.map.call(rk.querySelectorAll('.rank-row'),function(r){
+      var n=r.querySelector('.rank-name'), v=r.querySelector('.rank-value');
+      var c=r.querySelector('.rank-company');
+      return {el:r,name:((n&&n.firstChild?n.firstChild.textContent:'')||'').trim(),comp:c?c.textContent.trim():'',val:parseInt(((v&&v.textContent)||'0').replace(/\D/g,''),10)||0};
+    });
+  }
+  function topOf(el){return el.getBoundingClientRect().top-rk.getBoundingClientRect().top}
+  function ord(i){return (i+1)+'º'}
+
+
+  /* Aviso grande de ultrapassagem: quem subiu e quem desceu */
+  var big=$('ovBig'), bigTimer=null, BIG_MS=6000;
+  function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e}
+  function posTxt(from,to){return (from==null?'fora do Top 5':ord(from))+'  →  '+(to==null?'fora do Top 5':ord(to))}
+  function hideBig(){clearTimeout(bigTimer);big.classList.remove('on')}
+  function row(kind,name,comp,from,to){
+    var r=el('div','ovb-row ovb-'+kind);
+    r.appendChild(el('div','ovb-arrow',kind==='up'?'▲':'▼'));
+    var m=el('div','ovb-main');m.appendChild(el('div','ovb-name',name));
+    m.appendChild(el('div','ovb-sub',(kind==='up'?'SUBIU':'DESCEU')+(comp?' · '+comp:'')));
+    r.appendChild(m);r.appendChild(el('div','ovb-pos',posTxt(from,to)));return r;
+  }
+  function showBig(events){
+    var e=events[0], lead=e.to===0, card=big.querySelector('.ovb-card');
+    card.className='ovb-card'+(lead?' lead':'');
+    card.textContent='';
+    card.appendChild(el('div','ovb-kick',(lead?'NOVO LÍDER':'ULTRAPASSAGEM')+' · '+(MOD[activeTab()]||'')));
+    card.appendChild(row('up',e.name,e.comp,e.from,e.to));
+    e.info.forEach(function(d,i){if(i<2)card.appendChild(row('down',d.name,d.comp,d.from,d.to))});
+    var more=events.length-1+Math.max(0,e.info.length-2);
+    if(more>0)card.appendChild(el('div','ovb-more','+'+more+' movimento'+(more>1?'s':'')+' no ranking'));
+    var bar=el('div','ovb-bar');bar.appendChild(el('i'));card.appendChild(bar);
+    big.classList.remove('on');void big.offsetWidth;big.classList.add('on');
+    clearTimeout(bigTimer);bigTimer=setTimeout(hideBig,BIG_MS);
+  }
+  if(big)big.addEventListener('click',hideBig);
+
+  function process(){
+    var list=read(), k=keyNow(), same=(k===prevKey&&prevList.length&&list.length), events=[];
+    var mx=list.length?Math.max.apply(null,list.map(function(x){return x.val})):1;
+    list.forEach(function(x){x.el.style.setProperty('--w',(mx?Math.round(x.val/mx*100):0)+'%')});
+
+    if(same){
+      var oldIdx=new Map(prevList.map(function(p,i){return [p.name,i]}));
+      var newIdx=new Map(list.map(function(p,i){return [p.name,i]}));
+      list.forEach(function(x,i){
+        var o=oldIdx.get(x.name);
+        if(o===undefined){
+          var dropped=prevList.filter(function(p){return !newIdx.has(p.name)}).map(function(p){return p.name});
+          if(dropped.length){var d=dropped[dropped.length-1];events.push({name:x.name,comp:x.comp,from:null,to:i,passed:[d],info:[{name:d,comp:(prevList[oldIdx.get(d)]||{}).comp||'',from:oldIdx.get(d),to:null}]})}
+        }else if(i<o){
+          var passed=prevList.filter(function(p,pi){return pi<o&&newIdx.has(p.name)&&newIdx.get(p.name)>i}).map(function(p){return p.name});
+          if(passed.length) events.push({name:x.name,comp:x.comp,from:o,to:i,passed:passed,info:passed.map(function(n){return {name:n,comp:(prevList[oldIdx.get(n)]||{}).comp||'',from:oldIdx.get(n),to:newIdx.get(n)}})});
+        }
+      });
+    }else{hl.clear();idle()}
+
+    var now=Date.now(), fresh=new Set();
+    events.forEach(function(e){
+      hl.set(e.name,{type:'up',until:now+HL,passed:e.passed});fresh.add(e.name);
+      e.passed.forEach(function(p){if(!(hl.get(p)&&hl.get(p).type==='up'))hl.set(p,{type:'down',until:now+HL})});
+    });
+
+    /* marca as linhas (apenas classes e um rótulo) */
+    list.forEach(function(x){
+      var h=hl.get(x.name);
+      if(h&&h.until<now){hl.delete(x.name);h=null}
+      if(!h)return;
+      x.el.classList.add(h.type==='up'?'ov-up':'ov-down');
+      if(h.type==='up'){
+        var n=x.el.querySelector('.rank-name'), tag=document.createElement('span');
+        tag.className='ov-tag';
+        tag.textContent='▲ ultrapassou '+h.passed[0]+(h.passed.length>1?' +'+(h.passed.length-1):'');
+        n.appendChild(tag);
+        if(fresh.has(x.name))x.el.classList.add('ov-hit');
+      }
+    });
+
+    /* faixa de status + flash do painel */
+    if(events.length){
+      events.sort(function(a,b){return a.to-b.to});
+      var e0=events[0], lead=e0.to===0;
+      stTxt.textContent=(lead?'NOVO LÍDER · ':'')+'▲ '+e0.name+' ultrapassou '+e0.passed[0]+' · agora '+ord(e0.to)+(events.length>1?' · +'+(events.length-1)+' mov.':'');
+      st.classList.remove('alert');void st.offsetWidth;st.classList.add('alert');
+      clearTimeout(stTimer);stTimer=setTimeout(function(){clearRows();idle()},HL);
+      if(big)showBig(events);
+      if(!reduce){panel.classList.remove('ov-flash');void panel.offsetWidth;panel.classList.add('ov-flash');clearTimeout(flashTimer);flashTimer=setTimeout(function(){panel.classList.remove('ov-flash')},1400)}
+    }
+
+    /* FLIP: linhas deslizam até a nova posição */
+    var tops=new Map(list.map(function(x){return [x.name,topOf(x.el)]}));
+    if(same&&!reduce){
+      list.forEach(function(x){
+        var p=prevTop.get(x.name), c=tops.get(x.name);
+        if(p!==undefined&&Math.abs(p-c)>1&&x.el.animate)
+          x.el.animate([{transform:'translateY('+(p-c)+'px)'},{transform:'none'}],{duration:700,easing:'cubic-bezier(.2,.8,.2,1)'});
+      });
+    }
+    prevTop=tops;prevList=list.map(function(x){return {name:x.name,comp:x.comp,val:x.val}});prevKey=k;
+  }
+  ['rankingTabs','periodDay','periodMonth'].forEach(function(id){$(id).addEventListener('click',function(){if(big)hideBig()})});
+  ['companyFilter','unitFilter'].forEach(function(id){$(id).addEventListener('change',function(){if(big)hideBig()})});
+  new MutationObserver(process).observe(rk,{childList:true});
+  process();
+}catch(err){console.warn('V8 LIVE visual layer:',err)}})();
+</script>
+</body>
+</html>

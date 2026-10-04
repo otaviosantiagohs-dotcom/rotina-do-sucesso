@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/><meta name="theme-color" content="#050608"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" name="viewport"/>
-<title>Rotina do Sucesso — V8.8 Dashboards Reais</title>
+<title>Rotina do Sucesso — V8.9.3 Dashboard Ao Vivo 30min Otimizado</title>
 <style>
 :root{--bg:#0b0e12;--panel:#12171d;--panel2:#171d24;--line:#27303a;--text:#f5f7fa;--muted:#8d98a5;--red:#e43b32;--green:#61d394;--amber:#e9b45d}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
@@ -307,6 +307,29 @@ main{animation:fadein .22s ease both}
   .org-summary{grid-template-columns:1fr}
 }
 
+
+.current-date{
+  height:38px;display:flex;align-items:center;padding:0 12px;border:1px solid var(--line);
+  border-radius:10px;background:rgba(255,255,255,.025);color:var(--text);font-size:12px;
+  white-space:nowrap;font-weight:700;letter-spacing:.02em
+}
+.current-date small{color:var(--muted);font-weight:600;margin-right:7px;text-transform:uppercase;letter-spacing:.08em;font-size:9px}
+
+/* V8.9 — alojamento do Dashboard Ao Vivo. O design do módulo permanece isolado no iframe. */
+#liveDashboardContainer{
+  width:100%;
+  height:calc(100vh - 150px);
+  min-height:620px;
+  overflow:hidden;
+  border:1px solid var(--line);
+  background:#050608;
+}
+#liveDashboardFrame{width:100%;height:100%;display:block;border:0;background:#050608}
+#app.live-performance-mode > .wrap > .head{display:none}
+#app.live-performance-mode .admin-nav{margin-top:0}
+@media(max-width:760px){
+  #liveDashboardContainer{height:calc(100vh - 125px);min-height:620px}
+}
 </style>
 </head>
 <body>
@@ -340,6 +363,7 @@ main{animation:fadein .22s ease both}
 <header class="top">
 <div class="brand"><div class="slash"></div><div><b>Rotina do Sucesso</b><small id="mode">missão em andamento</small></div></div>
 <div class="actions">
+<div class="current-date" id="currentDateGlobal"><small>Data atual</small><span>--/--/----</span></div>
 <button class="btn" id="clearDay">Zerar hoje</button><button class="btn" id="export">Exportar Excel</button>
 <button class="btn" id="history">Histórico</button>
 <button class="btn ghost" id="logout">Sair</button>
@@ -354,11 +378,7 @@ main{animation:fadein .22s ease both}
 </div>
 <div class="user"><div class="avatar" id="avatar">DS</div><div><b id="uname">Dayana Souza</b><div class="save" id="savestatus">● salvo automaticamente</div></div></div>
 </div>
-<div class="tabs hidden" id="tabs">
-<button class="tab active" data-view="performance">Performance</button>
-<button class="tab" data-view="manager">Gerente</button>
-<button class="tab" data-view="collab">Colaborador</button>
-</div>
+<div class="tabs hidden" id="tabs" aria-hidden="true"></div>
 <div class="mobile-collab-nav hidden" id="collabModeNav">
 <button class="modebtn active" data-collab-mode="entry">Registrar atividade</button>
 <button class="modebtn" data-collab-mode="dashboard">Minha Dashboard</button>
@@ -446,6 +466,7 @@ main{animation:fadein .22s ease both}
 <main class="hidden" id="performance">
 <div class="admin-nav" id="performanceModeNav">
 <button class="active" data-performance-mode="dashboard">Super Dashboard</button>
+<button data-performance-mode="live">Dashboard Ao Vivo</button>
 <button data-performance-mode="users">Gestão de Usuários</button>
 <button data-performance-mode="org">Empresas e Unidades</button>
 </div>
@@ -472,6 +493,10 @@ main{animation:fadein .22s ease both}
 <section class="card pad"><div class="section" style="margin:0"><h2>Comparação de períodos</h2><span>Período anterior × atual</span></div><div class="stats" style="grid-template-columns:1fr 1fr;margin-top:10px"><div class="card stat"><div class="l" id="pfPrevLabel">—</div><div class="v" id="pfPrevValue">0</div></div><div class="card stat"><div class="l" id="pfCurrLabel">—</div><div class="v" id="pfCurrValue">0</div><div class="d" id="pfPeriodDelta">0%</div></div></div></section>
 <section class="card pad"><div class="section" style="margin:0"><h2>Comparação entre agentes</h2><span id="pfAgentRankLabel">Todas as ações</span></div><div id="agentrank"></div></section>
 </div>
+</div>
+
+<div class="hidden" id="liveDashboardContainer">
+  <iframe id="liveDashboardFrame" data-src="modules/dashboard-ao-vivo/index.html" title="Dashboard Ao Vivo — Rotina do Sucesso"></iframe>
 </div>
 
 <div class="hidden" id="userManagement">
@@ -670,6 +695,24 @@ const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHA
     detectSessionInUrl:false
   }
 });
+
+function formatCurrentBusinessDate(){
+  const parts=new Intl.DateTimeFormat('pt-BR',{
+    timeZone:'America/Sao_Paulo',
+    weekday:'short',
+    day:'2-digit',
+    month:'2-digit',
+    year:'numeric'
+  }).formatToParts(new Date());
+
+  const map=Object.fromEntries(parts.map(p=>[p.type,p.value]));
+  const weekday=(map.weekday||'').replace('.','');
+  return `${weekday.charAt(0).toUpperCase()+weekday.slice(1)} · ${map.day}/${map.month}/${map.year}`;
+}
+function renderCurrentBusinessDate(){
+  const el=document.querySelector('#currentDateGlobal span');
+  if(el)el.textContent=formatCurrentBusinessDate();
+}
 function currentBusinessDate(){
   const parts=new Intl.DateTimeFormat('en-CA',{
     timeZone:'America/Sao_Paulo',
@@ -1029,7 +1072,17 @@ function renderEntry(){if(!currentUser||currentUser.role!=='colaborador')return;
 function render(){renderEntry();if(currentUser?.role==='colaborador')renderPersonalDashboard();if(!$('#manager').classList.contains('hidden'))renderManager();if(!$('#performance').classList.contains('hidden')){renderPerformance();renderUserManagement();renderOrgManagement()}}
 
 function setTopForView(v){
-  if(v==='collab'){$('#kick').textContent='Missão do dia';$('#title').textContent='Minha Rotina';$('#subtitle').textContent='Execução diária e salvamento automático.';$('#mode').textContent='missão em andamento';$('#history').classList.remove('hidden');$('#clearDay').classList.remove('hidden');if(currentUser?.role==='colaborador')$('#collabModeNav').classList.remove('hidden')}
+  if(v==='collab'){
+    $('#kick').textContent='Missão do dia';
+    $('#title').textContent='Minha Rotina';
+    $('#subtitle').textContent='Execução diária e salvamento automático.';
+    $('#mode').textContent='missão em andamento';
+
+    const isCollaborator=currentUser?.role==='colaborador';
+    $('#history').classList.toggle('hidden',!isCollaborator);
+    $('#clearDay').classList.toggle('hidden',!isCollaborator);
+    $('#collabModeNav').classList.toggle('hidden',!isCollaborator);
+  }
   else if(v==='manager'){const c=managerContext();$('#kick').textContent='Comando da unidade';$('#title').textContent='Dashboard do Gerente';$('#subtitle').textContent=c?`${c.unit} · ${c.company} · acompanhamento da equipe`:'Selecione uma unidade';$('#mode').textContent='comando da unidade';$('#history').classList.add('hidden');$('#clearDay').classList.add('hidden');$('#collabModeNav').classList.add('hidden')}
   else{
     $('#kick').textContent='Central de comando';
@@ -1039,7 +1092,30 @@ function setTopForView(v){
     $('#mode').textContent='central de comando';$('#history').classList.add('hidden');$('#clearDay').classList.add('hidden');$('#collabModeNav').classList.add('hidden')
   }
 }
-function view(v){['collab','manager','performance'].forEach(x=>$('#'+x).classList.add('hidden'));$('#'+v).classList.remove('hidden');$$('.tab').forEach(x=>x.classList.toggle('active',x.dataset.view===v));setTopForView(v);if(v==='manager'){rebuildManagerAgentOptions();renderManager()}if(v==='performance'){renderPerformance();renderUserManagement();renderOrgManagement()}if(v==='collab')renderPersonalDashboard()}
+function view(v){
+  if(currentUser){
+    const allowedView=currentUser.role==='performance'?'performance':currentUser.role==='gerente'?'manager':'collab';
+    v=allowedView;
+  }
+
+  ['collab','manager','performance'].forEach(x=>$('#'+x).classList.add('hidden'));
+  $('#'+v).classList.remove('hidden');
+  $$('.tab').forEach(x=>x.classList.toggle('active',x.dataset.view===v));
+  setTopForView(v);
+
+  if(v==='manager'){
+    rebuildManagerAgentOptions();
+    renderManager();
+  }
+  if(v==='performance'){
+    renderPerformance();
+    renderUserManagement();
+    renderOrgManagement();
+  }
+  if(v==='collab'&&currentUser?.role==='colaborador'){
+    renderPersonalDashboard();
+  }
+}
 
 function showLogin(){currentUser=null;role=null;$('#app').classList.add('hidden');$('#login').classList.remove('hidden');$('#user').value='';$('#pass').value='';$('#msg').textContent='';['first','hist','userModal','importUsersModal','companyModal','unitModal'].forEach(id=>$('#'+id)?.classList.add('hidden'))}
 function technicalEmailForUsername(username){
@@ -1113,10 +1189,30 @@ async function authenticateReal(username,password){
   if(touchError)console.warn('Não foi possível atualizar último acesso:',touchError);
   return profile;
 }
-function loginAsUser(u){currentUser=u;role=u.role;u.lastLogin=nowLabel();audit('Login',u.username,'Acesso realizado');$('#login').classList.add('hidden');$('#app').classList.remove('hidden');setMetaForUser(u);
-  if(u.role==='colaborador'){state=ensureLiveState(u);$('#tabs').classList.add('hidden');view('collab');setCollabMode('entry');if(!u.profileComplete)openFirstAccess()}
-  else if(u.role==='gerente'){$('#tabs').classList.add('hidden');view('manager')}
-  else{$('#tabs').classList.remove('hidden');setPerformanceMode('dashboard');view('performance')}
+function loginAsUser(u){
+  currentUser=u;
+  role=u.role;
+  u.lastLogin=nowLabel();
+  audit('Login',u.username,'Acesso realizado');
+
+  $('#login').classList.add('hidden');
+  $('#app').classList.remove('hidden');
+  $('#tabs').classList.add('hidden');
+  setMetaForUser(u);
+
+  if(u.role==='colaborador'){
+    state=ensureLiveState(u);
+    view('collab');
+    setCollabMode('entry');
+    if(!u.profileComplete)openFirstAccess();
+  }
+  else if(u.role==='gerente'){
+    view('manager');
+  }
+  else{
+    setPerformanceMode('dashboard');
+    view('performance');
+  }
 }
 $('#loginForm').addEventListener('submit',async e=>{
   e.preventDefault();
@@ -1580,13 +1676,28 @@ function expectedRowsForFilter(month){const company=$('#pfCompany').value,unit=$
 function renderPerformance(){if(!$('#pfCompany'))return;const key=$('#pfIndicator').value,month=$('#pfMonth').value,rows=performanceFilteredRows(),label=indicatorNames[key],uniqueUnits=unique(rows.map(r=>r.short)),uniqueAgents=unique(rows.map(r=>r.userId)),actions=sum(rows,key),expected=expectedRowsForFilter(month),fill=expected?Math.round(rows.length/expected*100):0;$('#pfStatUnits').textContent=formatInt(uniqueUnits.length);$('#pfStatAgents').textContent=formatInt(uniqueAgents.length);$('#pfStatActions').textContent=formatInt(actions);$('#pfStatFill').textContent=fill+'%';$('#pfStatActions').parentElement.querySelector('.l').textContent=key==='all'?'Ações operacionais':indicatorShort[key];const byUnit=unique(rows.map(r=>r.short)).map(s=>({n:s,l:s.split(' ')[0],v:sum(rows.filter(r=>r.short===s),key)}));bars($('#pfchart'),byUnit.map(x=>({l:x.l,v:x.v})));rank($('#unitrank'),byUnit.map(x=>({n:x.n,s:label,v:x.v})));const byAgent=unique(rows.map(r=>r.userId)).map(id=>{const ar=rows.filter(r=>r.userId===id),u=getRuntimeUser(id);return {n:u?fullName(u):ar[0]?.agent||'—',s:ar[0]?.short||'',v:sum(ar,key)}});rank($('#agentrank'),byAgent.slice().sort((a,b)=>b.v-a.v).slice(0,8));$('#pfChartLabel').textContent=label;$('#pfUnitRankLabel').textContent=label;$('#pfAgentRankLabel').textContent=label;const prevMonth=previousMonth(month),prev=sum(performanceFilteredRows(prevMonth),key);$('#pfPrevLabel').textContent=monthLabel(prevMonth);$('#pfPrevValue').textContent=formatInt(prev);$('#pfCurrLabel').textContent=monthLabel(month);$('#pfCurrValue').textContent=formatInt(actions);$('#pfPeriodDelta').textContent=pctDelta(actions,prev)}
 $('#pfCompany').addEventListener('change',()=>{rebuildPerformanceOptions();renderPerformance()});$('#pfUnit').addEventListener('change',()=>{rebuildPerformanceOptions();renderPerformance()});['pfAgent','pfMonth','pfIndicator'].forEach(id=>$('#'+id).addEventListener('change',renderPerformance));$('#pfApply').addEventListener('click',()=>currentUser?.source==='supabase'?loadDashboardRoutinesFromSupabase():renderPerformance());
 
+
+
+/* Dashboard Ao Vivo: integração isolada em modules/dashboard-ao-vivo/bridge.js */
+
 function setPerformanceMode(mode){
   performanceMode=mode;
-  const users=mode==='users',org=mode==='org',dashboard=mode==='dashboard';
+  const users=mode==='users',
+        org=mode==='org',
+        dashboard=mode==='dashboard',
+        live=mode==='live';
+
   $('#performanceDashboard').classList.toggle('hidden',!dashboard);
+  $('#liveDashboardContainer').classList.toggle('hidden',!live);
   $('#userManagement').classList.toggle('hidden',!users);
   $('#orgManagement').classList.toggle('hidden',!org);
+  $('#app').classList.toggle('live-performance-mode',live);
+
   $$('[data-performance-mode]').forEach(b=>b.classList.toggle('active',b.dataset.performanceMode===mode));
+
+  if(window.LiveDashboardBridge){
+    window.LiveDashboardBridge.setActive(live);
+  }
 
   if(currentUser?.role==='performance'){
     setTopForView('performance');
@@ -1601,6 +1712,9 @@ function setPerformanceMode(mode){
     else if(org){
       renderOrgManagement();
       if(currentUser?.source==='supabase')loadOrganizationFromSupabase();
+    }
+    else if(live){
+      if(currentUser?.source==='supabase')window.LiveDashboardBridge?.refresh();
     }
     else{
       renderPerformance();
@@ -2409,5 +2523,9 @@ syncCompanySelects();fillSelectUnits($('#company'),$('#unit'),false);updateFirst
   var msg=document.getElementById('msg'),box=document.getElementById('loginForm');
   new MutationObserver(function(){if(msg.textContent.trim()){box.classList.remove('deny');void box.offsetWidth;box.classList.add('deny')}}).observe(msg,{childList:true,characterData:true,subtree:true});
 }catch(e){console.warn('V8 visual layer:',e)}})();
+
+renderCurrentBusinessDate();
+setInterval(renderCurrentBusinessDate,60000);
 </script>
+<script src="modules/dashboard-ao-vivo/bridge.js"></script>
 </body></html>

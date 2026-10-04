@@ -1,0 +1,33 @@
+ROTINA DO SUCESSO — V8.8 DASHBOARDS REAIS
+
+NÃO PRECISA EXECUTAR NOVO SQL.
+
+Agora são dados reais do Supabase:
+- Dashboard do Gerente
+- Super Dashboard Performance
+- filtros Empresa > Unidade > Agente
+- filtros de mês/período/indicador
+- evolução por dia
+- ranking de colaboradores
+- ranking de unidades
+- comparação com período anterior
+- preenchimento das rotinas
+
+Regras preservadas:
+- Gerente: somente sua unidade.
+- Performance: visão consolidada.
+- Vendas NÃO entram nos KPIs, rankings e comparações principais.
+- Contas reais não misturam dados demonstrativos.
+- Aplicar filtros consulta novamente o banco.
+
+PUBLICAÇÃO
+Substitua somente index.html no GitHub e faça commit.
+
+TESTE
+1. Entre como teste.agente e faça alguns lançamentos.
+2. Entre como performance.
+3. Abra Super Dashboard.
+4. Filtre a Empresa e a Unidade do teste.agente.
+5. Alterne Todos / Abordagem / Captação Online / Cotações.
+6. Cards, gráficos e rankings devem mudar juntos.
+7. Se houver Gerente real nessa unidade, valide o Dashboard do Gerente.

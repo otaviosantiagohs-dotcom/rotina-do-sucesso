@@ -1,0 +1,13 @@
+ROTINA DO SUCESSO — V8.9.3
+
+Dashboard Ao Vivo:
+- atualização automática a cada 30 minutos;
+- Atualizar agora mantido;
+- módulo permanece separado;
+- primeira abertura carrega o mês;
+- polling automático consulta somente o dia atual;
+- filtros não disparam consulta;
+- polling para fora do módulo e com navegador em segundo plano.
+
+Não precisa executar SQL novo.
+Publique mantendo a estrutura completa de pastas.

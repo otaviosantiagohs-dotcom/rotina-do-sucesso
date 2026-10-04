@@ -1,0 +1,11 @@
+ROTINA DO SUCESSO — V8.8.2 DATA ATUAL GLOBAL
+
+Ajuste:
+- a data atual fica visível no cabeçalho principal;
+- aparece em TODOS os módulos, pois o cabeçalho é global;
+- usa o fuso America/Sao_Paulo;
+- atualiza automaticamente, inclusive na virada do dia;
+- não precisa executar SQL.
+
+PUBLICAÇÃO:
+Substitua somente index.html no GitHub e faça commit.
