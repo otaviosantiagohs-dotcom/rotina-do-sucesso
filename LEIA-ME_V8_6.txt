@@ -1,0 +1,56 @@
+ROTINA DO SUCESSO — V8.6 USUÁRIOS REAIS
+
+ANTES DE PUBLICAR
+Na Vercel, o projeto precisa ter:
+- SUPABASE_URL
+- SUPABASE_PUBLISHABLE_KEY
+- SUPABASE_SECRET_KEY
+
+Arquivos desta versão:
+- index.html
+- api/admin-users.js
+- package.json
+- vercel.json
+
+O que ficou real:
+- Login
+- Empresas e Unidades
+- Gestão de Usuários
+- Criar usuário
+- Editar usuário e perfil
+- Alterar senha por Performance
+- Ativar/Inativar
+- Gerente/Capitão por unidade
+- Primeiro acesso
+- Importação em lote
+- Auditoria das alterações de usuários
+
+Segurança:
+- SUPABASE_SECRET_KEY fica somente na Vercel.
+- O navegador nunca recebe essa chave.
+- /api/admin-users exige sessão válida e perfil Performance.
+- Senhas ficam somente no Supabase Auth.
+
+PUBLICAÇÃO
+Substitua/adicone no GitHub TODOS estes itens:
+1. index.html
+2. pasta api com admin-users.js
+3. package.json
+4. vercel.json
+
+Depois faça Commit changes e aguarde a Vercel concluir o deployment.
+
+TESTE RECOMENDADO
+1. Entre como performance.
+2. Abra Gestão de Usuários.
+3. Crie um usuário:
+   usuario: teste.agente
+   senha: uma senha com 6+ caracteres
+   perfil: Colaborador
+   status: Ativo
+   cadastro concluído: desmarcado
+4. Saia.
+5. Entre como teste.agente.
+6. O sistema deve abrir o Primeiro Acesso.
+7. Preencha Nome, Sobrenome, Empresa e Unidade.
+8. Saia/entre novamente e confirme que o Primeiro Acesso não aparece mais.

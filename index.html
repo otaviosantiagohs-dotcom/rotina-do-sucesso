@@ -901,11 +901,109 @@ function fillSelectUnits(companyEl,unitEl,allowBlank=false,blankLabel='Definir n
   unitEl.innerHTML=(allowBlank?`<option value="">${blankLabel}</option>`:'')+opts.map(x=>`<option value="${x.unit}">${x.unit}${x.active===false?' (Inativa)':''}</option>`).join('');
   if(opts.some(x=>x.unit===current))unitEl.value=current;else if(allowBlank)unitEl.value='';
 }
-function openFirstAccess(){if(!currentUser)return;$('#fn').value=currentUser.firstName||'';$('#ln').value=currentUser.lastName||'';$('#company').value=currentUser.company||'SOS';fillSelectUnits($('#company'),$('#unit'),false);if(currentUser.unit&&UNIT_CATALOG.some(x=>x.company===$('#company').value&&x.unit===currentUser.unit))$('#unit').value=currentUser.unit;updateFirstCaptain();$('#firstAccessError').textContent='';$('#first').classList.remove('hidden')}
-function updateFirstCaptain(){const m=managerFor($('#company').value,$('#unit').value);$('#captain').value=m?fullName(m):'Nenhum gerente ativo definido'}
-$('#company').addEventListener('change',()=>{fillSelectUnits($('#company'),$('#unit'),false);updateFirstCaptain()});$('#unit').addEventListener('change',updateFirstCaptain);
-$('#firstForm').addEventListener('submit',e=>{e.preventDefault();if(!currentUser)return;const fn=$('#fn').value.trim(),ln=$('#ln').value.trim(),company=$('#company').value,unit=$('#unit').value;if(!fn||!ln||!company||!unit){$('#firstAccessError').textContent='Preencha Nome, Sobrenome, Empresa e Unidade.';return}if(currentUser.role==='gerente'){const existing=managerFor(company,unit);if(existing&&existing.id!==currentUser.id){$('#firstAccessError').textContent=`A unidade já possui o gerente ${fullName(existing)}.`;return}}
-  const before=`${currentUser.company||'—'} / ${currentUser.unit||'—'}`;currentUser.firstName=fn;currentUser.lastName=ln;currentUser.company=company;currentUser.unit=unit;currentUser.profileComplete=true;state=ensureLiveState(currentUser);audit('Primeiro acesso',currentUser.username,`${before} → ${company} / ${unit}`);setMetaForUser(currentUser);$('#first').classList.add('hidden');render();
+
+/* Primeiro acesso real: empresa/unidade vêm do Supabase e o vínculo é salvo via RPC. */
+let FIRST_ACCESS_COMPANIES=[];
+let FIRST_ACCESS_UNITS=[];
+
+async function loadFirstAccessOrganization(){
+  const [cRes,uRes]=await Promise.all([
+    supabaseClient.from('companies').select('id,name,active').eq('active',true).order('name'),
+    supabaseClient.from('units').select('id,company_id,name,manager_user_id,active').eq('active',true).order('name')
+  ]);
+  if(cRes.error)throw cRes.error;
+  if(uRes.error)throw uRes.error;
+  FIRST_ACCESS_COMPANIES=cRes.data||[];
+  FIRST_ACCESS_UNITS=uRes.data||[];
+}
+
+function fillFirstAccessCompanies(){
+  const el=$('#company'),current=currentUser?.companyId||'';
+  el.innerHTML=FIRST_ACCESS_COMPANIES.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  if(FIRST_ACCESS_COMPANIES.some(c=>c.id===current))el.value=current;
+}
+
+function fillFirstAccessUnits(){
+  const cId=$('#company').value,current=currentUser?.unitId||'';
+  const opts=FIRST_ACCESS_UNITS.filter(u=>u.company_id===cId&&u.active!==false);
+  $('#unit').innerHTML=opts.map(u=>`<option value="${u.id}">${u.name}</option>`).join('');
+  if(opts.some(u=>u.id===current))$('#unit').value=current;
+  updateFirstCaptain();
+}
+
+function updateFirstCaptain(){
+  const unit=FIRST_ACCESS_UNITS.find(u=>u.id===$('#unit').value);
+  $('#captain').value=unit?.manager_user_id?'Gerente definido automaticamente pela unidade':'Nenhum gerente ativo definido';
+}
+
+async function openFirstAccess(){
+  if(!currentUser)return;
+  $('#firstAccessError').textContent='';
+  $('#fn').value=currentUser.firstName||'';
+  $('#ln').value=currentUser.lastName||'';
+  try{
+    await loadFirstAccessOrganization();
+    fillFirstAccessCompanies();
+    fillFirstAccessUnits();
+    $('#first').classList.remove('hidden');
+  }catch(err){
+    console.error(err);
+    $('#firstAccessError').textContent='Não foi possível carregar Empresas e Unidades.';
+    $('#first').classList.remove('hidden');
+  }
+}
+
+$('#company').addEventListener('change',fillFirstAccessUnits);
+$('#unit').addEventListener('change',updateFirstCaptain);
+
+$('#firstForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(!currentUser)return;
+
+  const fn=$('#fn').value.trim(),
+        ln=$('#ln').value.trim(),
+        companyId=$('#company').value,
+        unitId=$('#unit').value,
+        btn=e.submitter;
+
+  if(!fn||!ln||!companyId||!unitId){
+    $('#firstAccessError').textContent='Preencha Nome, Sobrenome, Empresa e Unidade.';
+    return;
+  }
+
+  if(btn){btn.disabled=true;btn.textContent='SALVANDO...'}
+  $('#firstAccessError').textContent='';
+
+  try{
+    const {error}=await supabaseClient.rpc('complete_first_access',{
+      p_first_name:fn,
+      p_last_name:ln,
+      p_company_id:companyId,
+      p_unit_id:unitId
+    });
+    if(error)throw error;
+
+    const c=FIRST_ACCESS_COMPANIES.find(x=>x.id===companyId);
+    const u=FIRST_ACCESS_UNITS.find(x=>x.id===unitId);
+
+    currentUser.firstName=fn;
+    currentUser.lastName=ln;
+    currentUser.companyId=companyId;
+    currentUser.unitId=unitId;
+    currentUser.company=c?.name||'';
+    currentUser.unit=u?.name||'';
+    currentUser.profileComplete=true;
+
+    state=ensureLiveState(currentUser);
+    setMetaForUser(currentUser);
+    $('#first').classList.add('hidden');
+    render();
+  }catch(err){
+    console.error(err);
+    $('#firstAccessError').textContent=err?.message||'Não foi possível concluir o primeiro acesso.';
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='CONFIRMAR VÍNCULO'}
+  }
 });
 
 $$('.plus').forEach(b=>b.addEventListener('click',()=>{if(currentUser?.role!=='colaborador')return;state[b.dataset.k]++;render();pulse()}));
@@ -944,7 +1042,13 @@ function setPerformanceMode(mode){
   $$('[data-performance-mode]').forEach(b=>b.classList.toggle('active',b.dataset.performanceMode===mode));
   if(currentUser?.role==='performance'){
     setTopForView('performance');
-    if(users)renderUserManagement();
+    if(users){
+      renderUserManagement();
+      if(currentUser?.source==='supabase')loadOrganizationFromSupabase().then(()=>{
+        renderUserManagement();
+        loadUserAuditFromSupabase();
+      });
+    }
     else if(org){
       renderOrgManagement();
       if(currentUser?.source==='supabase')loadOrganizationFromSupabase();
@@ -979,7 +1083,7 @@ async function loadOrganizationFromSupabase(){
     const [companiesRes,unitsRes,profilesRes]=await Promise.all([
       supabaseClient.from('companies').select('id,name,active,created_at,updated_at').order('name'),
       supabaseClient.from('units').select('id,company_id,name,short_code,manager_user_id,timezone,active,created_at,updated_at').order('name'),
-      supabaseClient.from('profiles').select('user_id,username,first_name,last_name,role,company_id,unit_id,active,first_access_completed').order('username')
+      supabaseClient.from('profiles').select('user_id,username,first_name,last_name,role,company_id,unit_id,active,first_access_completed,last_access_at').order('username')
     ]);
     if(companiesRes.error)throw companiesRes.error;
     if(unitsRes.error)throw unitsRes.error;
@@ -1287,16 +1391,148 @@ $('#unitForm').addEventListener('submit',async e=>{
   }
 });
 
-function rebuildUserMgmtUnits(){const company=$('#umCompany').value,current=$('#umUnit').value,opts=UNIT_CATALOG.filter(x=>company==='all'||x.company===company);$('#umUnit').innerHTML='<option value="all">Todas as unidades</option>'+opts.map(x=>`<option value="${x.unit}">${x.unit}${effectiveUnitActive(x)?'':' (Inativa)'}</option>`).join('');if(opts.some(x=>x.unit===current))$('#umUnit').value=current;else $('#umUnit').value='all'}
-function filteredUsers(){const q=$('#umSearch').value.trim().toLowerCase(),r=$('#umRole').value,s=$('#umStatus').value,c=$('#umCompany').value,u=$('#umUnit').value;return userStore.filter(x=>{const text=`${x.username} ${fullName(x)}`.toLowerCase();if(q&&!text.includes(q))return false;if(r!=='all'&&x.role!==r)return false;if(s==='active'&&!x.active)return false;if(s==='inactive'&&x.active)return false;if(s==='pending'&&x.profileComplete)return false;if(c!=='all'&&x.company!==c)return false;if(u!=='all'&&x.unit!==u)return false;return true})}
+async function adminApi(action,payload={}){
+  const {data:{session}}=await supabaseClient.auth.getSession();
+  if(!session?.access_token)throw new Error('Sessão expirada. Entre novamente.');
+
+  const res=await fetch('/api/admin-users',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'Authorization':`Bearer ${session.access_token}`
+    },
+    body:JSON.stringify({action,...payload})
+  });
+
+  let body={};
+  try{body=await res.json()}catch(_){}
+  if(!res.ok){
+    const err=new Error(body?.message||'Não foi possível concluir a operação.');
+    err.code=body?.code||'ADMIN_API_ERROR';
+    throw err;
+  }
+  return body;
+}
+
+function profileCompanyName(p){
+  return orgDbCompanyById(p?.company_id)?.name||'';
+}
+function profileUnitName(p){
+  return orgDbUnitById(p?.unit_id)?.name||'';
+}
+function profileFullName(p){
+  return [p?.first_name,p?.last_name].filter(Boolean).join(' ').trim()||p?.username||'Usuário';
+}
+function profileStatusMarkup(p){
+  if(!p.active)return '<span class="status-badge inactive">Inativo</span>';
+  if(!p.first_access_completed)return '<span class="status-badge pending">1º acesso</span>';
+  return '<span class="status-badge active">Ativo</span>';
+}
+function formatLastAccess(v){
+  if(!v)return '—';
+  try{return new Intl.DateTimeFormat('pt-BR',{dateStyle:'short',timeStyle:'short'}).format(new Date(v))}
+  catch(_){return v}
+}
+async function loadUserAuditFromSupabase(){
+  if(currentUser?.role!=='performance')return;
+  const {data,error}=await supabaseClient
+    .from('audit_logs')
+    .select('id,actor_user_id,event_type,entity_type,entity_id,old_value,new_value,created_at')
+    .eq('entity_type','user')
+    .order('created_at',{ascending:false})
+    .limit(10);
+  if(error){console.error(error);return}
+  const el=$('#userAuditList');if(!el)return;
+  el.innerHTML=(data||[]).map(a=>`<div class="audit-row">
+    <div class="muted">${formatLastAccess(a.created_at)}</div>
+    <div><b>${a.event_type.replaceAll('_',' ')}</b><br><span class="muted">${a.entity_id||'usuário'}</span></div>
+    <div>${a.new_value||'—'}</div>
+    <div class="muted">registro seguro</div>
+  </div>`).join('')||'<div class="sub" style="padding:10px 0">Nenhuma alteração registrada.</div>';
+}
+
+function rebuildUserMgmtCompanyFilter(){
+  const el=$('#umCompany'),current=el.value||'all';
+  el.innerHTML='<option value="all">Todas as empresas</option>'+
+    ORG_COMPANIES_DB.map(c=>`<option value="${c.id}">${c.name}${c.active===false?' (Inativa)':''}</option>`).join('');
+  if(current==='all'||ORG_COMPANIES_DB.some(c=>c.id===current))el.value=current;
+  else el.value='all';
+}
+function rebuildUserMgmtUnits(){
+  const company=$('#umCompany').value,current=$('#umUnit').value;
+  const opts=ORG_UNITS_DB.filter(u=>company==='all'||u.company_id===company);
+  $('#umUnit').innerHTML='<option value="all">Todas as unidades</option>'+
+    opts.map(u=>`<option value="${u.id}">${u.name}${u.active===false?' (Inativa)':''}</option>`).join('');
+  if(current==='all'||opts.some(u=>u.id===current))$('#umUnit').value=current;
+  else $('#umUnit').value='all';
+}
+function filteredUsers(){
+  const q=$('#umSearch').value.trim().toLowerCase(),
+        r=$('#umRole').value,
+        s=$('#umStatus').value,
+        c=$('#umCompany').value,
+        u=$('#umUnit').value;
+  return ORG_PROFILES_DB.filter(p=>{
+    const text=`${p.username} ${profileFullName(p)}`.toLowerCase();
+    if(q&&!text.includes(q))return false;
+    if(r!=='all'&&p.role!==r)return false;
+    if(s==='active'&&!p.active)return false;
+    if(s==='inactive'&&p.active)return false;
+    if(s==='pending'&&p.first_access_completed)return false;
+    if(c!=='all'&&p.company_id!==c)return false;
+    if(u!=='all'&&p.unit_id!==u)return false;
+    return true;
+  });
+}
 function roleLabel(r){return r==='performance'?'Performance':r==='gerente'?'Gerente':'Colaborador'}
-function statusMarkup(u){if(!u.active)return '<span class="status-badge inactive">Inativo</span>';if(!u.profileComplete)return '<span class="status-badge pending">1º acesso</span>';return '<span class="status-badge active">Ativo</span>'}
-function renderUserManagement(){if(!$('#userTableBody'))return;const rows=filteredUsers();$('#umActiveCount').textContent=userStore.filter(u=>u.active).length;$('#umCollabCount').textContent=userStore.filter(u=>u.active&&u.role==='colaborador').length;$('#umManagerCount').textContent=userStore.filter(u=>u.active&&u.role==='gerente').length;$('#umPendingCount').textContent=userStore.filter(u=>u.active&&!u.profileComplete).length;$('#userTableBody').innerHTML=rows.map(u=>{const m=u.role==='colaborador'&&u.company&&u.unit?managerFor(u.company,u.unit):null;return `<tr data-inactive="${u.active?0:1}"><td><b>${u.username}</b></td><td>${fullName(u)}</td><td>${roleLabel(u.role)}</td><td>${u.company||'—'}</td><td>${u.unit||'—'}</td><td>${u.role==='colaborador'?(m?fullName(m):'Não definido'):'—'}</td><td>${statusMarkup(u)}</td><td>${u.lastLogin||'—'}</td><td><div class="user-actions"><button class="btn" data-edit-user="${u.id}">Editar</button><button class="btn ghost" data-toggle-user="${u.id}">${u.active?'Inativar':'Ativar'}</button></div></td></tr>`}).join('')||'<tr><td colspan="9">Nenhum usuário encontrado.</td></tr>';renderAudit()}
-function renderAudit(){const el=$('#userAuditList');if(!el)return;el.innerHTML=auditLog.slice(0,10).map(a=>`<div class="audit-row"><div class="muted">${a.time}</div><div><b>${a.action}</b><br><span class="muted">${a.target}</span></div><div>${a.details||'—'}</div><div class="muted">por ${a.by}</div></div>`).join('')||'<div class="sub" style="padding:10px 0">Nenhuma alteração de usuário nesta sessão.</div>'}
+function renderUserManagement(){
+  if(!$('#userTableBody'))return;
+  rebuildUserMgmtCompanyFilter();
+  rebuildUserMgmtUnits();
+  const rows=filteredUsers();
 
-['umSearch','umRole','umStatus','umUnit'].forEach(id=>$('#'+id).addEventListener(id==='umSearch'?'input':'change',renderUserManagement));$('#umCompany').addEventListener('change',()=>{rebuildUserMgmtUnits();renderUserManagement()});$('#umClearFilters').addEventListener('click',()=>{$('#umSearch').value='';$('#umRole').value=$('#umStatus').value=$('#umCompany').value='all';rebuildUserMgmtUnits();$('#umUnit').value='all';renderUserManagement()});
+  $('#umActiveCount').textContent=ORG_PROFILES_DB.filter(p=>p.active).length;
+  $('#umCollabCount').textContent=ORG_PROFILES_DB.filter(p=>p.active&&p.role==='colaborador').length;
+  $('#umManagerCount').textContent=ORG_PROFILES_DB.filter(p=>p.active&&p.role==='gerente').length;
+  $('#umPendingCount').textContent=ORG_PROFILES_DB.filter(p=>p.active&&!p.first_access_completed).length;
 
-// Importação em lote de usuários
+  $('#userTableBody').innerHTML=rows.map(p=>{
+    const unit=orgDbUnitById(p.unit_id);
+    const manager=unit?.manager_user_id?orgDbProfileById(unit.manager_user_id):null;
+    return `<tr data-inactive="${p.active?0:1}">
+      <td><b>${p.username}</b></td>
+      <td>${profileFullName(p)}</td>
+      <td>${roleLabel(p.role)}</td>
+      <td>${profileCompanyName(p)||'—'}</td>
+      <td>${profileUnitName(p)||'—'}</td>
+      <td>${p.role==='colaborador'?(manager?profileFullName(manager):'Não definido'):'—'}</td>
+      <td>${profileStatusMarkup(p)}</td>
+      <td>${formatLastAccess(p.last_access_at)}</td>
+      <td><div class="user-actions">
+        <button class="btn" data-edit-user="${p.user_id}">Editar</button>
+        <button class="btn ghost" data-toggle-user="${p.user_id}">${p.active?'Inativar':'Ativar'}</button>
+      </div></td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="9">Nenhum usuário encontrado.</td></tr>';
+
+  loadUserAuditFromSupabase();
+}
+
+['umSearch','umRole','umStatus','umUnit'].forEach(id=>
+  $('#'+id).addEventListener(id==='umSearch'?'input':'change',renderUserManagement)
+);
+$('#umCompany').addEventListener('change',()=>{rebuildUserMgmtUnits();renderUserManagement()});
+$('#umClearFilters').addEventListener('click',()=>{
+  $('#umSearch').value='';
+  $('#umRole').value='all';
+  $('#umStatus').value='all';
+  $('#umCompany').value='all';
+  rebuildUserMgmtUnits();
+  $('#umUnit').value='all';
+  renderUserManagement();
+});
+
+// ---------------- Importação real em lote ----------------
 let pendingUserImport=[];
 
 function normalizeImportHeader(v){
@@ -1335,7 +1571,7 @@ function detectDelimiter(line){
 }
 function parseDelimited(text){
   const lines=String(text||'').replace(/^\uFEFF/,'').split(/\r?\n/).filter(x=>x.trim().length);
-  if(!lines.length)return [];
+  if(!lines.length)return[];
   const delim=detectDelimiter(lines[0]);
   function parseLine(line){
     const out=[];let cur='',quoted=false;
@@ -1349,18 +1585,17 @@ function parseDelimited(text){
     }
     out.push(cur);return out;
   }
-  const rows=lines.map(parseLine);
-  const headers=rows.shift()||[];
+  const rows=lines.map(parseLine),headers=rows.shift()||[];
   return rows.map(r=>Object.fromEntries(headers.map((h,i)=>[h,r[i]??''])));
 }
 function rowsFromWorkbook(arrayBuffer){
-  if(typeof XLSX==='undefined')throw new Error('Leitor de Excel indisponível. Salve a planilha como CSV ou verifique sua conexão com a internet.');
+  if(typeof XLSX==='undefined')throw new Error('Leitor de Excel indisponível. Salve como CSV ou verifique a conexão.');
   const wb=XLSX.read(arrayBuffer,{type:'array',raw:false});
   const ws=wb.Sheets[wb.SheetNames[0]];
   return XLSX.utils.sheet_to_json(ws,{defval:'',raw:false});
 }
 function mapImportRows(rawRows){
-  if(!rawRows.length)return [];
+  if(!rawRows.length)return[];
   const originalHeaders=Object.keys(rawRows[0]||{});
   const headerMap=new Map(originalHeaders.map(h=>[normalizeImportHeader(h),h]));
   const userHeader=headerMap.get('usuario')||headerMap.get('user')||headerMap.get('username')||headerMap.get('login');
@@ -1369,17 +1604,15 @@ function mapImportRows(rawRows){
 
   const fileSeen=new Set();
   return rawRows.map((r,i)=>{
-    const username=String(r[userHeader]??'').trim();
+    const username=String(r[userHeader]??'').trim().toLowerCase();
     const password=String(r[passHeader]??'').trim();
     let status='ready',reason='Pronto para importar';
-    const key=username.toLowerCase();
-
     if(!username||!password){status='error';reason='Usuário ou senha em branco.'}
-    else if(!/^[A-Za-z0-9._-]{3,80}$/.test(username)){status='error';reason='Usuário deve usar apenas letras, números, ponto, hífen ou underline.'}
-    else if(fileSeen.has(key)){status='skip';reason='Usuário duplicado dentro da planilha.'}
-    else if(userStore.some(u=>u.username.toLowerCase()===key)){status='skip';reason='Usuário já cadastrado no sistema.'}
-
-    if(username)fileSeen.add(key);
+    else if(!/^[a-z0-9._-]{3,40}$/.test(username)){status='error';reason='Usuário inválido.'}
+    else if(password.length<6){status='error';reason='Senha precisa ter pelo menos 6 caracteres.'}
+    else if(fileSeen.has(username)){status='skip';reason='Usuário duplicado dentro da planilha.'}
+    else if(ORG_PROFILES_DB.some(p=>p.username.toLowerCase()===username)){status='skip';reason='Usuário já cadastrado.'}
+    fileSeen.add(username);
     return {line:i+2,username,password,status,reason};
   });
 }
@@ -1403,15 +1636,11 @@ async function handleUserImportFile(file){
   $('#importFileName').textContent=file.name;
   $('#importUsersError').textContent='Lendo planilha...';
   try{
-    let rawRows=[];
     const lower=file.name.toLowerCase();
-    if(lower.endsWith('.csv')){
-      rawRows=parseDelimited(await file.text());
-    }else if(lower.endsWith('.xlsx')||lower.endsWith('.xls')){
-      rawRows=rowsFromWorkbook(await file.arrayBuffer());
-    }else{
-      throw new Error('Formato não suportado. Use XLSX, XLS ou CSV.');
-    }
+    let rawRows=[];
+    if(lower.endsWith('.csv'))rawRows=parseDelimited(await file.text());
+    else if(lower.endsWith('.xlsx')||lower.endsWith('.xls'))rawRows=rowsFromWorkbook(await file.arrayBuffer());
+    else throw new Error('Formato não suportado. Use XLSX, XLS ou CSV.');
     pendingUserImport=mapImportRows(rawRows);
     renderUserImportPreview();
     $('#importUsersError').textContent=pendingUserImport.length?'':'A planilha está vazia.';
@@ -1421,30 +1650,24 @@ async function handleUserImportFile(file){
     $('#importUsersError').textContent=err?.message||'Não foi possível ler a planilha.';
   }
 }
-function confirmUserImport(){
+async function confirmUserImport(){
   const ready=pendingUserImport.filter(x=>x.status==='ready');
   if(!ready.length)return;
-  ready.forEach(x=>{
-    userStore.push({
-      id:nextId(),
-      username:x.username,
-      password:x.password,
-      firstName:'',
-      lastName:'',
-      role:'colaborador',
-      company:'',
-      unit:'',
-      active:true,
-      profileComplete:false,
-      lastLogin:null
-    });
-  });
-  audit('Importação de usuários','Planilha',`${ready.length} usuário(s) criado(s) com primeiro acesso pendente.`);
-  $('#importUsersModal').classList.add('hidden');
-  refreshAfterUserChange();
-  alert(`${ready.length} usuário(s) importado(s) com sucesso.`);
+  const btn=$('#confirmImportUsersBtn');
+  btn.disabled=true;btn.textContent='IMPORTANDO...';
+  try{
+    const result=await adminApi('bulkCreate',{users:ready.map(x=>({username:x.username,password:x.password}))});
+    $('#importUsersModal').classList.add('hidden');
+    await refreshAfterUserChange();
+    const created=result.created||0,failed=(result.results||[]).filter(x=>!x.ok).length;
+    alert(`${created} usuário(s) importado(s).${failed?` ${failed} não foram criados.`:''}`);
+  }catch(err){
+    console.error(err);
+    $('#importUsersError').textContent=err.message;
+  }finally{
+    btn.disabled=false;btn.textContent='IMPORTAR USUÁRIOS';
+  }
 }
-
 $('#importUsersBtn').addEventListener('click',openUserImport);
 $('#downloadUserTemplateBtn').addEventListener('click',downloadUserTemplate);
 $('#chooseImportFileBtn').addEventListener('click',()=>$('#importUsersFile').click());
@@ -1452,16 +1675,166 @@ $('#importUsersFile').addEventListener('change',e=>handleUserImportFile(e.target
 $('#cancelImportUsersBtn').addEventListener('click',()=>$('#importUsersModal').classList.add('hidden'));
 $('#confirmImportUsersBtn').addEventListener('click',confirmUserImport);
 
+// ---------------- Editor real de usuário ----------------
+function fillUserEditorCompanies(selected=''){
+  const el=$('#userCompany');
+  el.innerHTML='<option value="">Definir no primeiro acesso</option>'+
+    ORG_COMPANIES_DB.map(c=>`<option value="${c.id}">${c.name}${c.active===false?' (Inativa)':''}</option>`).join('');
+  if(ORG_COMPANIES_DB.some(c=>c.id===selected))el.value=selected;
+  else el.value='';
+}
+function fillUserEditorUnits(selected=''){
+  const companyId=$('#userCompany').value;
+  const opts=ORG_UNITS_DB.filter(u=>companyId&&u.company_id===companyId);
+  $('#userUnit').innerHTML='<option value="">Definir no primeiro acesso</option>'+
+    opts.map(u=>`<option value="${u.id}">${u.name}${u.active===false?' (Inativa)':''}</option>`).join('');
+  if(opts.some(u=>u.id===selected))$('#userUnit').value=selected;
+  else $('#userUnit').value='';
+  updateUserCaptainPreview();
+}
+function updateUserCaptainPreview(){
+  const role=$('#userRole').value,unit=orgDbUnitById($('#userUnit').value);
+  if(role==='performance'){$('#userCaptainPreview').value='Acesso global';return}
+  if(role==='gerente'){$('#userCaptainPreview').value=unit?`Será o gerente de ${unit.name}`:'Defina uma unidade';return}
+  const m=unit?.manager_user_id?orgDbProfileById(unit.manager_user_id):null;
+  $('#userCaptainPreview').value=m?profileFullName(m):'Nenhum gerente ativo definido';
+}
+function syncUserRoleFields(){
+  const role=$('#userRole').value;
+  if(role==='performance'){
+    $('#userCompany').value='';
+    fillUserEditorUnits('');
+    $('#userProfileComplete').checked=true;
+  }else updateUserCaptainPreview();
+}
+function openUserEditor(profile=null){
+  editingUserId=profile?.user_id||null;
+  $('#editUserId').value=editingUserId||'';
+  $('#userModalKicker').textContent=profile?'Editar cadastro':'Novo cadastro';
+  $('#userModalTitle').textContent=profile?'Editar usuário':'Cadastrar usuário';
+  $('#userLogin').value=profile?.username||'';
+  $('#userPassword').value='';
+  $('#passwordHint').textContent=profile?'Deixe em branco para manter a senha atual.':'Obrigatória para novo usuário.';
+  $('#userFirstName').value=profile?.first_name||'';
+  $('#userLastName').value=profile?.last_name||'';
+  $('#userRole').value=profile?.role||'colaborador';
+  $('#userStatus').value=profile?.active===false?'inactive':'active';
+  fillUserEditorCompanies(profile?.company_id||'');
+  fillUserEditorUnits(profile?.unit_id||'');
+  $('#userProfileComplete').checked=profile?.first_access_completed??false;
+  updateUserCaptainPreview();
+  $('#userFormError').textContent='';
+  $('#userModal').classList.remove('hidden');
+}
+function validateUserForm(existing){
+  const username=$('#userLogin').value.trim().toLowerCase(),
+        password=$('#userPassword').value,
+        first=$('#userFirstName').value.trim(),
+        last=$('#userLastName').value.trim(),
+        r=$('#userRole').value,
+        active=$('#userStatus').value==='active',
+        complete=$('#userProfileComplete').checked,
+        companyId=r==='performance'?null:($('#userCompany').value||null),
+        unitId=r==='performance'?null:($('#userUnit').value||null);
 
-function fillUserEditorUnits(){fillSelectUnits($('#userCompany'),$('#userUnit'),true);updateUserCaptainPreview()}
-function updateUserCaptainPreview(){const role=$('#userRole').value,company=$('#userCompany').value,unit=$('#userUnit').value;if(role==='performance'){$('#userCaptainPreview').value='Acesso global';return}if(role==='gerente'){$('#userCaptainPreview').value=unit?`Será o gerente de ${unit}`:'Defina uma unidade';return}const m=managerFor(company,unit);$('#userCaptainPreview').value=m?fullName(m):'Nenhum gerente ativo definido'}
-function syncUserRoleFields(){const role=$('#userRole').value;if(role==='performance'){$('#userCompany').value='';fillUserEditorUnits();$('#userProfileComplete').checked=true}else updateUserCaptainPreview()}
-function openUserEditor(user=null){editingUserId=user?.id||null;$('#editUserId').value=editingUserId||'';$('#userModalKicker').textContent=user?'Editar cadastro':'Novo cadastro';$('#userModalTitle').textContent=user?'Editar usuário':'Cadastrar usuário';$('#userLogin').value=user?.username||'';$('#userPassword').value='';$('#passwordHint').textContent=user?'Deixe em branco para manter a senha atual.':'Obrigatória para novo usuário.';$('#userFirstName').value=user?.firstName||'';$('#userLastName').value=user?.lastName||'';$('#userRole').value=user?.role||'colaborador';$('#userStatus').value=user?.active===false?'inactive':'active';$('#userCompany').value=user?.company||'';fillUserEditorUnits();if(user?.unit&&[...$('#userUnit').options].some(o=>o.value===user.unit))$('#userUnit').value=user.unit;$('#userProfileComplete').checked=user?.profileComplete??false;updateUserCaptainPreview();$('#userFormError').textContent='';$('#userModal').classList.remove('hidden')}
-$('#newUserBtn').addEventListener('click',()=>openUserEditor());$('#cancelUserEdit').addEventListener('click',()=>$('#userModal').classList.add('hidden'));$('#userCompany').addEventListener('change',fillUserEditorUnits);$('#userUnit').addEventListener('change',updateUserCaptainPreview);$('#userRole').addEventListener('change',syncUserRoleFields);
-$('#userTableBody').addEventListener('click',e=>{const edit=e.target.closest('[data-edit-user]'),toggle=e.target.closest('[data-toggle-user]');if(edit){openUserEditor(getUser(edit.dataset.editUser));return}if(toggle){const u=getUser(toggle.dataset.toggleUser);if(!u)return;if(currentUser&&u.id===currentUser.id){alert('Não é possível inativar o usuário que está logado.');return}u.active=!u.active;audit(u.active?'Usuário ativado':'Usuário inativado',u.username,`${fullName(u)} · ${u.company||'sem empresa'} / ${u.unit||'sem unidade'}`);refreshAfterUserChange();}});
-function validateUserForm(existing){const username=$('#userLogin').value.trim(),password=$('#userPassword').value,first=$('#userFirstName').value.trim(),last=$('#userLastName').value.trim(),r=$('#userRole').value,active=$('#userStatus').value==='active',complete=$('#userProfileComplete').checked,company=r==='performance'?'':$('#userCompany').value,unit=r==='performance'?'':$('#userUnit').value;if(!username)return 'Informe um usuário.';if(userStore.some(u=>u.id!==existing?.id&&u.username.toLowerCase()===username.toLowerCase()))return 'Esse usuário já existe.';if(!existing&&!password)return 'Defina uma senha para o novo usuário.';if(complete&&r!=='performance'&&(!first||!last||!company||!unit))return 'Cadastro concluído exige Nome, Sobrenome, Empresa e Unidade.';if(r==='gerente'&&(!company||!unit))return 'Gerente precisa estar vinculado a uma Empresa e Unidade.';if(r==='gerente'&&active){const other=managerFor(company,unit);if(other&&other.id!==existing?.id)return `A unidade ${unit} já possui o gerente ${fullName(other)}.`}return null}
-$('#userForm').addEventListener('submit',e=>{e.preventDefault();const existing=editingUserId?getUser(editingUserId):null,err=validateUserForm(existing);if(err){$('#userFormError').textContent=err;return}const old=existing?{...existing}:null;const target=existing||{id:nextId(),lastLogin:null};target.username=$('#userLogin').value.trim();if($('#userPassword').value)target.password=$('#userPassword').value;target.firstName=$('#userFirstName').value.trim();target.lastName=$('#userLastName').value.trim();target.role=$('#userRole').value;target.active=$('#userStatus').value==='active';target.profileComplete=$('#userProfileComplete').checked;target.company=target.role==='performance'?'':$('#userCompany').value;target.unit=target.role==='performance'||!target.company?'':$('#userUnit').value;if(!existing)userStore.push(target);if(currentUser&&currentUser.id===target.id){currentUser=target;role=target.role;setMetaForUser(target)}const details=old?`${old.role}/${old.company||'—'}/${old.unit||'—'} → ${target.role}/${target.company||'—'}/${target.unit||'—'}`:`${target.role} · ${target.company||'sem empresa'} / ${target.unit||'sem unidade'}`;audit(existing?'Usuário editado':'Usuário criado',target.username,details);$('#userModal').classList.add('hidden');refreshAfterUserChange()});
-function refreshAfterUserChange(){syncCompanySelects();rebuildPerformanceOptions();rebuildUserMgmtUnits();rebuildManagerAgentOptions();renderPerformance();renderManager();renderUserManagement();renderOrgManagement();if(currentUser)setMetaForUser(currentUser)}
+  if(!/^[a-z0-9._-]{3,40}$/.test(username))return 'Usuário deve ter 3 a 40 caracteres: letras, números, ponto, hífen ou underline.';
+  if(ORG_PROFILES_DB.some(p=>p.user_id!==existing?.user_id&&p.username.toLowerCase()===username))return 'Esse usuário já existe.';
+  if(!existing&&password.length<6)return 'Defina uma senha com pelo menos 6 caracteres.';
+  if(existing&&password&&password.length<6)return 'A nova senha precisa ter pelo menos 6 caracteres.';
+  if(r==='gerente'&&(!companyId||!unitId))return 'Gerente precisa estar vinculado a uma Empresa e Unidade.';
+  if(complete&&r!=='performance'&&(!first||!last||!companyId||!unitId))return 'Cadastro concluído exige Nome, Sobrenome, Empresa e Unidade.';
+  if(r==='gerente'&&active){
+    const unit=orgDbUnitById(unitId);
+    if(unit?.manager_user_id&&unit.manager_user_id!==existing?.user_id){
+      const other=orgDbProfileById(unit.manager_user_id);
+      return `A unidade ${unit.name} já possui o gerente ${other?profileFullName(other):'definido'}.`;
+    }
+  }
+  return null;
+}
+
+$('#newUserBtn').addEventListener('click',()=>openUserEditor());
+$('#cancelUserEdit').addEventListener('click',()=>$('#userModal').classList.add('hidden'));
+$('#userCompany').addEventListener('change',()=>fillUserEditorUnits(''));
+$('#userUnit').addEventListener('change',updateUserCaptainPreview);
+$('#userRole').addEventListener('change',syncUserRoleFields);
+
+$('#userTableBody').addEventListener('click',async e=>{
+  const edit=e.target.closest('[data-edit-user]'),toggle=e.target.closest('[data-toggle-user]');
+  if(edit){
+    openUserEditor(orgDbProfileById(edit.dataset.editUser));
+    return;
+  }
+  if(toggle){
+    const p=orgDbProfileById(toggle.dataset.toggleUser);
+    if(!p)return;
+    if(currentUser&&p.user_id===currentUser.id){
+      alert('Não é possível inativar o usuário que está logado.');
+      return;
+    }
+    toggle.disabled=true;
+    try{
+      await adminApi('toggle',{userId:p.user_id,active:!p.active});
+      await refreshAfterUserChange();
+    }catch(err){
+      console.error(err);alert(err.message);
+    }finally{toggle.disabled=false}
+  }
+});
+
+$('#userForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const existing=editingUserId?orgDbProfileById(editingUserId):null;
+  const err=validateUserForm(existing);
+  if(err){$('#userFormError').textContent=err;return}
+
+  const role=$('#userRole').value,
+        complete=$('#userProfileComplete').checked,
+        companyId=role==='performance'?null:($('#userCompany').value||null),
+        unitId=role==='performance'?null:($('#userUnit').value||null),
+        payload={
+          username:$('#userLogin').value.trim().toLowerCase(),
+          password:$('#userPassword').value||undefined,
+          firstName:$('#userFirstName').value.trim(),
+          lastName:$('#userLastName').value.trim(),
+          role,
+          active:$('#userStatus').value==='active',
+          firstAccessCompleted:role==='performance'?true:complete,
+          companyId,
+          unitId
+        },
+        btn=e.submitter;
+
+  $('#userFormError').textContent='';
+  if(btn){btn.disabled=true;btn.textContent='SALVANDO...'}
+
+  try{
+    if(existing)await adminApi('update',{userId:existing.user_id,user:payload});
+    else await adminApi('create',{user:payload});
+    $('#userModal').classList.add('hidden');
+    await refreshAfterUserChange();
+  }catch(err){
+    console.error(err);
+    const map={
+      USERNAME_EXISTS:'Esse usuário já existe.',
+      UNIT_HAS_MANAGER:'Essa unidade já possui outro Gerente/Capitão.',
+      LAST_PERFORMANCE:'É necessário manter pelo menos um Performance ativo.',
+      SELF_LOCKOUT:'Não é possível retirar o próprio acesso de Performance.'
+    };
+    $('#userFormError').textContent=map[err.code]||err.message;
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='SALVAR USUÁRIO'}
+  }
+});
+
+async function refreshAfterUserChange(){
+  await loadOrganizationFromSupabase();
+  rebuildUserMgmtCompanyFilter();
+  rebuildUserMgmtUnits();
+  renderUserManagement();
+  renderOrgManagement();
+  if(currentUser)setMetaForUser(currentUser);
+}
 
 function downloadExcel(rows,filename){const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');const table=`<table><thead><tr><th>Data</th><th>Empresa</th><th>Unidade</th><th>Agente</th><th>Abordagem no Salão</th><th>Captação Online</th><th>Cotações</th><th>Vendas</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.date)}</td><td>${esc(r.company)}</td><td>${esc(r.unit)}</td><td>${esc(r.agent)}</td><td>${r.salao}</td><td>${r.online}</td><td>${r.cotacoes}</td><td>${r.vendas}</td></tr>`).join('')}</tbody></table>`;const blob=new Blob(['\ufeff<html><meta charset="utf-8"><body>'+table+'</body></html>'],{type:'application/vnd.ms-excel;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),200)}
 $('#export').addEventListener('click',()=>{if(!currentUser)return;if(!$('#collab').classList.contains('hidden'))downloadExcel(userRows(currentUser).filter(r=>r.date===DEMO_TODAY),'rotina_do_sucesso_colaborador.xls');else if(!$('#manager').classList.contains('hidden'))downloadExcel(managerFilteredRows(),'rotina_do_sucesso_gerente.xls');else downloadExcel(performanceFilteredRows(),'rotina_do_sucesso_performance.xls')});
