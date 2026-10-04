@@ -42,7 +42,90 @@ module.exports = async function handler(req, res) {
       .eq('user_id', actor.id)
       .single();
 
-    if (actorProfileError || !actorProfile || !actorProfile.active || actorProfile.role !== 'performance') {
+    if (actorProfileError || !actorProfile || !actorProfile.active) {
+      return json(res, 403, { code: 'FORBIDDEN', message: 'Usuário sem acesso ativo.' });
+    }
+
+    const body = req.body || {};
+    const action = String(body.action || '');
+
+    // Estas ações pertencem ao próprio usuário autenticado e não exigem perfil Performance.
+    if (action === 'getMyPendingAlerts') {
+      const { data: recipientRows, error: recipientError } = await admin
+        .from('admin_alert_recipients')
+        .select('alert_id,viewed_at,acknowledged_at')
+        .eq('user_id', actor.id)
+        .is('acknowledged_at', null);
+
+      if (recipientError) throw recipientError;
+
+      const alertIds = [...new Set((recipientRows || []).map(r => r.alert_id).filter(Boolean))];
+      if (!alertIds.length) return json(res, 200, { ok: true, alerts: [] });
+
+      const { data: alertRows, error: alertError } = await admin
+        .from('admin_alerts')
+        .select('id,message,created_at,expires_at,created_by')
+        .in('id', alertIds)
+        .gt('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: true });
+
+      if (alertError) throw alertError;
+
+      const alerts = (alertRows || []).map(a => ({
+        alertId: a.id,
+        message: a.message || '',
+        sender: 'Administração',
+        sentAt: a.created_at || null,
+        expiresAt: a.expires_at || null
+      })).filter(a => a.alertId && a.message);
+
+      return json(res, 200, { ok: true, alerts });
+    }
+
+    if (action === 'markAlertSeen') {
+      const alertId = String(body.alertId || '');
+      if (!alertId) return json(res, 400, { code: 'MISSING_ALERT', message: 'Alerta não informado.' });
+
+      const now = new Date().toISOString();
+
+      const { data: recipient, error: recipientError } = await admin
+        .from('admin_alert_recipients')
+        .select('alert_id,user_id,viewed_at,acknowledged_at')
+        .eq('alert_id', alertId)
+        .eq('user_id', actor.id)
+        .maybeSingle();
+
+      if (recipientError) throw recipientError;
+      if (!recipient) return json(res, 404, { code: 'ALERT_NOT_FOUND', message: 'Alerta não encontrado para este usuário.' });
+
+      const { data: alertRow, error: alertError } = await admin
+        .from('admin_alerts')
+        .select('id,expires_at')
+        .eq('id', alertId)
+        .maybeSingle();
+
+      if (alertError) throw alertError;
+      if (!alertRow || new Date(alertRow.expires_at).getTime() <= Date.now()) {
+        return json(res, 410, { code: 'ALERT_EXPIRED', message: 'Este alerta já expirou.' });
+      }
+
+      const update = {};
+      if (!recipient.viewed_at) update.viewed_at = now;
+      if (body.acknowledged === true && !recipient.acknowledged_at) update.acknowledged_at = now;
+
+      if (Object.keys(update).length) {
+        const { error: updateError } = await admin
+          .from('admin_alert_recipients')
+          .update(update)
+          .eq('alert_id', alertId)
+          .eq('user_id', actor.id);
+        if (updateError) throw updateError;
+      }
+
+      return json(res, 200, { ok: true });
+    }
+
+    if (actorProfile.role !== 'performance') {
       return json(res, 403, { code: 'FORBIDDEN', message: 'Apenas Administradores/Performance podem executar esta operação.' });
     }
 
@@ -167,8 +250,6 @@ module.exports = async function handler(req, res) {
       }
     }
 
-    const body = req.body || {};
-    const action = body.action;
 
     if (action === 'create') {
       const u = body.user || {};
@@ -471,34 +552,163 @@ module.exports = async function handler(req, res) {
       if (!message) return json(res, 400, { code: 'EMPTY_MESSAGE', message: 'Digite a mensagem do alerta.' });
       if (message.length > 1000) return json(res, 400, { code: 'MESSAGE_TOO_LONG', message: 'O alerta pode ter no máximo 1.000 caracteres.' });
 
-      const payload = {
-        message,
-        sender: actorProfile.username || 'Administração',
-        sentAt: new Date().toISOString()
-      };
+      let recipients = [];
 
       if (audience === 'all') {
-        await sendRealtimeAlert('rds-alerts-all', payload);
-        return json(res, 200, { ok: true, targets: 1 });
+        const { data, error } = await admin
+          .from('profiles')
+          .select('user_id')
+          .eq('active', true);
+        if (error) throw error;
+        recipients = data || [];
+      } else {
+        const requested = Array.isArray(body.userIds)
+          ? [...new Set(body.userIds.map(String))].slice(0, 500)
+          : [];
+
+        if (!requested.length) {
+          return json(res, 400, { code: 'NO_RECIPIENTS', message: 'Selecione pelo menos um usuário.' });
+        }
+
+        const { data, error } = await admin
+          .from('profiles')
+          .select('user_id')
+          .in('user_id', requested)
+          .eq('active', true);
+
+        if (error) throw error;
+        recipients = data || [];
       }
 
-      const requested = Array.isArray(body.userIds) ? [...new Set(body.userIds.map(String))].slice(0, 200) : [];
-      if (!requested.length) return json(res, 400, { code: 'NO_RECIPIENTS', message: 'Selecione pelo menos um usuário.' });
+      const ids = [...new Set(recipients.map(x => x.user_id).filter(Boolean))];
+      if (!ids.length) {
+        return json(res, 400, { code: 'NO_ACTIVE_RECIPIENTS', message: 'Nenhum destinatário ativo foi encontrado.' });
+      }
 
-      const { data: recipients, error: recipientsError } = await admin
-        .from('profiles')
-        .select('user_id')
-        .in('user_id', requested)
-        .eq('active', true);
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+      const { data: createdAlert, error: alertError } = await admin
+        .from('admin_alerts')
+        .insert({
+          created_by: actor.id,
+          message,
+          audience,
+          target_count: ids.length,
+          expires_at: expiresAt
+        })
+        .select('id,created_at,expires_at')
+        .single();
+
+      if (alertError) throw alertError;
+
+      const recipientRows = ids.map(userId => ({
+        alert_id: createdAlert.id,
+        user_id: userId
+      }));
+
+      const { error: recipientInsertError } = await admin
+        .from('admin_alert_recipients')
+        .insert(recipientRows);
+
+      if (recipientInsertError) {
+        await admin.from('admin_alerts').delete().eq('id', createdAlert.id);
+        throw recipientInsertError;
+      }
+
+      const payload = {
+        alertId: createdAlert.id,
+        message,
+        sender: actorProfile.username || 'Administração',
+        sentAt: createdAlert.created_at,
+        expiresAt: createdAlert.expires_at
+      };
+
+      let realtimeFailures = 0;
+
+      if (audience === 'all') {
+        try {
+          await sendRealtimeAlert('rds-alerts-all', payload);
+        } catch (e) {
+          console.error(e);
+          realtimeFailures = ids.length;
+        }
+      } else {
+        const results = await Promise.allSettled(
+          ids.map(id => sendRealtimeAlert(`rds-alerts-user-${id}`, payload))
+        );
+        realtimeFailures = results.filter(r => r.status === 'rejected').length;
+      }
+
+      return json(res, 200, {
+        ok: true,
+        alertId: createdAlert.id,
+        targets: ids.length,
+        realtimeFailures,
+        expiresAt: createdAlert.expires_at
+      });
+    }
+
+    if (action === 'listAlertViews') {
+      const now = new Date().toISOString();
+
+      const { data: alerts, error: alertsError } = await admin
+        .from('admin_alerts')
+        .select('id,message,audience,target_count,created_at,expires_at,created_by')
+        .gt('expires_at', now)
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (alertsError) throw alertsError;
+      if (!(alerts || []).length) return json(res, 200, { ok: true, alerts: [] });
+
+      const alertIds = alerts.map(a => a.id);
+
+      const { data: recipientRows, error: recipientsError } = await admin
+        .from('admin_alert_recipients')
+        .select('alert_id,user_id,viewed_at,acknowledged_at')
+        .in('alert_id', alertIds);
 
       if (recipientsError) throw recipientsError;
-      const ids = (recipients || []).map(x => x.user_id);
 
-      await Promise.all(
-        ids.map(id => sendRealtimeAlert(`rds-alerts-user-${id}`, payload))
-      );
+      const userIds = [...new Set((recipientRows || []).map(r => r.user_id).filter(Boolean))];
+      let profiles = [];
 
-      return json(res, 200, { ok: true, targets: ids.length });
+      if (userIds.length) {
+        const { data, error } = await admin
+          .from('profiles')
+          .select('user_id,username,first_name,last_name,unit_id')
+          .in('user_id', userIds);
+        if (error) throw error;
+        profiles = data || [];
+      }
+
+      const profileMap = new Map(profiles.map(p => [p.user_id, p]));
+
+      const output = alerts.map(a => ({
+        id: a.id,
+        message: a.message,
+        audience: a.audience,
+        audience_label: a.audience === 'all' ? 'Todos os usuários ativos' : 'Usuários específicos',
+        target_count: a.target_count,
+        created_at: a.created_at,
+        expires_at: a.expires_at,
+        recipients: (recipientRows || [])
+          .filter(r => r.alert_id === a.id)
+          .map(r => {
+            const p = profileMap.get(r.user_id) || {};
+            return {
+              user_id: r.user_id,
+              username: p.username || '',
+              name: [p.first_name, p.last_name].filter(Boolean).join(' ').trim() || p.username || 'Usuário',
+              unit_id: p.unit_id || null,
+              viewed_at: r.viewed_at,
+              acknowledged_at: r.acknowledged_at
+            };
+          })
+          .sort((x, y) => String(x.name).localeCompare(String(y.name), 'pt-BR'))
+      }));
+
+      return json(res, 200, { ok: true, alerts: output });
     }
 
     if (action === 'bulkCreate') {

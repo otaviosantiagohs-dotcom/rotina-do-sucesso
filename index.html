@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/><meta name="theme-color" content="#050608"/><meta name="color-scheme" content="dark light"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" name="viewport"/>
-<title>Rotina do Sucesso — V9.2 Final</title>
+<title>Rotina do Sucesso — V9.3 Final</title>
 <script>/* V9 — tema aplicado antes da pintura (evita piscar) */(function(){var t='dark';try{var s=localStorage.getItem('rds-theme');if(s==='light'||s==='dark')t=s}catch(e){}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='light'?'#f2f0ec':'#050608')})();</script>
 <style>
 :root{--bg:#0b0e12;--panel:#12171d;--panel2:#171d24;--line:#27303a;--text:#f5f7fa;--muted:#8d98a5;--red:#e43b32;--green:#61d394;--amber:#e9b45d}
@@ -594,6 +594,29 @@ tbody tr:hover{background:var(--accent-soft)}
   }
 </style>
 
+
+<style id="v9-3-alert-history">
+  .alert-history-list{display:grid;gap:10px;max-height:58vh;overflow:auto;padding-right:4px}
+  .alert-history-card{border:1px solid var(--line);border-radius:14px;background:var(--panel2);padding:14px}
+  .alert-history-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+  .alert-history-message{white-space:pre-wrap;line-height:1.55;margin:10px 0 12px}
+  .alert-history-stats{display:flex;gap:8px;flex-wrap:wrap}
+  .alert-stat{border:1px solid var(--line);border-radius:999px;padding:5px 9px;font-size:12px;color:var(--muted)}
+  .alert-stat b{color:var(--text)}
+  .alert-viewers{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+  .alert-viewer-row{display:grid;grid-template-columns:minmax(150px,1.2fr) minmax(120px,.8fr) minmax(115px,.7fr);gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+  .alert-viewer-row:last-child{border-bottom:0}
+  .alert-viewer-row .muted{font-size:12px}
+  .alert-history-expiry{font-size:11px;color:var(--muted);margin-top:8px}
+  #adminAlertMeta{margin-top:-6px;margin-bottom:8px}
+  #adminAlertStatus{min-height:18px;margin-top:8px}
+  @media(max-width:760px){
+    .alert-viewer-row{grid-template-columns:1fr;gap:3px}
+    .alert-history-head{display:block}
+    .alert-history-head .status-badge{display:inline-block;margin-top:6px}
+  }
+</style>
+
 </head>
 <body>
 <section class="login" id="login">
@@ -771,7 +794,7 @@ tbody tr:hover{background:var(--accent-soft)}
 </div>
 
 <div class="hidden" id="userManagement">
-<div class="section" style="margin-top:0"><div><h2>Gestão de Usuários</h2><div class="sub">Cadastros, perfis, unidades e acesso ao sistema.</div></div><div class="user-head-actions"><button class="btn" id="broadcastAlertBtn">Disparar alerta</button><button class="btn" id="downloadUserTemplateBtn">Baixar modelo</button><button class="btn" id="importUsersBtn">Importar planilha</button><button class="btn red" id="newUserBtn">+ Novo usuário</button></div></div>
+<div class="section" style="margin-top:0"><div><h2>Gestão de Usuários</h2><div class="sub">Cadastros, perfis, unidades e acesso ao sistema.</div></div><div class="user-head-actions"><button class="btn" id="broadcastAlertBtn">Disparar alerta</button><button class="btn" id="alertViewsBtn">Visualizações de alertas</button><button class="btn" id="downloadUserTemplateBtn">Baixar modelo</button><button class="btn" id="importUsersBtn">Importar planilha</button><button class="btn red" id="newUserBtn">+ Novo usuário</button></div></div>
 <div class="user-link-note"><b>Vínculo automático por unidade:</b> o Gerente visualiza todos os colaboradores ativos vinculados à mesma Empresa + Unidade. O Capitão é identificado automaticamente pelo usuário marcado como Gerente daquela unidade. Usuários inativos permanecem no histórico, mas não conseguem entrar.</div>
 <div class="user-summary">
 <div class="card"><div class="t">Usuários ativos</div><div class="n" id="umActiveCount">0</div></div>
@@ -1030,7 +1053,7 @@ tbody tr:hover{background:var(--accent-soft)}
   <div class="modalbox user-editor" style="width:min(720px,100%)">
     <div class="kicker">Comunicação imediata</div>
     <h2>Disparar alerta</h2>
-    <p class="sub">Somente usuários conectados no momento recebem o alerta. O conteúdo não é salvo no banco nem fica em histórico.</p>
+    <p class="sub">O alerta é enviado em tempo real e também fica disponível para o destinatário enquanto estiver válido. Mensagem, destinatários e visualizações são mantidos por 7 dias e depois apagados automaticamente.</p>
     <form id="broadcastAlertForm">
       <label class="label">Destinatários</label>
       <select id="broadcastAudience">
@@ -1062,13 +1085,32 @@ tbody tr:hover{background:var(--accent-soft)}
   <div class="modalbox">
     <div class="kicker">Alerta da Administração</div>
     <h2>Atenção</h2>
+    <div class="sub" id="adminAlertMeta"></div>
     <div class="admin-alert-body" id="adminAlertText"></div>
     <div class="checkline">
       <input id="adminAlertAck" type="checkbox"/>
       <label for="adminAlertAck"><b>Li e estou ciente deste alerta.</b></label>
     </div>
+    <div class="form-error" id="adminAlertStatus"></div>
     <div class="modal-actions">
       <button class="btn red" id="adminAlertOk" type="button" disabled>OK</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal hidden" id="alertViewsModal">
+  <div class="modalbox user-editor" style="width:min(860px,100%)">
+    <div class="kicker">Histórico temporário · 7 dias</div>
+    <div class="section" style="margin:0 0 10px">
+      <div>
+        <h2>Visualizações de alertas</h2>
+        <div class="sub">Veja quem visualizou e quem confirmou cada alerta. Os registros são apagados automaticamente após 7 dias.</div>
+      </div>
+      <button class="btn" id="refreshAlertViewsBtn" type="button">Atualizar</button>
+    </div>
+    <div class="alert-history-list" id="alertHistoryList"></div>
+    <div class="modal-actions">
+      <button class="btn" id="closeAlertViewsBtn" type="button">Fechar</button>
     </div>
   </div>
 </div>
@@ -1563,7 +1605,7 @@ function showLogin(){
   $('#user').value='';
   $('#pass').value='';
   $('#msg').textContent='';
-  ['first','hist','userModal','importUsersModal','importUnitsModal','companyModal','unitModal'].forEach(id=>$('#'+id)?.classList.add('hidden'));
+  ['first','hist','userModal','importUsersModal','importUnitsModal','companyModal','unitModal','broadcastAlertModal','alertViewsModal','adminAlertPopup','deleteConfirmModal'].forEach(id=>$('#'+id)?.classList.add('hidden'));
 }
 function technicalEmailForUsername(username){
   const login=username.trim().toLowerCase();
@@ -1768,6 +1810,7 @@ function loginAsUser(u){
   }
 
   startAdminAlertChannels();
+  loadPendingStoredAlerts();
 }
 $('#loginForm').addEventListener('submit',async e=>{
   e.preventDefault();
@@ -2744,28 +2787,73 @@ $('#unitForm').addEventListener('submit',async e=>{
   }
 });
 
-async function adminApi(action,payload={}){
-  const {data:{session}}=await supabaseClient.auth.getSession();
-  if(!session?.access_token)throw new Error('Sessão expirada. Entre novamente.');
+async function freshSessionForApi(forceRefresh=false){
+  let session=null;
 
-  const res=await fetch('/api/admin-users',{
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'Authorization':`Bearer ${session.access_token}`
-    },
-    body:JSON.stringify({action,...payload})
-  });
+  if(!forceRefresh){
+    const {data,error}=await supabaseClient.auth.getSession();
+    if(!error)session=data?.session||null;
+  }
+
+  const expiresAt=Number(session?.expires_at||0)*1000;
+  const nearExpiry=!session?.access_token||!expiresAt||(expiresAt-Date.now())<90000;
+
+  if(forceRefresh||nearExpiry){
+    const {data,error}=await supabaseClient.auth.refreshSession();
+    if(error||!data?.session?.access_token){
+      const err=new Error('Sua sessão expirou. Entre novamente para continuar.');
+      err.code='SESSION_EXPIRED';
+      throw err;
+    }
+    session=data.session;
+  }
+
+  return session;
+}
+
+async function adminApi(action,payload={},retry=true){
+  let session=await freshSessionForApi(false);
+
+  async function execute(token){
+    return fetch('/api/admin-users',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':`Bearer ${token}`
+      },
+      body:JSON.stringify({action,...payload})
+    });
+  }
+
+  let res=await execute(session.access_token);
+
+  // Corrige o caso em que a sessão local ainda existe, mas o token
+  // enviado à API já venceu ou foi invalidado pelo Supabase.
+  if(res.status===401&&retry){
+    session=await freshSessionForApi(true);
+    try{supabaseClient.realtime.setAuth(session.access_token)}catch(_){}
+    res=await execute(session.access_token);
+  }
 
   let body={};
   try{body=await res.json()}catch(_){}
+
   if(!res.ok){
     const err=new Error(body?.message||'Não foi possível concluir a operação.');
     err.code=body?.code||'ADMIN_API_ERROR';
+    err.status=res.status;
     throw err;
   }
+
   return body;
 }
+
+// Mantém o token do Realtime alinhado quando o Supabase renova a sessão.
+supabaseClient.auth.onAuthStateChange((_event,session)=>{
+  if(session?.access_token){
+    try{supabaseClient.realtime.setAuth(session.access_token)}catch(_){}
+  }
+});
 
 function profileCompanyName(p){
   return orgDbCompanyById(p?.company_id)?.name||'';
@@ -3505,7 +3593,7 @@ $('#confirmDeleteBtn').addEventListener('click',async()=>{
   }
 });
 
-// ---------------- Disparo de alerta efêmero ----------------
+// ---------------- Alertas administrativos temporários (7 dias) ----------------
 function renderBroadcastRecipients(){
   const el=$('#broadcastRecipientList');if(!el)return;
   const rows=ORG_PROFILES_DB
@@ -3566,7 +3654,12 @@ $('#broadcastAlertForm').addEventListener('submit',async e=>{
       message
     });
     $('#broadcastAlertModal').classList.add('hidden');
-    alert(`Alerta disparado para ${result.targets||0} destino(s) em tempo real.`);
+
+    const suffix=result.realtimeFailures
+      ? ` ${result.realtimeFailures} envio(s) em tempo real falharam, mas o alerta ficou disponível no sistema.`
+      : '';
+
+    alert(`Alerta criado para ${result.targets||0} usuário(s).${suffix}`);
   }catch(err){
     console.error(err);
     $('#broadcastAlertError').textContent=err.message;
@@ -3575,10 +3668,22 @@ $('#broadcastAlertForm').addEventListener('submit',async e=>{
   }
 });
 
-// ---------------- Recebimento do alerta: sem armazenamento ----------------
+// ---------------- Recebimento e confirmação ----------------
 let adminAlertChannels=[];
 let adminAlertQueue=[];
 let activeAdminAlert=null;
+let queuedAdminAlertIds=new Set();
+
+function formatAlertDate(value){
+  if(!value)return '';
+  try{
+    return new Intl.DateTimeFormat('pt-BR',{
+      timeZone:'America/Sao_Paulo',
+      day:'2-digit',month:'2-digit',year:'numeric',
+      hour:'2-digit',minute:'2-digit'
+    }).format(new Date(value));
+  }catch(_){return ''}
+}
 
 async function stopAdminAlertChannels(){
   const channels=adminAlertChannels.slice();
@@ -3590,32 +3695,80 @@ async function stopAdminAlertChannels(){
 
 function enqueueAdminAlert(payload){
   const msg=String(payload?.message||'').trim();
+  const alertId=String(payload?.alertId||'').trim();
   if(!msg)return;
+
+  if(alertId&&(queuedAdminAlertIds.has(alertId)||activeAdminAlert?.alertId===alertId))return;
+  if(alertId)queuedAdminAlertIds.add(alertId);
+
   adminAlertQueue.push({
+    alertId:alertId||null,
     message:msg,
     sender:payload?.sender||'Administração',
-    sentAt:payload?.sentAt||null
+    sentAt:payload?.sentAt||null,
+    expiresAt:payload?.expiresAt||null
   });
   showNextAdminAlert();
 }
 
+async function markActiveAlert(viewedOnly=false){
+  if(!activeAdminAlert?.alertId)return true;
+  try{
+    await adminApi('markAlertSeen',{
+      alertId:activeAdminAlert.alertId,
+      acknowledged:!viewedOnly
+    });
+    return true;
+  }catch(err){
+    console.error('Falha ao registrar visualização do alerta:',err);
+    return false;
+  }
+}
+
 function showNextAdminAlert(){
   if(activeAdminAlert||!adminAlertQueue.length)return;
+
   activeAdminAlert=adminAlertQueue.shift();
+  if(activeAdminAlert.alertId)queuedAdminAlertIds.delete(activeAdminAlert.alertId);
+
   $('#adminAlertText').textContent=activeAdminAlert.message;
+  $('#adminAlertMeta').textContent=[
+    activeAdminAlert.sender?`Enviado por ${activeAdminAlert.sender}`:'',
+    activeAdminAlert.sentAt?formatAlertDate(activeAdminAlert.sentAt):''
+  ].filter(Boolean).join(' · ');
+
   $('#adminAlertAck').checked=false;
   $('#adminAlertOk').disabled=true;
+  $('#adminAlertStatus').textContent='';
   $('#adminAlertPopup').classList.remove('hidden');
+
+  // "Visualizou" significa que o popup efetivamente abriu para o usuário.
+  markActiveAlert(true);
 }
 
 $('#adminAlertAck').addEventListener('change',e=>{
   $('#adminAlertOk').disabled=!e.target.checked;
 });
 
-$('#adminAlertOk').addEventListener('click',()=>{
-  if(!$('#adminAlertAck').checked)return;
+$('#adminAlertOk').addEventListener('click',async()=>{
+  if(!$('#adminAlertAck').checked||!activeAdminAlert)return;
+
+  const btn=$('#adminAlertOk');
+  btn.disabled=true;
+  btn.textContent='CONFIRMANDO...';
+  $('#adminAlertStatus').textContent='';
+
+  const ok=await markActiveAlert(false);
+  if(!ok){
+    $('#adminAlertStatus').textContent='Não foi possível registrar a confirmação. Tente novamente.';
+    btn.disabled=false;
+    btn.textContent='OK';
+    return;
+  }
+
   $('#adminAlertPopup').classList.add('hidden');
   activeAdminAlert=null;
+  btn.textContent='OK';
   showNextAdminAlert();
 });
 
@@ -3626,12 +3779,26 @@ document.addEventListener('keydown',e=>{
   }
 },true);
 
+async function loadPendingStoredAlerts(){
+  if(!currentUser||currentUser.source!=='supabase')return;
+  try{
+    const result=await adminApi('getMyPendingAlerts',{});
+    (result.alerts||[]).forEach(enqueueAdminAlert);
+  }catch(err){
+    console.warn('Não foi possível carregar alertas pendentes:',err);
+  }
+}
+
 async function startAdminAlertChannels(){
   await stopAdminAlertChannels();
   if(!currentUser||currentUser.source!=='supabase')return;
 
-  const {data:{session}}=await supabaseClient.auth.getSession();
-  if(!session?.access_token)return;
+  let session=null;
+  try{
+    session=await freshSessionForApi(false);
+  }catch(_){
+    return;
+  }
 
   try{supabaseClient.realtime.setAuth(session.access_token)}catch(_){}
 
@@ -3647,6 +3814,89 @@ async function startAdminAlertChannels(){
     adminAlertChannels.push(channel);
   }
 }
+
+// ---------------- Visualizações de alertas (Administrador) ----------------
+function escapeAlertHtml(value){
+  return String(value??'')
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'","&#039;");
+}
+
+function alertRecipientStatus(r){
+  if(r.acknowledged_at)return '<span class="status-badge active">Confirmou</span>';
+  if(r.viewed_at)return '<span class="status-badge pending">Visualizou</span>';
+  return '<span class="status-badge inactive">Pendente</span>';
+}
+
+async function loadAlertViews(){
+  if(currentUser?.role!=='performance')return;
+  const el=$('#alertHistoryList');
+  if(!el)return;
+  el.innerHTML='<div class="sub" style="padding:12px">Carregando alertas...</div>';
+
+  try{
+    const result=await adminApi('listAlertViews',{});
+    const alerts=result.alerts||[];
+
+    if(!alerts.length){
+      el.innerHTML='<div class="sub" style="padding:12px">Nenhum alerta dos últimos 7 dias.</div>';
+      return;
+    }
+
+    el.innerHTML=alerts.map(a=>{
+      const viewed=(a.recipients||[]).filter(r=>r.viewed_at).length;
+      const acknowledged=(a.recipients||[]).filter(r=>r.acknowledged_at).length;
+      const pending=(a.recipients||[]).length-acknowledged;
+
+      const recipients=(a.recipients||[]).map(r=>`
+        <div class="alert-viewer-row">
+          <div><b>${escapeAlertHtml(r.name||r.username||'Usuário')}</b><div class="muted">${escapeAlertHtml(r.username||'')}</div></div>
+          <div>${alertRecipientStatus(r)}<div class="muted">${r.viewed_at?`Visualizou ${formatAlertDate(r.viewed_at)}`:'Ainda não visualizou'}</div></div>
+          <div><b>${r.acknowledged_at?'OK confirmado':'—'}</b><div class="muted">${r.acknowledged_at?formatAlertDate(r.acknowledged_at):''}</div></div>
+        </div>
+      `).join('');
+
+      return `<div class="alert-history-card">
+        <div class="alert-history-head">
+          <div>
+            <b>${formatAlertDate(a.created_at)}</b>
+            <div class="sub">${escapeAlertHtml(a.audience_label||'Alerta')}</div>
+          </div>
+          <span class="status-badge active">${a.target_count||0} destinatário(s)</span>
+        </div>
+
+        <div class="alert-history-message">${escapeAlertHtml(a.message)}</div>
+
+        <div class="alert-history-stats">
+          <span class="alert-stat"><b>${viewed}</b> visualizaram</span>
+          <span class="alert-stat"><b>${acknowledged}</b> confirmaram OK</span>
+          <span class="alert-stat"><b>${pending}</b> pendentes</span>
+        </div>
+
+        <details class="alert-viewers">
+          <summary><b>Ver visualizações do alerta</b></summary>
+          <div style="margin-top:8px">${recipients||'<div class="sub">Sem destinatários.</div>'}</div>
+        </details>
+
+        <div class="alert-history-expiry">Expira e é apagado em ${formatAlertDate(a.expires_at)}.</div>
+      </div>`;
+    }).join('');
+  }catch(err){
+    console.error(err);
+    el.innerHTML=`<div class="form-error" style="padding:12px">${escapeAlertHtml(err.message)}</div>`;
+  }
+}
+
+$('#alertViewsBtn').addEventListener('click',async()=>{
+  if(currentUser?.role!=='performance')return;
+  $('#alertViewsModal').classList.remove('hidden');
+  await loadAlertViews();
+});
+$('#refreshAlertViewsBtn').addEventListener('click',loadAlertViews);
+$('#closeAlertViewsBtn').addEventListener('click',()=>$('#alertViewsModal').classList.add('hidden'));
 
 
 // Inicialização
