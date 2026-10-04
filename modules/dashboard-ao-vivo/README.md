@@ -20,3 +20,7 @@
 - `bridge.js`: banco, cache e integração.
 
 Não requer SQL novo.
+
+
+## Horário oficial
+Todos os horários exibidos neste módulo usam São Paulo/Brasília (`America/Sao_Paulo`).

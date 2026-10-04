@@ -531,6 +531,7 @@ h1{font-family:var(--mono);font-size:22px;letter-spacing:-.02em}
     <div class="live-meta">
       <div class="live-pill" id="livePill"><span class="dot"></span><strong>AO VIVO</strong></div>
       <div class="meta-pill meta-date">Data atual: <strong id="currentDateLive">--/--/----</strong></div>
+      <div class="meta-pill">Horário do sistema: <strong>São Paulo/Brasília</strong></div>
       <div class="meta-pill meta-upd">Última atualização: <strong id="lastUpdate">--:--:--</strong></div>
       <div class="meta-pill meta-next">Próxima em <strong id="countdown">30m</strong></div>
     </div>
@@ -1027,7 +1028,7 @@ function formatCurrentDate(){
     const snaps=liveSnapshots.slice(-40);
     return {
       values:snaps.map(s=>snapshotMetric(s,activeAction)),
-      labels:snaps.map(s=>new Date(s.ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}))
+      labels:snaps.map(s=>new Date(s.ts).toLocaleTimeString('pt-BR',{timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit'}))
     };
   }
 
@@ -1162,7 +1163,7 @@ function formatCurrentDate(){
     populateCompanies(true);
     populateUnits(true);
     refreshView();
-    $('lastUpdate').textContent=new Date(ts).toLocaleTimeString('pt-BR');
+    $('lastUpdate').textContent=new Date(ts).toLocaleTimeString('pt-BR',{timeZone:'America/Sao_Paulo'});
     $('currentDateLive').textContent=formatCurrentDate();
     seconds=3600;
     $('countdown').textContent='1h';
@@ -1187,7 +1188,7 @@ function formatCurrentDate(){
       s.month.cotacoes+=Math.floor(Math.random()*3);
     });
     refreshView();
-    $('lastUpdate').textContent=new Date().toLocaleTimeString('pt-BR');
+    $('lastUpdate').textContent=new Date().toLocaleTimeString('pt-BR',{timeZone:'America/Sao_Paulo'});
     seconds=1800;
   }
 
@@ -1274,7 +1275,7 @@ function formatCurrentDate(){
   populateUnits(false);
   syncActionTabs();
   $('currentDateLive').textContent=formatCurrentDate();
-  $('lastUpdate').textContent=new Date().toLocaleTimeString('pt-BR');
+  $('lastUpdate').textContent=new Date().toLocaleTimeString('pt-BR',{timeZone:'America/Sao_Paulo'});
   refreshView();
   startTimer();
   if(hostActive)requestRealData('initial');

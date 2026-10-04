@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/><meta name="theme-color" content="#050608"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" name="viewport"/>
-<title>Rotina do Sucesso — V8.9.3 Dashboard Ao Vivo 30min Otimizado</title>
+<title>Rotina do Sucesso — V8.10 Produção Piloto</title>
 <style>
 :root{--bg:#0b0e12;--panel:#12171d;--panel2:#171d24;--line:#27303a;--text:#f5f7fa;--muted:#8d98a5;--red:#e43b32;--green:#61d394;--amber:#e9b45d}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
@@ -353,7 +353,7 @@ main{animation:fadein .22s ease both}
 <label class="label">Senha</label><input autocomplete="new-password" id="pass" placeholder="••••••••" type="password"/>
 <button class="btn red" type="submit">ACEITAR MISSÃO</button>
 <div id="msg" style="color:#ff8c85;font-size:12px;margin-top:9px"></div>
-<div class="demo"><b>Login real ativado.</b><br/>Nesta etapa, o acesso já é validado pelo Supabase Auth e pelo perfil cadastrado no banco.</div>
+<div class="demo"><b>Login real ativado.</b><br/>Acesso validado pelo Supabase Auth e pelo perfil cadastrado no banco.<br/><b>Horário do sistema: São Paulo/Brasília.</b></div>
 </form>
 </div>
 </section>
@@ -364,6 +364,7 @@ main{animation:fadein .22s ease both}
 <div class="brand"><div class="slash"></div><div><b>Rotina do Sucesso</b><small id="mode">missão em andamento</small></div></div>
 <div class="actions">
 <div class="current-date" id="currentDateGlobal"><small>Data atual</small><span>--/--/----</span></div>
+<div class="current-date" id="systemTimezoneGlobal"><small>Horário do sistema</small><span>São Paulo/Brasília</span></div>
 <button class="btn" id="clearDay">Zerar hoje</button><button class="btn" id="export">Exportar Excel</button>
 <button class="btn" id="history">Histórico</button>
 <button class="btn ghost" id="logout">Sair</button>
@@ -688,9 +689,19 @@ main{animation:fadein .22s ease both}
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const SUPABASE_URL='https://vhlqutmtrsjjhjnfcgke.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_qOjlqv9mOGAylLvGAmR6Ew_pyYZVHZA';
+const SESSION_IS_MOBILE=(()=>{
+  try{
+    const coarse=window.matchMedia?.('(pointer: coarse)').matches===true;
+    const narrow=Math.min(window.screen?.width||9999,window.screen?.height||9999)<=1024;
+    return coarse&&narrow;
+  }catch(_){return false}
+})();
+const AUTH_SESSION_STORAGE=SESSION_IS_MOBILE?window.localStorage:window.sessionStorage;
+
 const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{
   auth:{
-    persistSession:false,
+    storage:AUTH_SESSION_STORAGE,
+    persistSession:true,
     autoRefreshToken:true,
     detectSessionInUrl:false
   }
@@ -712,6 +723,12 @@ function formatCurrentBusinessDate(){
 function renderCurrentBusinessDate(){
   const el=document.querySelector('#currentDateGlobal span');
   if(el)el.textContent=formatCurrentBusinessDate();
+}
+function checkBusinessDateRollover(){
+  renderCurrentBusinessDate();
+  if(currentUser&&currentBusinessDate()!==DEMO_TODAY){
+    window.location.reload();
+  }
 }
 function currentBusinessDate(){
   const parts=new Intl.DateTimeFormat('en-CA',{
@@ -742,6 +759,9 @@ const indicatorNames={all:'Todas as ações',salao:'Abordagem no Salão',online:
 const indicatorShort={all:'Ações',salao:'Salão',online:'Online',cotacoes:'Cotações'};
 
 let currentUser=null, role=null, state={salao:0,online:0,cotacoes:0,vendas:0,obs:''}, editingUserId=null, performanceMode='dashboard';
+const DESKTOP_IDLE_MS=30*60*1000;
+let desktopIdleTimer=null;
+let accessCheckBusy=false;
 const liveStates=new Map();
 let REAL_ROUTINE_ROWS=[];
 let DASHBOARD_ROUTINE_ROWS=[];
@@ -829,7 +849,7 @@ function getRuntimeUser(id){
 }
 function nextId(){idCounter++;return 'u'+idCounter}
 function nextOrgId(prefix='org'){orgCounter++;return prefix+orgCounter}
-function nowLabel(){return new Intl.DateTimeFormat('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date())}
+function nowLabel(){return new Intl.DateTimeFormat('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date())}
 function audit(action,target,details=''){auditLog.unshift({time:nowLabel(),action,target,details,by:currentUser?fullName(currentUser):'Sistema'});renderAudit()}
 function renderAudit(){
   const el=$('#userAuditList');
@@ -940,7 +960,7 @@ async function loadMyRoutinesFromSupabase(){
   const start=addDays(DEMO_TODAY,-90);
   const {data,error}=await supabaseClient
     .from('daily_routines')
-    .select('id,user_id,unit_id,routine_date,floor_approaches,online_captures,quotations,sales,note,closed,created_at,updated_at')
+    .select('id,user_id,unit_id,routine_date,floor_approaches,online_captures,quotations,sales,note,closed,closed_at,created_at,updated_at')
     .eq('user_id',currentUser.id)
     .gte('routine_date',start)
     .lte('routine_date',DEMO_TODAY)
@@ -1007,6 +1027,8 @@ async function persistMetricDelta(key,delta){
   }catch(err){
     console.error('Erro ao salvar indicador:',err);
     routineSyncErrors++;
+    const accessOk=await verifyCurrentAccess();
+    if(!accessOk)return;
     // Recarrega o valor oficial para evitar divergência.
     try{await loadMyRoutinesFromSupabase()}catch(_){
       state[key]=previous;
@@ -1117,7 +1139,17 @@ function view(v){
   }
 }
 
-function showLogin(){currentUser=null;role=null;$('#app').classList.add('hidden');$('#login').classList.remove('hidden');$('#user').value='';$('#pass').value='';$('#msg').textContent='';['first','hist','userModal','importUsersModal','companyModal','unitModal'].forEach(id=>$('#'+id)?.classList.add('hidden'))}
+function showLogin(){
+  currentUser=null;
+  role=null;
+  if(desktopIdleTimer){clearTimeout(desktopIdleTimer);desktopIdleTimer=null}
+  $('#app').classList.add('hidden');
+  $('#login').classList.remove('hidden');
+  $('#user').value='';
+  $('#pass').value='';
+  $('#msg').textContent='';
+  ['first','hist','userModal','importUsersModal','companyModal','unitModal'].forEach(id=>$('#'+id)?.classList.add('hidden'));
+}
 function technicalEmailForUsername(username){
   const login=username.trim().toLowerCase();
   if(!/^[a-z0-9._-]{3,40}$/.test(login))return null;
@@ -1189,6 +1221,109 @@ async function authenticateReal(username,password){
   if(touchError)console.warn('Não foi possível atualizar último acesso:',touchError);
   return profile;
 }
+
+async function loadRoleData(u){
+  if(u.role==='performance'){
+    await loadOrganizationFromSupabase();
+    await loadDashboardRoutinesFromSupabase();
+  }else if(u.role==='gerente'){
+    await loadDashboardRoutinesFromSupabase();
+  }else if(u.role==='colaborador'&&u.profileComplete){
+    await loadMyRoutinesFromSupabase();
+  }
+}
+
+function resetDesktopIdleTimer(){
+  if(SESSION_IS_MOBILE||!currentUser)return;
+  if(desktopIdleTimer)clearTimeout(desktopIdleTimer);
+  desktopIdleTimer=setTimeout(async()=>{
+    if(!currentUser)return;
+    try{await supabaseClient.auth.signOut()}catch(_){}
+    showLogin();
+    alert('Sessão encerrada após 30 minutos de inatividade neste computador.');
+  },DESKTOP_IDLE_MS);
+}
+
+['pointerdown','keydown','scroll'].forEach(evt=>{
+  window.addEventListener(evt,resetDesktopIdleTimer,{passive:true});
+});
+
+async function verifyCurrentAccess(){
+  if(accessCheckBusy||!currentUser||currentUser.source!=='supabase')return true;
+  accessCheckBusy=true;
+  try{
+    const {data,error}=await supabaseClient
+      .from('profiles')
+      .select('active,role,company_id,unit_id')
+      .eq('user_id',currentUser.id)
+      .maybeSingle();
+
+    if(error)return true;
+
+    const changed=!data
+      || data.active!==true
+      || data.role!==currentUser.role
+      || (data.company_id||null)!==(currentUser.companyId||null)
+      || (data.unit_id||null)!==(currentUser.unitId||null);
+
+    if(changed){
+      try{await supabaseClient.auth.signOut()}catch(_){}
+      showLogin();
+      alert('Seu acesso foi alterado ou inativado. Entre novamente para continuar.');
+      return false;
+    }
+    return true;
+  }finally{
+    accessCheckBusy=false;
+  }
+}
+
+window.addEventListener('focus',()=>{
+  if(currentUser)verifyCurrentAccess();
+});
+
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden&&currentUser){
+    resetDesktopIdleTimer();
+    verifyCurrentAccess();
+  }
+});
+
+async function restoreSessionAfterRefresh(){
+  try{
+    const {data:{session},error}=await supabaseClient.auth.getSession();
+    if(error||!session?.user)return false;
+
+    const profile=await fetchAuthenticatedProfile(session.user);
+
+    if(!profile||!profile.active){
+      try{await supabaseClient.auth.signOut()}catch(_){}
+      showLogin();
+      return false;
+    }
+
+    loginAsUser(profile);
+
+    try{
+      const {error:touchError}=await supabaseClient.rpc('touch_last_access');
+      if(touchError)console.warn('Não foi possível atualizar último acesso:',touchError);
+    }catch(_){}
+
+    await loadRoleData(profile);
+    resetDesktopIdleTimer();
+
+    // Pedido operacional: após qualquer atualização/F5, confirmar claramente
+    // qual usuário permaneceu autenticado.
+    alert(`VOCÊ ESTÁ LOGADO COMO: ${fullName(profile)}`);
+    return true;
+  }catch(err){
+    console.error('Falha ao restaurar sessão:',err);
+    try{await supabaseClient.auth.signOut()}catch(_){}
+    showLogin();
+    return false;
+  }
+}
+
 function loginAsUser(u){
   currentUser=u;
   role=u.role;
@@ -1199,6 +1334,7 @@ function loginAsUser(u){
   $('#app').classList.remove('hidden');
   $('#tabs').classList.add('hidden');
   setMetaForUser(u);
+  resetDesktopIdleTimer();
 
   if(u.role==='colaborador'){
     state=ensureLiveState(u);
@@ -1241,18 +1377,7 @@ $('#loginForm').addEventListener('submit',async e=>{
   try{
     loginAsUser(u);
 
-    if(u.role==='performance'){
-      await loadOrganizationFromSupabase();
-      await loadDashboardRoutinesFromSupabase();
-    }
-
-    if(u.role==='gerente'){
-      await loadDashboardRoutinesFromSupabase();
-    }
-
-    if(u.role==='colaborador'&&u.profileComplete){
-      await loadMyRoutinesFromSupabase();
-    }
+    await loadRoleData(u);
   }catch(err){
     console.error('Erro após autenticação:',err);
     $('#msg').textContent=`Acesso autenticado, mas houve erro ao abrir o sistema: ${err?.message||'erro desconhecido'}`;
@@ -1471,7 +1596,7 @@ async function loadDashboardRoutinesFromSupabase(){
 
     const {data,error}=await supabaseClient
       .from('daily_routines')
-      .select('id,user_id,unit_id,routine_date,floor_approaches,online_captures,quotations,sales,note,closed,created_at,updated_at')
+      .select('id,user_id,unit_id,routine_date,floor_approaches,online_captures,quotations,sales,note,closed,closed_at,created_at,updated_at')
       .gte('routine_date',startDate)
       .lte('routine_date',DEMO_TODAY)
       .order('routine_date',{ascending:true});
@@ -2525,7 +2650,8 @@ syncCompanySelects();fillSelectUnits($('#company'),$('#unit'),false);updateFirst
 }catch(e){console.warn('V8 visual layer:',e)}})();
 
 renderCurrentBusinessDate();
-setInterval(renderCurrentBusinessDate,60000);
+setInterval(checkBusinessDateRollover,60000);
+restoreSessionAfterRefresh();
 </script>
 <script src="modules/dashboard-ao-vivo/bridge.js"></script>
 </body></html>
