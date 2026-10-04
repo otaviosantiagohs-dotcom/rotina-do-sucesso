@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/><meta name="theme-color" content="#050608"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" name="viewport"/>
-<title>Rotina do Sucesso — V8.10.2 Importação de Unidades</title>
+<title>Rotina do Sucesso — V8.10.3 Gerente Operacional</title>
 <style>
 :root{--bg:#0b0e12;--panel:#12171d;--panel2:#171d24;--line:#27303a;--text:#f5f7fa;--muted:#8d98a5;--red:#e43b32;--green:#61d394;--amber:#e9b45d}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
@@ -380,6 +380,11 @@ main{animation:fadein .22s ease both}
 <div class="user"><div class="avatar" id="avatar">DS</div><div><b id="uname">Dayana Souza</b><div class="save" id="savestatus">● salvo automaticamente</div></div></div>
 </div>
 <div class="tabs hidden" id="tabs" aria-hidden="true"></div>
+<div class="admin-nav hidden" id="managerModeNav">
+  <button class="active" data-manager-mode="dashboard">Dashboard da unidade</button>
+  <button data-manager-mode="entry">Registrar atividade</button>
+  <button data-manager-mode="personal">Minha Dashboard</button>
+</div>
 <div class="mobile-collab-nav hidden" id="collabModeNav">
 <button class="modebtn active" data-collab-mode="entry">Registrar atividade</button>
 <button class="modebtn" data-collab-mode="dashboard">Minha Dashboard</button>
@@ -460,7 +465,7 @@ main{animation:fadein .22s ease both}
 </div>
 <div class="grid g2" style="margin-top:14px">
 <section class="card pad"><div class="section" style="margin:0"><h2>Evolução por dia</h2><span id="mgrChartLabel">Todas as ações</span></div><div class="chart" id="mgrchart"></div></section>
-<section class="card pad"><div class="section" style="margin:0"><h2>Ranking de colaboradores</h2><span id="mgrRankLabel">Todas as ações</span></div><div id="mgrrank"></div></section>
+<section class="card pad"><div class="section" style="margin:0"><h2>Ranking da equipe</h2><span id="mgrRankLabel">Todas as ações</span></div><div id="mgrrank"></div></section>
 </div>
 <section class="card pad" style="margin-top:14px"><div class="section" style="margin:0"><h2>Ranking de ações</h2><span>Quem executa cada atividade</span></div><div class="table"><table><thead id="mgrActionHead"><tr><th>Agente</th><th>Salão</th><th>Online</th><th>Cotações</th><th>Total</th></tr></thead><tbody id="mgrActionBody"><tr><td><b>Dayana Souza</b></td><td>68</td><td>54</td><td>42</td><td><b>164</b></td></tr><tr><td><b>Marina Alves</b></td><td>61</td><td>49</td><td>46</td><td><b>156</b></td></tr><tr><td><b>João Lima</b></td><td>58</td><td>44</td><td>43</td><td><b>145</b></td></tr><tr><td><b>Renata Costa</b></td><td>52</td><td>39</td><td>43</td><td><b>134</b></td></tr></tbody></table></div></section>
 </main>
@@ -482,7 +487,7 @@ main{animation:fadein .22s ease both}
 <div class="section"><h2>Super Dashboard</h2><span>Visão consolidada</span></div>
 <div class="stats">
 <div class="card stat"><div class="l">Unidades ativas</div><div class="v" id="pfStatUnits">0</div><div class="d" id="pfStatUnitsDelta">visão geral</div></div>
-<div class="card stat"><div class="l">Colaboradores</div><div class="v" id="pfStatAgents">0</div><div class="d" id="pfStatAgentsDelta">com registros no período</div></div>
+<div class="card stat"><div class="l">Pessoas com produção</div><div class="v" id="pfStatAgents">0</div><div class="d" id="pfStatAgentsDelta">com registros no período</div></div>
 <div class="card stat"><div class="l">Ações operacionais</div><div class="v" id="pfStatActions">0</div><div class="d" id="pfStatActionsDelta">atividade do período</div></div>
 <div class="card stat"><div class="l">Preenchimento</div><div class="v" id="pfStatFill">0%</div><div class="d" id="pfStatFillDelta">rotinas registradas</div></div>
 </div>
@@ -856,6 +861,7 @@ const userStore=[
   {id:'u25',username:'ana.for',password:'123',firstName:'Ana',lastName:'Ferreira',role:'colaborador',company:'SOS',unit:'Fortaleza',active:false,profileComplete:true,lastLogin:null}
 ];
 
+function isOperationalRole(u=currentUser){return !!u&&['colaborador','gerente'].includes(u.role)}
 function fullName(u){return `${u?.firstName||''} ${u?.lastName||''}`.trim()||u?.username||'Usuário'}
 function initials(n){return String(n||'').split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase()||'US'}
 function companyRecord(name){return COMPANY_CATALOG.find(x=>x.name===name)||null}
@@ -1001,7 +1007,7 @@ function applyTodayRoutineToState(dbRow){
   state.obs=dbRow.note||'';
 }
 async function loadMyRoutinesFromSupabase(){
-  if(!currentUser||currentUser.role!=='colaborador'||currentUser.source!=='supabase'||!currentUser.profileComplete)return;
+  if(!currentUser||!isOperationalRole(currentUser)||currentUser.source!=='supabase'||!currentUser.profileComplete)return;
 
   // Carrega também os catálogos necessários para nomear o histórico.
   if(!ORG_COMPANIES_DB.length||!ORG_UNITS_DB.length||!ORG_PROFILES_DB.length){
@@ -1062,7 +1068,7 @@ const metricDbMap={
   vendas:'sales'
 };
 async function persistMetricDelta(key,delta){
-  if(!currentUser||currentUser.role!=='colaborador'||currentUser.source!=='supabase')return;
+  if(!currentUser||!isOperationalRole(currentUser)||currentUser.source!=='supabase')return;
   const previous=state[key];
   state[key]=Math.max(0,state[key]+delta);
   updateRealTodayFromState();
@@ -1090,7 +1096,7 @@ async function persistMetricDelta(key,delta){
   }
 }
 async function persistTodayNote(){
-  if(!currentUser||currentUser.role!=='colaborador'||currentUser.source!=='supabase')return;
+  if(!currentUser||!isOperationalRole(currentUser)||currentUser.source!=='supabase')return;
   try{
     const {error}=await supabaseClient.rpc('save_today_note',{p_note:state.obs||''});
     if(error)throw error;
@@ -1114,7 +1120,7 @@ function rowsWithLive(){
 
   for(const [userId,s] of liveStates.entries()){
     const u=getRuntimeUser(userId);
-    if(!u||u.role!=='colaborador'||!u.profileComplete||!u.company||!u.unit)continue;
+    if(!u||!['colaborador','gerente'].includes(u.role)||!u.profileComplete||!u.company||!u.unit)continue;
     rows=rows.filter(r=>!(r.userId===u.id&&r.date===DEMO_TODAY));
     rows.push({
       userId:u.id,
@@ -1141,19 +1147,20 @@ function setMetaForUser(u){
   else if(u.role==='gerente')$('#meta').innerHTML=`<span class="chip">Gerente</span><span class="chip">${u.company||'—'}</span><span class="chip">${u.unit||'—'}</span>`;
   else {const mgr=managerFor(u.company,u.unit);$('#meta').innerHTML=`<span class="chip">${u.company||'Não definido'}</span><span class="chip">${u.unit||'Não definido'}</span><span class="chip">Capitão: ${mgr?fullName(mgr):'Não definido'}</span>`}
 }
-function renderEntry(){if(!currentUser||currentUser.role!=='colaborador')return;['salao','online','cotacoes','vendas'].forEach(k=>{const el=$('#c-'+k);if(el)el.textContent=state[k]});$('#total').textContent=state.salao+state.online+state.cotacoes;$('#obs').value=state.obs||''}
-function render(){renderEntry();if(currentUser?.role==='colaborador')renderPersonalDashboard();if(!$('#manager').classList.contains('hidden'))renderManager();if(!$('#performance').classList.contains('hidden')){renderPerformance();renderUserManagement();renderOrgManagement()}}
+function renderEntry(){if(!currentUser||!isOperationalRole(currentUser))return;['salao','online','cotacoes','vendas'].forEach(k=>{const el=$('#c-'+k);if(el)el.textContent=state[k]});$('#total').textContent=state.salao+state.online+state.cotacoes;$('#obs').value=state.obs||''}
+function render(){renderEntry();if(isOperationalRole(currentUser))renderPersonalDashboard();if(!$('#manager').classList.contains('hidden'))renderManager();if(!$('#performance').classList.contains('hidden')){renderPerformance();renderUserManagement();renderOrgManagement()}}
 
 function setTopForView(v){
   if(v==='collab'){
-    $('#kick').textContent='Missão do dia';
+    $('#kick').textContent=currentUser?.role==='gerente'?'Produção do capitão':'Missão do dia';
     $('#title').textContent='Minha Rotina';
     $('#subtitle').textContent='Execução diária e salvamento automático.';
-    $('#mode').textContent='missão em andamento';
+    $('#mode').textContent=currentUser?.role==='gerente'?'capitão em operação':'missão em andamento';
 
+    const operational=isOperationalRole(currentUser);
     const isCollaborator=currentUser?.role==='colaborador';
-    $('#history').classList.toggle('hidden',!isCollaborator);
-    $('#clearDay').classList.toggle('hidden',!isCollaborator);
+    $('#history').classList.toggle('hidden',!operational);
+    $('#clearDay').classList.toggle('hidden',!operational);
     $('#collabModeNav').classList.toggle('hidden',!isCollaborator);
   }
   else if(v==='manager'){const c=managerContext();$('#kick').textContent='Comando da unidade';$('#title').textContent='Dashboard do Gerente';$('#subtitle').textContent=c?`${c.unit} · ${c.company} · acompanhamento da equipe`:'Selecione uma unidade';$('#mode').textContent='comando da unidade';$('#history').classList.add('hidden');$('#clearDay').classList.add('hidden');$('#collabModeNav').classList.add('hidden')}
@@ -1167,9 +1174,12 @@ function setTopForView(v){
 }
 function view(v){
   if(currentUser){
-    const allowedView=currentUser.role==='performance'?'performance':currentUser.role==='gerente'?'manager':'collab';
-    v=allowedView;
+    if(currentUser.role==='performance')v='performance';
+    else if(currentUser.role==='gerente'&&!['manager','collab'].includes(v))v='manager';
+    else if(currentUser.role==='colaborador')v='collab';
   }
+
+  $('#managerModeNav')?.classList.toggle('hidden',currentUser?.role!=='gerente');
 
   ['collab','manager','performance'].forEach(x=>$('#'+x).classList.add('hidden'));
   $('#'+v).classList.remove('hidden');
@@ -1185,10 +1195,29 @@ function view(v){
     renderUserManagement();
     renderOrgManagement();
   }
-  if(v==='collab'&&currentUser?.role==='colaborador'){
+  if(v==='collab'&&isOperationalRole(currentUser)){
     renderPersonalDashboard();
   }
 }
+
+
+function setManagerMode(mode){
+  if(currentUser?.role!=='gerente')return;
+
+  $$('[data-manager-mode]').forEach(b=>b.classList.toggle('active',b.dataset.managerMode===mode));
+
+  if(mode==='dashboard'){
+    view('manager');
+    return;
+  }
+
+  view('collab');
+  setCollabMode(mode==='personal'?'dashboard':'entry');
+}
+
+$$('[data-manager-mode]').forEach(b=>{
+  b.addEventListener('click',()=>setManagerMode(b.dataset.managerMode));
+});
 
 function showLogin(){
   currentUser=null;
@@ -1279,6 +1308,7 @@ async function loadRoleData(u){
     await loadDashboardRoutinesFromSupabase();
   }else if(u.role==='gerente'){
     await loadDashboardRoutinesFromSupabase();
+    if(u.profileComplete)await loadMyRoutinesFromSupabase();
   }else if(u.role==='colaborador'&&u.profileComplete){
     await loadMyRoutinesFromSupabase();
   }
@@ -1394,7 +1424,8 @@ function loginAsUser(u){
     if(!u.profileComplete)openFirstAccess();
   }
   else if(u.role==='gerente'){
-    view('manager');
+    state=ensureLiveState(u);
+    setManagerMode('dashboard');
   }
   else{
     setPerformanceMode('dashboard');
@@ -1550,16 +1581,16 @@ $('#firstForm').addEventListener('submit',async e=>{
 });
 
 $$('.plus').forEach(b=>b.addEventListener('click',()=>{
-  if(currentUser?.role!=='colaborador')return;
+  if(!isOperationalRole(currentUser))return;
   persistMetricDelta(b.dataset.k,1);
 }));
 $$('.minus').forEach(b=>b.addEventListener('click',()=>{
-  if(currentUser?.role!=='colaborador')return;
+  if(!isOperationalRole(currentUser))return;
   if(state[b.dataset.k]<=0)return;
   persistMetricDelta(b.dataset.k,-1);
 }));
 $('#obs').addEventListener('input',e=>{
-  if(currentUser?.role!=='colaborador')return;
+  if(!isOperationalRole(currentUser))return;
   state.obs=e.target.value;
   updateRealTodayFromState();
   pulse();
@@ -1567,7 +1598,7 @@ $('#obs').addEventListener('input',e=>{
   routineNoteTimer=setTimeout(persistTodayNote,650);
 });
 $('#clearDay').addEventListener('click',async()=>{
-  if(currentUser?.role!=='colaborador')return;
+  if(!isOperationalRole(currentUser))return;
   if(!confirm('Zerar todas as contagens e a observação do dia atual?'))return;
   const before={...state};
   state.salao=state.online=state.cotacoes=state.vendas=0;
@@ -1589,8 +1620,26 @@ $('#clearDay').addEventListener('click',async()=>{
 });
 
 function personalRows(period){if(!currentUser)return[];return rowsForWindow(userRows(currentUser),$('#personalPeriod').value==='month'?DEMO_TODAY.slice(0,7):DEMO_TODAY.slice(0,7),period)}
-function renderPersonalDashboard(){if(!currentUser||currentUser.role!=='colaborador'||!currentUser.profileComplete)return;const key=$('#personalIndicator').value,period=$('#personalPeriod').value,rows=rowsForWindow(userRows(currentUser),DEMO_TODAY.slice(0,7),period),label=indicatorNames[key];const total=sum(rows,key),byDate=aggregateByDate(rows,key).sort((a,b)=>a.n.localeCompare(b.n)),todayRow=rows.find(r=>r.date===DEMO_TODAY),today=todayRow?metricValue(todayRow,key):0,best=byDate.length?Math.max(...byDate.map(x=>x.v)):0,bestRow=byDate.find(x=>x.v===best);$('#personalIndicatorLabel').textContent=label;$('#personalChartLabel').textContent=label;$('#personalTotal').textContent=formatInt(total);$('#personalToday').textContent=formatInt(today);$('#personalAverage').textContent=format1(byDate.length?total/byDate.length:0);$('#personalBest').textContent=formatInt(best);$('#personalBestDate').textContent=bestRow?(bestRow.n===DEMO_TODAY?'Hoje':bestRow.n.slice(8,10)+'/'+bestRow.n.slice(5,7)):'—';bars($('#personalChart'),byDate.map(x=>({l:x.n===DEMO_TODAY?'Hoje':x.n.slice(8,10),v:x.v})));rank($('#personalBreakdown'),[{n:'Abordagem no Salão',s:'captação presencial',v:sum(rows,'salao')},{n:'Captação Online',s:'prospecção e carteira',v:sum(rows,'online')},{n:'Cotações',s:'oportunidades trabalhadas',v:sum(rows,'cotacoes')}]);$('#personalSalesTotal').textContent=formatInt(rows.reduce((a,r)=>a+r.vendas,0))}
-function setCollabMode(mode){const dash=mode==='dashboard';$('#collabEntry').classList.toggle('hidden',dash);$('#collabDashboard').classList.toggle('hidden',!dash);$$('.modebtn').forEach(b=>b.classList.toggle('active',b.dataset.collabMode===mode));if(dash){$('#kick').textContent='Relatório de missão';$('#title').textContent='Minha Dashboard';$('#subtitle').textContent='Sua produção, evolução e composição da rotina.';$('#history').classList.add('hidden');$('#clearDay').classList.add('hidden');renderPersonalDashboard()}else setTopForView('collab')}
+function renderPersonalDashboard(){if(!currentUser||!isOperationalRole(currentUser)||!currentUser.profileComplete)return;const key=$('#personalIndicator').value,period=$('#personalPeriod').value,rows=rowsForWindow(userRows(currentUser),DEMO_TODAY.slice(0,7),period),label=indicatorNames[key];const total=sum(rows,key),byDate=aggregateByDate(rows,key).sort((a,b)=>a.n.localeCompare(b.n)),todayRow=rows.find(r=>r.date===DEMO_TODAY),today=todayRow?metricValue(todayRow,key):0,best=byDate.length?Math.max(...byDate.map(x=>x.v)):0,bestRow=byDate.find(x=>x.v===best);$('#personalIndicatorLabel').textContent=label;$('#personalChartLabel').textContent=label;$('#personalTotal').textContent=formatInt(total);$('#personalToday').textContent=formatInt(today);$('#personalAverage').textContent=format1(byDate.length?total/byDate.length:0);$('#personalBest').textContent=formatInt(best);$('#personalBestDate').textContent=bestRow?(bestRow.n===DEMO_TODAY?'Hoje':bestRow.n.slice(8,10)+'/'+bestRow.n.slice(5,7)):'—';bars($('#personalChart'),byDate.map(x=>({l:x.n===DEMO_TODAY?'Hoje':x.n.slice(8,10),v:x.v})));rank($('#personalBreakdown'),[{n:'Abordagem no Salão',s:'captação presencial',v:sum(rows,'salao')},{n:'Captação Online',s:'prospecção e carteira',v:sum(rows,'online')},{n:'Cotações',s:'oportunidades trabalhadas',v:sum(rows,'cotacoes')}]);$('#personalSalesTotal').textContent=formatInt(rows.reduce((a,r)=>a+r.vendas,0))}
+function setCollabMode(mode){
+  const dash=mode==='dashboard';
+  $('#collabEntry').classList.toggle('hidden',dash);
+  $('#collabDashboard').classList.toggle('hidden',!dash);
+  $$('.modebtn').forEach(b=>b.classList.toggle('active',b.dataset.collabMode===mode));
+
+  if(currentUser?.role==='gerente'){
+    $$('[data-manager-mode]').forEach(b=>b.classList.toggle('active',b.dataset.managerMode===(dash?'personal':'entry')));
+  }
+
+  if(dash){
+    $('#kick').textContent=currentUser?.role==='gerente'?'Relatório do capitão':'Relatório de missão';
+    $('#title').textContent='Minha Dashboard';
+    $('#subtitle').textContent='Sua produção, evolução e composição da rotina.';
+    $('#history').classList.add('hidden');
+    $('#clearDay').classList.add('hidden');
+    renderPersonalDashboard();
+  }else setTopForView('collab');
+}
 $$('.modebtn').forEach(b=>b.addEventListener('click',()=>setCollabMode(b.dataset.collabMode)));$('#personalIndicator').addEventListener('change',renderPersonalDashboard);$('#personalPeriod').addEventListener('change',renderPersonalDashboard);$('#showPersonalSales').addEventListener('change',e=>$('#personalSalesBox').classList.toggle('hidden',!e.target.checked));
 function renderHistory(){if(!currentUser)return;const rows=userRows(currentUser).filter(r=>r.date<=DEMO_TODAY).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);$('#historyBody').innerHTML=rows.map(r=>`<tr><td>${r.date.split('-').reverse().join('/')}</td><td>${r.salao}</td><td>${r.online}</td><td>${r.cotacoes}</td><td>${r.vendas}</td></tr>`).join('')||'<tr><td colspan="5">Sem registros.</td></tr>'}
 $('#history').addEventListener('click',()=>{renderHistory();$('#hist').classList.remove('hidden')});$('#closeHist').addEventListener('click',()=>$('#hist').classList.add('hidden'));$$('.tab').forEach(t=>t.addEventListener('click',()=>view(t.dataset.view)));
@@ -1699,7 +1748,7 @@ function rebuildManagerAgentOptions(){
   if(currentUser?.source==='supabase'){
     const historicIds=unique(rowsWithLive().filter(r=>r.company===c.company&&r.unit===c.unit).map(r=>r.userId));
     const currentIds=ORG_PROFILES_DB
-      .filter(p=>p.role==='colaborador'&&p.company_id===currentUser.companyId&&p.unit_id===currentUser.unitId)
+      .filter(p=>['colaborador','gerente'].includes(p.role)&&p.company_id===currentUser.companyId&&p.unit_id===currentUser.unitId)
       .map(p=>p.user_id);
 
     eligible=unique([...historicIds,...currentIds])
@@ -1784,11 +1833,11 @@ function renderManager(){
 function eligiblePerformanceUsers({activeOnly=true}={}){
   if(currentUser?.source==='supabase'){
     return ORG_PROFILES_DB
-      .filter(p=>p.role==='colaborador'&&p.first_access_completed&&p.company_id&&p.unit_id&&(!activeOnly||p.active))
+      .filter(p=>['colaborador','gerente'].includes(p.role)&&p.first_access_completed&&p.company_id&&p.unit_id&&(!activeOnly||p.active))
       .map(p=>getRuntimeUser(p.user_id))
       .filter(Boolean);
   }
-  return userStore.filter(u=>u.role==='colaborador'&&u.profileComplete&&u.company&&u.unit&&(!activeOnly||u.active));
+  return userStore.filter(u=>['colaborador','gerente'].includes(u.role)&&u.profileComplete&&u.company&&u.unit&&(!activeOnly||u.active));
 }
 function rebuildPerformanceOptions(){
   const previousCompany=$('#pfCompany').value,

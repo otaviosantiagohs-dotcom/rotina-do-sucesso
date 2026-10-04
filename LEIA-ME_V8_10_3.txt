@@ -1,0 +1,54 @@
+ROTINA DO SUCESSO — V8.10.3 GERENTE OPERACIONAL
+
+NOVA REGRA
+O Gerente/Capitão também atende na loja e agora possui produção própria.
+
+O GERENTE PODE:
+- visualizar o Dashboard da Unidade;
+- registrar Abordagem no Salão;
+- registrar Captação Online;
+- registrar Cotações;
+- registrar Vendas como apoio operacional;
+- registrar observação do dia;
+- desfazer lançamentos;
+- zerar a própria rotina do dia;
+- visualizar a própria Dashboard e o próprio histórico.
+
+NAVEGAÇÃO DO GERENTE
+- Dashboard da unidade
+- Registrar atividade
+- Minha Dashboard
+
+CONSOLIDAÇÃO
+A produção do Gerente:
+- pertence à unidade em que ele está cadastrado;
+- aparece nos totais da loja;
+- aparece no ranking da equipe;
+- aparece no Super Dashboard;
+- aparece no Dashboard Ao Vivo;
+- entra nos indicadores Abordagem, Captação e Cotações;
+- Vendas continuam fora dos KPIs principais.
+
+SEGURANÇA
+O Gerente lança apenas a própria produção.
+Ele continua podendo visualizar a equipe da unidade, mas não edita a produção
+de outro colaborador.
+
+HORÁRIO OFICIAL
+São Paulo/Brasília — America/Sao_Paulo.
+
+PUBLICAÇÃO
+1. Execute primeiro:
+   supabase_migration_4_gerente_operacional.sql
+2. Depois publique todos os arquivos deste pacote, preservando as pastas.
+3. Entre com um usuário Gerente e valide:
+   - Dashboard da unidade
+   - Registrar atividade
+   - Minha Dashboard
+   - +1
+   - F5
+   - retorno ao Dashboard da unidade
+   - produção do Gerente aparecendo no ranking
+
+A Migração 3.1 deve continuar instalada. A Migração 4 é incremental:
+não execute novamente a Migração 3.1.

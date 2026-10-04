@@ -118,7 +118,7 @@
 
     const capacityByUnit=new Map();
     ORG_PROFILES_DB.forEach(p=>{
-      if(p.role!=='colaborador' || p.active!==true || !p.unit_id)return;
+      if(!['colaborador','gerente'].includes(p.role) || p.active!==true || !p.unit_id)return;
       capacityByUnit.set(p.unit_id,(capacityByUnit.get(p.unit_id)||0)+1);
     });
 
