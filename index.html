@@ -748,6 +748,11 @@ function nextId(){idCounter++;return 'u'+idCounter}
 function nextOrgId(prefix='org'){orgCounter++;return prefix+orgCounter}
 function nowLabel(){return new Intl.DateTimeFormat('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date())}
 function audit(action,target,details=''){auditLog.unshift({time:nowLabel(),action,target,details,by:currentUser?fullName(currentUser):'Sistema'});renderAudit()}
+function renderAudit(){
+  const el=$('#userAuditList');
+  if(!el)return;
+  el.innerHTML=auditLog.slice(0,10).map(a=>`<div class="audit-row"><div class="muted">${a.time}</div><div><b>${a.action}</b><br><span class="muted">${a.target}</span></div><div>${a.details||'—'}</div><div class="muted">por ${a.by}</div></div>`).join('')||'<div class="sub" style="padding:10px 0">Nenhuma alteração de usuário nesta sessão.</div>';
+}
 function unique(a){return [...new Set(a)]}
 function formatInt(n){return Number(n||0).toLocaleString('pt-BR')}
 function format1(n){return Number(n||0).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})}
@@ -897,12 +902,11 @@ $('#loginForm').addEventListener('submit',async e=>{
   $('#msg').textContent='';
   if(!name||!pass){$('#msg').textContent='Informe usuário e senha.';return}
   if(btn){btn.disabled=true;btn.textContent='VALIDANDO ACESSO...'}
+  let u=null;
   try{
-    const u=await authenticateReal(name,pass);
-    loginAsUser(u);
-    if(u.role==='performance')await loadOrganizationFromSupabase();
+    u=await authenticateReal(name,pass);
   }catch(err){
-    console.error('Diagnóstico de login:',err);
+    console.error('Falha de autenticação:',err);
     if(err?.message==='INVALID_USERNAME'){
       $('#msg').textContent='Formato de usuário inválido.';
     }else if(err?.code==='PROFILE_BLOCKED'){
@@ -912,6 +916,16 @@ $('#loginForm').addEventListener('submit',async e=>{
       const status=err?.status?` HTTP ${err.status}`:'';
       $('#msg').textContent=`Supabase: ${err?.message||'Falha de autenticação'}${code}${status}`;
     }
+    if(btn){btn.disabled=false;btn.textContent='ACEITAR MISSÃO'}
+    return;
+  }
+
+  try{
+    loginAsUser(u);
+    if(u.role==='performance')await loadOrganizationFromSupabase();
+  }catch(err){
+    console.error('Erro após autenticação:',err);
+    $('#msg').textContent=`Acesso autenticado, mas houve erro ao abrir o sistema: ${err?.message||'erro desconhecido'}`;
   }finally{
     if(btn){btn.disabled=false;btn.textContent='ACEITAR MISSÃO'}
   }
