@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/><meta name="theme-color" content="#050608"/><meta name="color-scheme" content="dark light"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" name="viewport"/>
-<title>Rotina do Sucesso — V9.4.3 Final</title>
+<title>Rotina do Sucesso — V9.4.5 Final</title>
 <script>/* V9 — tema aplicado antes da pintura (evita piscar) */(function(){var t='dark';try{var s=localStorage.getItem('rds-theme');if(s==='light'||s==='dark')t=s}catch(e){}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='light'?'#f2f0ec':'#050608')})();</script>
 <style>
 :root{--bg:#0b0e12;--panel:#12171d;--panel2:#171d24;--line:#27303a;--text:#f5f7fa;--muted:#8d98a5;--red:#e43b32;--green:#61d394;--amber:#e9b45d}
@@ -670,9 +670,49 @@ tbody tr:hover{background:var(--accent-soft)}
   }
 </style>
 
+
+<link rel="manifest" href="/manifest.webmanifest"/>
+<meta name="theme-color" content="#0b0e12"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Rotina do Sucesso"/>
+<link rel="apple-touch-icon" href="/icons/icon-192.png"/>
+
+
+<style id="v9-4-4-sales-pwa">
+  .install-fab{
+    position:fixed;
+    z-index:30;
+    top:calc(14px + env(safe-area-inset-top));
+    right:calc(64px + env(safe-area-inset-right));
+    box-shadow:var(--shadow);
+    min-height:38px;
+    padding:0 12px;
+  }
+  .sales-visibility-box{
+    margin-top:12px;
+    border-color:var(--sales-line);
+    background:linear-gradient(180deg,var(--sales-bg),transparent),var(--panel);
+  }
+  .sales-visibility-box .summary{font-size:42px}
+  .sales-visibility-control{margin-top:12px}
+  .sales-visibility-control b{color:var(--text)!important}
+  @media(max-width:760px){
+    .install-fab{
+      top:calc(14px + env(safe-area-inset-top));
+      right:calc(62px + env(safe-area-inset-right));
+      min-height:38px;
+      padding:0 10px;
+      font-size:11px;
+    }
+  }
+</style>
+
 </head>
 <body>
 <section class="login" id="login">
+<button class="btn install-fab hidden" type="button" data-install-app>Instalar app</button>
 <button class="theme-btn theme-fab" type="button" data-theme-toggle aria-pressed="false" aria-label="Ativar modo claro" title="Alternar modo claro / escuro"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><g class="rays"><path d="M12 2.4v2.3M12 19.3v2.3M2.4 12h2.3M19.3 12h2.3M5.2 5.2l1.6 1.6M17.2 17.2l1.6 1.6M18.8 5.2l-1.6 1.6M6.8 17.2l-1.6 1.6"/></g></svg></button>
 <div class="hero">
 <div>
@@ -690,7 +730,7 @@ tbody tr:hover{background:var(--accent-soft)}
 <p>Autenticação conectada ao ambiente seguro da Rotina do Sucesso.</p>
 <label class="label">Usuário</label><input autocomplete="off" id="user" placeholder="seu.usuario"/>
 <div style="height:10px"></div>
-<label class="label">Senha</label><input autocomplete="new-password" id="pass" placeholder="••••••••" type="password"/>
+<label class="label">Senha</label><input autocomplete="new-password" id="pass" placeholder="••••" type="password"/>
 <button class="btn red" type="submit">ACEITAR MISSÃO</button>
 <div id="msg" style="color:#ff8c85;font-size:12px;margin-top:9px"></div>
 <div class="demo"><b>Login real ativado.</b><br/>Acesso validado pelo Supabase Auth e pelo perfil cadastrado no banco.<br/><b>Horário do sistema: São Paulo/Brasília.</b></div>
@@ -708,6 +748,7 @@ tbody tr:hover{background:var(--accent-soft)}
 <div class="current-date" id="systemTimezoneGlobal"><small>Horário do sistema</small><span>São Paulo/Brasília</span></div>
 <button class="btn" id="clearDay">Zerar hoje</button><button class="btn" id="export">Exportar Excel</button>
 <button class="btn" id="history">Histórico</button>
+<button class="btn hidden" type="button" data-install-app>Instalar app</button>
 <button class="btn ghost" id="logout">Sair</button>
 </div>
 </header>
@@ -776,9 +817,9 @@ tbody tr:hover{background:var(--accent-soft)}
 <div id="personalBreakdown"></div>
 </section>
 </div>
-<div class="sales-toggle-row">
-<span><b style="color:#fff">Vendas são apoio operacional.</b><br/>Ficam ocultas da produção principal por padrão.</span>
-<label aria-label="Mostrar vendas" class="switch">
+<div class="sales-toggle-row sales-visibility-control">
+<span><b>Vendas registradas</b><br/>Escolha se deseja visualizar suas vendas no período selecionado.</span>
+<label aria-label="Mostrar ou ocultar vendas registradas" class="switch">
 <input id="showPersonalSales" type="checkbox"/>
 <span class="slider"></span>
 </label>
@@ -797,6 +838,28 @@ tbody tr:hover{background:var(--accent-soft)}
 <select id="mgrPeriod"><option value="month">Período atual</option><option value="7">Últimos 7 dias</option><option value="15">Últimos 15 dias</option></select>
 <button class="btn" id="mgrApply">Aplicar filtros</button>
 </div>
+<div class="sales-toggle-row sales-visibility-control">
+  <span><b>Vendas registradas</b><br/>Mostrar ou ocultar as vendas do usuário/equipe no filtro atual.</span>
+  <label aria-label="Mostrar ou ocultar vendas registradas" class="switch">
+    <input id="showManagerSales" type="checkbox"/>
+    <span class="slider"></span>
+  </label>
+</div>
+<div class="sales-toggle-row sales-visibility-control">
+  <span><b>Ranking por vendas</b><br/>Quando ativado, o Ranking da equipe passa a ordenar pelos volumes de vendas registradas.</span>
+  <label aria-label="Ativar ranking por vendas" class="switch">
+    <input id="rankManagerBySales" type="checkbox"/>
+    <span class="slider"></span>
+  </label>
+</div>
+<section class="card pad sales-visibility-box hidden" id="mgrSalesBox">
+  <div class="section" style="margin:0">
+    <h2 id="mgrSalesTitle">Vendas registradas</h2>
+    <span id="mgrSalesContext">Filtro atual</span>
+  </div>
+  <div class="summary" id="mgrSalesTotal">0</div>
+  <div class="sub">Informação de apoio. Não altera os KPIs nem os totais operacionais. O ranking só muda se a opção “Ranking por vendas” estiver ativada.</div>
+</section>
 <div class="section"><h2>Visão da unidade</h2><span id="mgrUnitLabel">RECIFE · SOS</span></div>
 <div class="stats">
 <div class="card stat"><div class="l">Abordagens</div><div class="v" id="mgrStatSalao">286</div><div class="d" id="mgrStatSalaoDelta">+12% vs período anterior</div></div>
@@ -825,6 +888,28 @@ tbody tr:hover{background:var(--accent-soft)}
 <select id="pfMonth"><option value="2026-10">Outubro/2026</option><option value="2026-09">Setembro/2026</option><option value="2026-08">Agosto/2026</option></select>
 <select id="pfIndicator"><option value="all">Todos os indicadores</option><option value="salao">Abordagem no Salão</option><option value="online">Captação Online</option><option value="cotacoes">Cotações</option></select>
 <button class="btn" id="pfApply">Aplicar filtros</button></div>
+<div class="sales-toggle-row sales-visibility-control">
+  <span><b>Vendas registradas</b><br/>Mostrar ou ocultar as vendas do usuário/unidade no filtro atual.</span>
+  <label aria-label="Mostrar ou ocultar vendas registradas" class="switch">
+    <input id="showPerformanceSales" type="checkbox"/>
+    <span class="slider"></span>
+  </label>
+</div>
+<div class="sales-toggle-row sales-visibility-control">
+  <span><b>Ranking por vendas</b><br/>Quando ativado, os rankings de unidades e agentes passam a usar as vendas registradas.</span>
+  <label aria-label="Ativar ranking por vendas" class="switch">
+    <input id="rankPerformanceBySales" type="checkbox"/>
+    <span class="slider"></span>
+  </label>
+</div>
+<section class="card pad sales-visibility-box hidden" id="pfSalesBox">
+  <div class="section" style="margin:0">
+    <h2 id="pfSalesTitle">Vendas registradas</h2>
+    <span id="pfSalesContext">Filtro atual</span>
+  </div>
+  <div class="summary" id="pfSalesTotal">0</div>
+  <div class="sub">Informação de apoio. Não altera os KPIs nem as comparações principais. Os rankings só mudam se a opção “Ranking por vendas” estiver ativada.</div>
+</section>
 <div class="section"><h2>Super Dashboard</h2><span>Visão consolidada</span></div>
 <div class="stats">
 <div class="card stat"><div class="l">Unidades ativas</div><div class="v" id="pfStatUnits">0</div><div class="d" id="pfStatUnitsDelta">visão geral</div></div>
@@ -2235,7 +2320,7 @@ $('#clearDay').addEventListener('click',async()=>{
 });
 
 function personalRows(period){if(!currentUser)return[];return rowsForWindow(userRows(currentUser),$('#personalPeriod').value==='month'?DEMO_TODAY.slice(0,7):DEMO_TODAY.slice(0,7),period)}
-function renderPersonalDashboard(){if(!currentUser||!isOperationalRole(currentUser)||!currentUser.profileComplete)return;const key=$('#personalIndicator').value,period=$('#personalPeriod').value,rows=rowsForWindow(userRows(currentUser),DEMO_TODAY.slice(0,7),period),label=indicatorNames[key];const total=sum(rows,key),byDate=aggregateByDate(rows,key).sort((a,b)=>a.n.localeCompare(b.n)),todayRow=rows.find(r=>r.date===DEMO_TODAY),today=todayRow?metricValue(todayRow,key):0,best=byDate.length?Math.max(...byDate.map(x=>x.v)):0,bestRow=byDate.find(x=>x.v===best);$('#personalIndicatorLabel').textContent=label;$('#personalChartLabel').textContent=label;$('#personalTotal').textContent=formatInt(total);$('#personalToday').textContent=formatInt(today);$('#personalAverage').textContent=format1(byDate.length?total/byDate.length:0);$('#personalBest').textContent=formatInt(best);$('#personalBestDate').textContent=bestRow?(bestRow.n===DEMO_TODAY?'Hoje':bestRow.n.slice(8,10)+'/'+bestRow.n.slice(5,7)):'—';bars($('#personalChart'),byDate.map(x=>({l:x.n===DEMO_TODAY?'Hoje':x.n.slice(8,10),v:x.v})));rank($('#personalBreakdown'),[{n:'Abordagem no Salão',s:'captação presencial',v:sum(rows,'salao')},{n:'Captação Online',s:'prospecção e carteira',v:sum(rows,'online')},{n:'Cotações',s:'oportunidades trabalhadas',v:sum(rows,'cotacoes')}]);$('#personalSalesTotal').textContent=formatInt(rows.reduce((a,r)=>a+r.vendas,0))}
+function renderPersonalDashboard(){if(!currentUser||!isOperationalRole(currentUser)||!currentUser.profileComplete)return;const key=$('#personalIndicator').value,period=$('#personalPeriod').value,rows=rowsForWindow(userRows(currentUser),DEMO_TODAY.slice(0,7),period),label=indicatorNames[key];const total=sum(rows,key),byDate=aggregateByDate(rows,key).sort((a,b)=>a.n.localeCompare(b.n)),todayRow=rows.find(r=>r.date===DEMO_TODAY),today=todayRow?metricValue(todayRow,key):0,best=byDate.length?Math.max(...byDate.map(x=>x.v)):0,bestRow=byDate.find(x=>x.v===best);$('#personalIndicatorLabel').textContent=label;$('#personalChartLabel').textContent=label;$('#personalTotal').textContent=formatInt(total);$('#personalToday').textContent=formatInt(today);$('#personalAverage').textContent=format1(byDate.length?total/byDate.length:0);$('#personalBest').textContent=formatInt(best);$('#personalBestDate').textContent=bestRow?(bestRow.n===DEMO_TODAY?'Hoje':bestRow.n.slice(8,10)+'/'+bestRow.n.slice(5,7)):'—';bars($('#personalChart'),byDate.map(x=>({l:x.n===DEMO_TODAY?'Hoje':x.n.slice(8,10),v:x.v})));rank($('#personalBreakdown'),[{n:'Abordagem no Salão',s:'captação presencial',v:sum(rows,'salao')},{n:'Captação Online',s:'prospecção e carteira',v:sum(rows,'online')},{n:'Cotações',s:'oportunidades trabalhadas',v:sum(rows,'cotacoes')}]);$('#personalSalesTotal').textContent=formatInt(rows.reduce((a,r)=>a+r.vendas,0));$('#personalSalesBox').classList.toggle('hidden',!$('#showPersonalSales').checked)}
 function setCollabMode(mode){
   const dash=mode==='dashboard';
   $('#collabEntry').classList.toggle('hidden',dash);
@@ -2433,17 +2518,45 @@ function renderManager(){
   const byDate=aggregateByDate(rows,key).sort((a,b)=>a.n.localeCompare(b.n));
   bars($('#mgrchart'),byDate.map(x=>({l:x.n.slice(8,10),v:x.v})));
 
+  const managerRankBySales=$('#rankManagerBySales').checked;
   const byAgent=unique(rows.map(r=>r.userId)).map(id=>{
     const ar=rows.filter(r=>r.userId===id),u=getRuntimeUser(id);
-    return {n:u?fullName(u):ar[0]?.agent||'—',s:label,v:sum(ar,key)};
+    return {
+      n:u?fullName(u):ar[0]?.agent||'—',
+      s:managerRankBySales?'Vendas registradas':label,
+      v:managerRankBySales
+        ? ar.reduce((acc,r)=>acc+(Number(r.vendas)||0),0)
+        : sum(ar,key)
+    };
   });
   rank($('#mgrrank'),byAgent);
 
   $('#mgrChartLabel').textContent=label;
-  $('#mgrRankLabel').textContent=label;
+  $('#mgrRankLabel').textContent=managerRankBySales?'Vendas registradas':label;
   renderManagerActionTable(rows,key);
+
+  const managerSales=rows.reduce((acc,r)=>acc+(Number(r.vendas)||0),0);
+  $('#mgrSalesTotal').textContent=formatInt(managerSales);
+
+  const selectedAgent=$('#mgrAgent').value;
+  if(selectedAgent==='all'){
+    $('#mgrSalesTitle').textContent='Vendas registradas pela equipe';
+    $('#mgrSalesContext').textContent='Filtro atual da unidade';
+  }else{
+    const selectedUser=getRuntimeUser(selectedAgent);
+    $('#mgrSalesTitle').textContent='Vendas registradas pelo usuário';
+    $('#mgrSalesContext').textContent=selectedUser?fullName(selectedUser):'Usuário selecionado';
+  }
+
+  $('#mgrSalesBox').classList.toggle('hidden',!$('#showManagerSales').checked);
 }
-['mgrMonth','mgrAgent','mgrIndicator','mgrPeriod'].forEach(id=>$('#'+id).addEventListener('change',renderManager));$('#mgrApply').addEventListener('click',()=>currentUser?.source==='supabase'?loadDashboardRoutinesFromSupabase():renderManager());
+['mgrMonth','mgrAgent','mgrIndicator','mgrPeriod'].forEach(id=>$('#'+id).addEventListener('change',renderManager));
+$('#showManagerSales').addEventListener('change',renderManager);
+$('#rankManagerBySales').addEventListener('change',e=>{
+  if(e.target.checked)$('#showManagerSales').checked=true;
+  renderManager();
+});
+$('#mgrApply').addEventListener('click',()=>currentUser?.source==='supabase'?loadDashboardRoutinesFromSupabase():renderManager());
 
 function eligiblePerformanceUsers({activeOnly=true}={}){
   if(currentUser?.source==='supabase'){
@@ -2513,8 +2626,96 @@ function rebuildPerformanceOptions(){
 function performanceFilteredRows(monthOverride=null){const month=monthOverride||$('#pfMonth').value,company=$('#pfCompany').value,unit=$('#pfUnit').value,agent=$('#pfAgent').value;return rowsWithLive().filter(r=>r.date.startsWith(month)&&(company==='all'||r.company===company)&&(unit==='all'||r.unit===unit)&&(agent==='all'||r.userId===agent))}
 function expectedRowsForFilter(month){const company=$('#pfCompany').value,unit=$('#pfUnit').value,agent=$('#pfAgent').value;const agents=eligiblePerformanceUsers().filter(u=>(company==='all'||u.company===company)&&(unit==='all'||u.unit===unit)&&(agent==='all'||u.id===agent));return agents.length*demoMonthDays(month)}
 
-function renderPerformance(){if(!$('#pfCompany'))return;const key=$('#pfIndicator').value,month=$('#pfMonth').value,rows=performanceFilteredRows(),label=indicatorNames[key],uniqueUnits=unique(rows.map(r=>r.short)),uniqueAgents=unique(rows.map(r=>r.userId)),actions=sum(rows,key),expected=expectedRowsForFilter(month),fill=expected?Math.round(rows.length/expected*100):0;$('#pfStatUnits').textContent=formatInt(uniqueUnits.length);$('#pfStatAgents').textContent=formatInt(uniqueAgents.length);$('#pfStatActions').textContent=formatInt(actions);$('#pfStatFill').textContent=fill+'%';$('#pfStatActions').parentElement.querySelector('.l').textContent=key==='all'?'Ações operacionais':indicatorShort[key];const byUnit=unique(rows.map(r=>r.short)).map(s=>({n:s,l:s.split(' ')[0],v:sum(rows.filter(r=>r.short===s),key)}));bars($('#pfchart'),byUnit.map(x=>({l:x.l,v:x.v})));rank($('#unitrank'),byUnit.map(x=>({n:x.n,s:label,v:x.v})));const byAgent=unique(rows.map(r=>r.userId)).map(id=>{const ar=rows.filter(r=>r.userId===id),u=getRuntimeUser(id);return {n:u?fullName(u):ar[0]?.agent||'—',s:ar[0]?.short||'',v:sum(ar,key)}});rank($('#agentrank'),byAgent.slice().sort((a,b)=>b.v-a.v).slice(0,8));$('#pfChartLabel').textContent=label;$('#pfUnitRankLabel').textContent=label;$('#pfAgentRankLabel').textContent=label;const prevMonth=previousMonth(month),prev=sum(performanceFilteredRows(prevMonth),key);$('#pfPrevLabel').textContent=monthLabel(prevMonth);$('#pfPrevValue').textContent=formatInt(prev);$('#pfCurrLabel').textContent=monthLabel(month);$('#pfCurrValue').textContent=formatInt(actions);$('#pfPeriodDelta').textContent=pctDelta(actions,prev)}
-$('#pfCompany').addEventListener('change',()=>{rebuildPerformanceOptions();renderPerformance()});$('#pfUnit').addEventListener('change',()=>{rebuildPerformanceOptions();renderPerformance()});['pfAgent','pfMonth','pfIndicator'].forEach(id=>$('#'+id).addEventListener('change',renderPerformance));$('#pfApply').addEventListener('click',()=>currentUser?.source==='supabase'?loadDashboardRoutinesFromSupabase():renderPerformance());
+function renderPerformance(){
+  if(!$('#pfCompany'))return;
+  const key=$('#pfIndicator').value,
+        month=$('#pfMonth').value,
+        rows=performanceFilteredRows(),
+        label=indicatorNames[key],
+        uniqueUnits=unique(rows.map(r=>r.short)),
+        uniqueAgents=unique(rows.map(r=>r.userId)),
+        actions=sum(rows,key),
+        expected=expectedRowsForFilter(month),
+        fill=expected?Math.round(rows.length/expected*100):0;
+
+  $('#pfStatUnits').textContent=formatInt(uniqueUnits.length);
+  $('#pfStatAgents').textContent=formatInt(uniqueAgents.length);
+  $('#pfStatActions').textContent=formatInt(actions);
+  $('#pfStatFill').textContent=fill+'%';
+  $('#pfStatActions').parentElement.querySelector('.l').textContent=key==='all'?'Ações operacionais':indicatorShort[key];
+
+  const performanceRankBySales=$('#rankPerformanceBySales').checked;
+
+  const byUnit=unique(rows.map(r=>r.short)).map(s=>({
+    n:s,
+    l:s.split(' ')[0],
+    v:sum(rows.filter(r=>r.short===s),key)
+  }));
+  bars($('#pfchart'),byUnit.map(x=>({l:x.l,v:x.v})));
+
+  const unitRanking=unique(rows.map(r=>r.short)).map(s=>{
+    const ur=rows.filter(r=>r.short===s);
+    return {
+      n:s,
+      s:performanceRankBySales?'Vendas registradas':label,
+      v:performanceRankBySales
+        ? ur.reduce((acc,r)=>acc+(Number(r.vendas)||0),0)
+        : sum(ur,key)
+    };
+  });
+  rank($('#unitrank'),unitRanking);
+
+  const byAgent=unique(rows.map(r=>r.userId)).map(id=>{
+    const ar=rows.filter(r=>r.userId===id),u=getRuntimeUser(id);
+    return {
+      n:u?fullName(u):ar[0]?.agent||'—',
+      s:performanceRankBySales?'Vendas registradas':(ar[0]?.short||''),
+      v:performanceRankBySales
+        ? ar.reduce((acc,r)=>acc+(Number(r.vendas)||0),0)
+        : sum(ar,key)
+    };
+  });
+  rank($('#agentrank'),byAgent.slice().sort((a,b)=>b.v-a.v).slice(0,8));
+
+  $('#pfChartLabel').textContent=label;
+  $('#pfUnitRankLabel').textContent=performanceRankBySales?'Vendas registradas':label;
+  $('#pfAgentRankLabel').textContent=performanceRankBySales?'Vendas registradas':label;
+
+  const prevMonth=previousMonth(month),prev=sum(performanceFilteredRows(prevMonth),key);
+  $('#pfPrevLabel').textContent=monthLabel(prevMonth);
+  $('#pfPrevValue').textContent=formatInt(prev);
+  $('#pfCurrLabel').textContent=monthLabel(month);
+  $('#pfCurrValue').textContent=formatInt(actions);
+  $('#pfPeriodDelta').textContent=pctDelta(actions,prev);
+
+  const performanceSales=rows.reduce((acc,r)=>acc+(Number(r.vendas)||0),0);
+  $('#pfSalesTotal').textContent=formatInt(performanceSales);
+
+  const selectedAgent=$('#pfAgent').value;
+  const selectedUnit=$('#pfUnit').value;
+  if(selectedAgent!=='all'){
+    const selectedUser=getRuntimeUser(selectedAgent);
+    $('#pfSalesTitle').textContent='Vendas registradas pelo usuário';
+    $('#pfSalesContext').textContent=selectedUser?fullName(selectedUser):'Usuário selecionado';
+  }else if(selectedUnit!=='all'){
+    $('#pfSalesTitle').textContent='Vendas registradas na unidade';
+    $('#pfSalesContext').textContent=selectedUnit;
+  }else{
+    $('#pfSalesTitle').textContent='Vendas registradas';
+    $('#pfSalesContext').textContent='Filtro atual';
+  }
+
+  $('#pfSalesBox').classList.toggle('hidden',!$('#showPerformanceSales').checked);
+}
+$('#pfCompany').addEventListener('change',()=>{rebuildPerformanceOptions();renderPerformance()});
+$('#pfUnit').addEventListener('change',()=>{rebuildPerformanceOptions();renderPerformance()});
+['pfAgent','pfMonth','pfIndicator'].forEach(id=>$('#'+id).addEventListener('change',renderPerformance));
+$('#showPerformanceSales').addEventListener('change',renderPerformance);
+$('#rankPerformanceBySales').addEventListener('change',e=>{
+  if(e.target.checked)$('#showPerformanceSales').checked=true;
+  renderPerformance();
+});
+$('#pfApply').addEventListener('click',()=>currentUser?.source==='supabase'?loadDashboardRoutinesFromSupabase():renderPerformance());
 
 
 
@@ -4195,4 +4396,65 @@ restoreSessionAfterRefresh();
 })();
 </script>
 <script src="modules/dashboard-ao-vivo/bridge.js"></script>
+<script id="rds-pwa-install">
+(()=>{
+  let deferredInstallPrompt=null;
+
+  const installButtons=()=>[...document.querySelectorAll('[data-install-app]')];
+  const isStandalone=()=>window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
+  const isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent);
+
+  function setInstallVisible(visible){
+    installButtons().forEach(btn=>btn.classList.toggle('hidden',!visible));
+  }
+
+  async function installApp(){
+    if(isStandalone()){
+      setInstallVisible(false);
+      return;
+    }
+
+    if(deferredInstallPrompt){
+      deferredInstallPrompt.prompt();
+      try{
+        const choice=await deferredInstallPrompt.userChoice;
+        if(choice?.outcome==='accepted')setInstallVisible(false);
+      }catch(_){}
+      deferredInstallPrompt=null;
+      return;
+    }
+
+    if(isIOS()){
+      alert('Para instalar no iPhone/iPad: toque em Compartilhar e depois em “Adicionar à Tela de Início”.');
+    }
+  }
+
+  window.addEventListener('beforeinstallprompt',event=>{
+    event.preventDefault();
+    deferredInstallPrompt=event;
+    if(!isStandalone())setInstallVisible(true);
+  });
+
+  window.addEventListener('appinstalled',()=>{
+    deferredInstallPrompt=null;
+    setInstallVisible(false);
+  });
+
+  window.addEventListener('DOMContentLoaded',()=>{
+    installButtons().forEach(btn=>btn.addEventListener('click',installApp));
+
+    if(isStandalone()){
+      setInstallVisible(false);
+    }else if(isIOS()){
+      setInstallVisible(true);
+    }
+
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.register('/service-worker.js').catch(err=>{
+        console.warn('Service Worker não registrado:',err);
+      });
+    }
+  });
+})();
+</script>
 </body></html>
