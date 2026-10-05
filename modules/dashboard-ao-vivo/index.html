@@ -831,6 +831,60 @@ html.theme-anim *{transition:background-color .28s ease,color .28s ease,border-c
 }
 </style>
 
+
+<style id="rds-live-v9512-responsive">
+/* Desktop */
+@media (min-width:821px){
+  .topbar{align-items:flex-start}
+  .live-meta{flex-wrap:wrap;justify-content:flex-end}
+  .filters{min-width:0}
+  .filters select{min-width:0}
+  .main-grid{min-width:0}
+  .panel{min-width:0}
+  #last30Text{overflow-wrap:anywhere}
+}
+
+/* Mobile */
+@media (max-width:820px){
+  .live-meta{
+    max-width:100%;
+    overflow-x:auto;
+    overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;
+  }
+  .filters{
+    grid-template-columns:1fr!important;
+    width:100%;
+  }
+  .filters select,
+  .filters button{
+    max-width:100%;
+  }
+  .status-strip{
+    width:100%;
+    min-width:0;
+  }
+  .metric{
+    min-width:0;
+  }
+  #last30Text,
+  #fastestText,
+  #coverageText,
+  #avgStoreText{
+    overflow-wrap:anywhere;
+  }
+  .ranking{
+    max-width:100%;
+  }
+  .rank-name{
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+}
+</style>
+
 </head>
 <body>
 <div class="cd-line" aria-hidden="true"><i></i></div>
@@ -1506,6 +1560,14 @@ function formatCurrentDate(){
     populateUnits(true);
     refreshView();
     $('lastUpdate').textContent=new Date(ts).toLocaleTimeString('pt-BR',{timeZone:'America/Sao_Paulo'});
+    $('last30Text').textContent=payload.syncMode==='cached-real'
+      ? `cache real · ${Number(payload.rowCount||0)} registros`
+      : `dados do banco · ${Number(payload.rowCount||0)} registros`;
+    console.info('Dashboard Ao Vivo payload:',{
+      rowCount:payload.rowCount||0,
+      syncMode:payload.syncMode||'database',
+      generatedAt:payload.generatedAt
+    });
     $('currentDateLive').textContent=formatCurrentDate();
     seconds=900;
     $('countdown').textContent='15m';
@@ -1574,10 +1636,12 @@ function formatCurrentDate(){
 
     if(event.data?.type==='rotina-live-data')applyRealPayload(event.data.payload||{});
     if(event.data?.type==='rotina-live-error'){
+      const detail=String(event.data?.message||'Falha na sincronização');
       $('last30Text').textContent=realMode
         ? 'falha temporária · mantendo último dado confirmado'
-        : 'falha na sincronização · nenhum dado fictício exibido';
-      $('lastUpdate').textContent=realMode?'último dado confirmado':'falha de sincronização';
+        : detail;
+      $('lastUpdate').textContent=realMode?'último dado confirmado':'erro de sincronização';
+
       if(!realMode){
         stores=[];
         liveSnapshots=[];
@@ -1585,6 +1649,7 @@ function formatCurrentDate(){
         populateUnits(false);
         refreshView();
       }
+
       seconds=900;
       $('countdown').textContent=formatCountdown(seconds);
     }

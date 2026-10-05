@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/><meta name="theme-color" content="#050608"/><meta name="color-scheme" content="dark light"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" name="viewport"/>
-<title>Rotina de Sucesso — V9.5.11 Final</title>
+<title>Rotina de Sucesso — V9.5.12 Final</title>
 <script>/* V9 — tema aplicado antes da pintura (evita piscar) */(function(){var t='dark';try{var s=localStorage.getItem('rds-theme');if(s==='light'||s==='dark')t=s}catch(e){}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='light'?'#f2f0ec':'#050608')})();</script>
 <style>
 :root{--bg:#0b0e12;--panel:#12171d;--panel2:#171d24;--line:#27303a;--text:#f5f7fa;--muted:#8d98a5;--red:#e43b32;--green:#61d394;--amber:#e9b45d}
@@ -1388,6 +1388,36 @@ tbody tr:hover{background:var(--accent-soft)}
 }
 </style>
 
+
+<style id="rds-live-container-v9512">
+@media (min-width:761px){
+  #liveDashboardContainer{
+    width:100%;
+    height:calc(100vh - 164px);
+    min-height:640px;
+    overflow:hidden;
+  }
+  #liveDashboardFrame{
+    width:100%;
+    height:100%;
+  }
+}
+@media (max-width:760px){
+  #liveDashboardContainer{
+    width:100%;
+    height:calc(100dvh - 150px);
+    min-height:620px;
+    overflow:hidden;
+    border-radius:12px;
+  }
+  #liveDashboardFrame{
+    width:100%;
+    height:100%;
+    min-width:0;
+  }
+}
+</style>
+
 </head>
 <body>
 <section class="login" id="login">
@@ -1721,7 +1751,7 @@ tbody tr:hover{background:var(--accent-soft)}
 </div>
 
 <div class="hidden" id="liveDashboardContainer">
-  <iframe id="liveDashboardFrame" data-src="modules/dashboard-ao-vivo/index.html" title="Dashboard Ao Vivo — Rotina de Sucesso"></iframe>
+  <iframe id="liveDashboardFrame" data-src="modules/dashboard-ao-vivo/index.html?v=9.5.12" title="Dashboard Ao Vivo — Rotina de Sucesso"></iframe>
 </div>
 
 <div class="hidden" id="userManagement">
@@ -5668,6 +5698,189 @@ syncCompanySelects();fillSelectUnits($('#company'),$('#unit'),false);updateFirst
   new MutationObserver(function(){if(msg.textContent.trim()){box.classList.remove('deny');void box.offsetWidth;box.classList.add('deny')}}).observe(msg,{childList:true,characterData:true,subtree:true});
 }catch(e){console.warn('V8 visual layer:',e)}})();
 
+
+/* ============================================================
+   V9.5.12 — PROVIDER OFICIAL DA DASHBOARD AO VIVO
+   ============================================================ */
+window.RDSLiveDataProvider={
+  isAvailable(){
+    return !!(
+      currentUser &&
+      currentUser.role==='performance' &&
+      currentUser.source==='supabase' &&
+      supabaseClient
+    );
+  },
+
+  async fetchPayload(reason='manual'){
+    if(!this.isAvailable()){
+      throw new Error('Sessão Performance indisponível para a Dashboard Ao Vivo.');
+    }
+
+    // Mesma estrutura organizacional usada pelo Super Dashboard.
+    await loadDashboardReferenceData();
+
+    const today=currentBusinessDate();
+    const month=today.slice(0,7);
+    const monthStart=`${month}-01`;
+
+    const {data,error}=await supabaseClient
+      .from('daily_routines')
+      .select('id,user_id,unit_id,routine_date,floor_approaches,online_captures,quotations,sales,note,closed,closed_at,created_at,updated_at')
+      .gte('routine_date',monthStart)
+      .lte('routine_date',today)
+      .order('routine_date',{ascending:true});
+
+    let rawRows=data||[];
+    let usedCachedRows=false;
+
+    if(error){
+      // Única contingência permitida: cache REAL já carregado pelo Super Dashboard.
+      const cachedReal=DASHBOARD_ROUTINE_ROWS
+        .filter(r=>String(r.date||'').startsWith(month))
+        .map(r=>({
+          id:r.dbId||null,
+          user_id:r.userId,
+          unit_id:r.unitId,
+          routine_date:r.date,
+          floor_approaches:Number(r.salao||0),
+          online_captures:Number(r.online||0),
+          quotations:Number(r.cotacoes||0),
+          sales:Number(r.vendas||0)
+        }));
+
+      if(cachedReal.length){
+        rawRows=cachedReal;
+        usedCachedRows=true;
+      }else{
+        throw error;
+      }
+    }else{
+      // A mesma resposta real também abastece o Super Dashboard.
+      DASHBOARD_ROUTINE_ROWS=rawRows.map(mapDbRoutineRow);
+    }
+
+    const companyById=new Map(ORG_COMPANIES_DB.map(c=>[c.id,c]));
+
+    const activeUnits=ORG_UNITS_DB.filter(u=>{
+      const company=companyById.get(u.company_id);
+      return u.active!==false && company?.active!==false;
+    });
+
+    const capacityByUnit=new Map();
+    ORG_PROFILES_DB.forEach(p=>{
+      if(!['colaborador','gerente'].includes(p.role) || p.active!==true || !p.unit_id)return;
+      capacityByUnit.set(p.unit_id,(capacityByUnit.get(p.unit_id)||0)+1);
+    });
+
+    const storeMap=new Map();
+
+    activeUnits.forEach(u=>{
+      const company=companyById.get(u.company_id);
+      storeMap.set(u.id,{
+        id:u.id,
+        name:u.short_code||u.name,
+        unitName:u.name,
+        company:company?.name||'',
+        capacity:capacityByUnit.get(u.id)||0,
+        dayActive:new Set(),
+        monthActive:new Set(),
+        day:{salao:0,online:0,cotacoes:0,vendas:0},
+        month:{salao:0,online:0,cotacoes:0,vendas:0},
+        daily:{}
+      });
+    });
+
+    rawRows.forEach(r=>{
+      const store=storeMap.get(r.unit_id);
+      if(!store)return;
+
+      const salao=Number(r.floor_approaches||0);
+      const online=Number(r.online_captures||0);
+      const cotacoes=Number(r.quotations||0);
+      const vendas=Number(r.sales||0);
+      const operational=salao+online+cotacoes;
+
+      store.month.salao+=salao;
+      store.month.online+=online;
+      store.month.cotacoes+=cotacoes;
+      store.month.vendas+=vendas;
+
+      const dayKey=String(r.routine_date||'').slice(8,10);
+      if(dayKey){
+        if(!store.daily[dayKey]){
+          store.daily[dayKey]={salao:0,online:0,cotacoes:0,vendas:0};
+        }
+        store.daily[dayKey].salao+=salao;
+        store.daily[dayKey].online+=online;
+        store.daily[dayKey].cotacoes+=cotacoes;
+        store.daily[dayKey].vendas+=vendas;
+      }
+
+      if(operational>0)store.monthActive.add(r.user_id);
+
+      if(r.routine_date===today){
+        store.day.salao+=salao;
+        store.day.online+=online;
+        store.day.cotacoes+=cotacoes;
+        store.day.vendas+=vendas;
+        if(operational>0)store.dayActive.add(r.user_id);
+      }
+    });
+
+    return {
+      today,
+      month,
+      generatedAt:new Date().toISOString(),
+      reason,
+      syncMode:usedCachedRows?'cached-real':'database',
+      rowCount:rawRows.length,
+      stores:[...storeMap.values()].map(s=>({
+        id:s.id,
+        name:s.name,
+        unitName:s.unitName,
+        company:s.company,
+        capacity:s.capacity,
+        dayActiveAgents:s.dayActive.size,
+        monthActiveAgents:s.monthActive.size,
+        day:s.day,
+        month:s.month,
+        daily:s.daily
+      }))
+    };
+  },
+
+  subscribe(onChange){
+    if(!this.isAvailable() || typeof onChange!=='function')return null;
+
+    try{
+      return supabaseClient
+        .channel(`rds-live-provider-${currentUser.id||currentUser.authUserId||'performance'}`)
+        .on(
+          'postgres_changes',
+          {event:'*',schema:'public',table:'daily_routines'},
+          payload=>{
+            const today=currentBusinessDate();
+            const rowDate=payload?.new?.routine_date||payload?.old?.routine_date||null;
+            if(!rowDate || rowDate===today)onChange(payload);
+          }
+        )
+        .subscribe();
+    }catch(err){
+      console.warn('Dashboard Ao Vivo: Realtime indisponível.',err);
+      return null;
+    }
+  },
+
+  async unsubscribe(channel){
+    if(!channel)return;
+    try{
+      await supabaseClient.removeChannel(channel);
+    }catch(_){}
+  }
+};
+
+
 renderCurrentBusinessDate();
 setInterval(checkBusinessDateRollover,60000);
 restoreSessionAfterRefresh();
@@ -5840,7 +6053,7 @@ document.addEventListener('click',function(e){
 },true);
 </script>
 
-<script src="modules/dashboard-ao-vivo/bridge.js"></script>
+<script src="modules/dashboard-ao-vivo/bridge.js?v=9.5.12"></script>
 <script id="rds-pwa-install">
 (()=>{
   let deferredInstallPrompt=null;
