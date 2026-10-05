@@ -2,7 +2,7 @@
    V8.9.3 — integração modular otimizada para reduzir leitura e egress.
 
    - 1ª abertura: carrega o mês corrente.
-   - Auto refresh (30 min): consulta somente o dia atual.
+   - Auto refresh (15 min): consulta somente o dia atual.
    - Atualizar agora: força sincronização completa do mês.
    - Filtros Hoje/Mês/Empresa/Unidade/Indicador: locais, sem nova consulta.
    - Fora do módulo: sem polling.
@@ -22,7 +22,7 @@
     lastTodaySyncAt:0
   };
 
-  const ORG_CACHE_MS = 30 * 60 * 1000;
+  const ORG_CACHE_MS = 15 * 60 * 1000;
 
   function frame(){
     return document.getElementById('liveDashboardFrame');

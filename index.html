@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/><meta name="theme-color" content="#050608"/><meta name="color-scheme" content="dark light"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" name="viewport"/>
-<title>Rotina de Sucesso — V9.5.3 Final</title>
+<title>Rotina de Sucesso — V9.5.6 Final</title>
 <script>/* V9 — tema aplicado antes da pintura (evita piscar) */(function(){var t='dark';try{var s=localStorage.getItem('rds-theme');if(s==='light'||s==='dark')t=s}catch(e){}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='light'?'#f2f0ec':'#050608')})();</script>
 <style>
 :root{--bg:#0b0e12;--panel:#12171d;--panel2:#171d24;--line:#27303a;--text:#f5f7fa;--muted:#8d98a5;--red:#e43b32;--green:#61d394;--amber:#e9b45d}
@@ -738,6 +738,120 @@ tbody tr:hover{background:var(--accent-soft)}
   @media(max-width:620px){.goal-editor-head{grid-template-columns:1fr}.goal-team-table{overflow:auto}.goal-team-table table{min-width:680px}.goal-editor-actions .btn{flex:1 1 100%}}
 </style>
 
+
+<style id="rds-user-palettes">
+  html[data-palette="mission"]{
+    --red:#e43b32;--red-dim:#6b1d19;--accent:#e43b32;--accent-2:#8f2722;
+    --accent-ink:#fff;--accent-soft:rgba(228,59,50,.12);--accent-line:rgba(228,59,50,.38);
+    --hero-bg:radial-gradient(circle at 22% 18%,rgba(228,59,50,.11),transparent 32%),#050608;
+    --page-glow:radial-gradient(1100px 520px at 85% -10%,rgba(228,59,50,.07),transparent 60%);
+  }
+  html[data-palette="blue"]{
+    --red:#3478e5;--red-dim:#17396e;--accent:#3478e5;--accent-2:#2459ad;
+    --accent-ink:#fff;--accent-soft:rgba(52,120,229,.12);--accent-line:rgba(52,120,229,.38);
+    --hero-bg:radial-gradient(circle at 22% 18%,rgba(52,120,229,.12),transparent 32%),#050608;
+    --page-glow:radial-gradient(1100px 520px at 85% -10%,rgba(52,120,229,.08),transparent 60%);
+  }
+  html[data-palette="green"]{
+    --red:#2da873;--red-dim:#15553b;--accent:#2da873;--accent-2:#217d57;
+    --accent-ink:#fff;--accent-soft:rgba(45,168,115,.12);--accent-line:rgba(45,168,115,.38);
+    --hero-bg:radial-gradient(circle at 22% 18%,rgba(45,168,115,.12),transparent 32%),#050608;
+    --page-glow:radial-gradient(1100px 520px at 85% -10%,rgba(45,168,115,.08),transparent 60%);
+  }
+  html[data-palette="amber"]{
+    --red:#c88824;--red-dim:#654511;--accent:#c88824;--accent-2:#986718;
+    --accent-ink:#fff;--accent-soft:rgba(200,136,36,.13);--accent-line:rgba(200,136,36,.40);
+    --hero-bg:radial-gradient(circle at 22% 18%,rgba(200,136,36,.13),transparent 32%),#050608;
+    --page-glow:radial-gradient(1100px 520px at 85% -10%,rgba(200,136,36,.08),transparent 60%);
+  }
+  html[data-palette="pink-premium"]{
+    --red:#c94f7d;--red-dim:#672941;--accent:#c94f7d;--accent-2:#96395d;
+    --accent-ink:#fff;--accent-soft:rgba(201,79,125,.13);--accent-line:rgba(201,79,125,.40);
+    --hero-bg:radial-gradient(circle at 22% 18%,rgba(201,79,125,.13),transparent 32%),#050608;
+    --page-glow:radial-gradient(1100px 520px at 85% -10%,rgba(201,79,125,.08),transparent 60%);
+  }
+  html[data-palette="pink-neon"]{
+    --red:#e52c91;--red-dim:#74174a;--accent:#e52c91;--accent-2:#aa216c;
+    --accent-ink:#fff;--accent-soft:rgba(229,44,145,.13);--accent-line:rgba(229,44,145,.42);
+    --hero-bg:radial-gradient(circle at 22% 18%,rgba(229,44,145,.14),transparent 32%),#050608;
+    --page-glow:radial-gradient(1100px 520px at 85% -10%,rgba(229,44,145,.09),transparent 60%);
+  }
+  html[data-palette="violet"]{
+    --red:#7258d6;--red-dim:#382b70;--accent:#7258d6;--accent-2:#5540a6;
+    --accent-ink:#fff;--accent-soft:rgba(114,88,214,.13);--accent-line:rgba(114,88,214,.40);
+    --hero-bg:radial-gradient(circle at 22% 18%,rgba(114,88,214,.14),transparent 32%),#050608;
+    --page-glow:radial-gradient(1100px 520px at 85% -10%,rgba(114,88,214,.09),transparent 60%);
+  }
+  html[data-palette="purple-electric"]{
+    --red:#913dd6;--red-dim:#481f6c;--accent:#913dd6;--accent-2:#692ba0;
+    --accent-ink:#fff;--accent-soft:rgba(145,61,214,.13);--accent-line:rgba(145,61,214,.42);
+    --hero-bg:radial-gradient(circle at 22% 18%,rgba(145,61,214,.14),transparent 32%),#050608;
+    --page-glow:radial-gradient(1100px 520px at 85% -10%,rgba(145,61,214,.09),transparent 60%);
+  }
+  html[data-palette="graphite"]{
+    --red:#718092;--red-dim:#39424d;--accent:#718092;--accent-2:#566372;
+    --accent-ink:#fff;--accent-soft:rgba(113,128,146,.13);--accent-line:rgba(113,128,146,.40);
+    --hero-bg:radial-gradient(circle at 22% 18%,rgba(113,128,146,.12),transparent 32%),#050608;
+    --page-glow:radial-gradient(1100px 520px at 85% -10%,rgba(113,128,146,.07),transparent 60%);
+  }
+  html[data-palette="mono"]{
+    --red:#8c96a1;--red-dim:#454d56;--accent:#8c96a1;--accent-2:#69737e;
+    --accent-ink:#fff;--accent-soft:rgba(140,150,161,.13);--accent-line:rgba(140,150,161,.40);
+    --hero-bg:radial-gradient(circle at 22% 18%,rgba(140,150,161,.11),transparent 32%),#050608;
+    --page-glow:radial-gradient(1100px 520px at 85% -10%,rgba(140,150,161,.06),transparent 60%);
+  }
+
+  .palette-btn{
+    flex:0 0 auto;width:38px;height:38px;display:inline-grid;place-items:center;padding:0;
+    border:1px solid var(--line2);border-radius:10px;background:var(--panel2);cursor:pointer;
+    transition:border-color .15s,background .15s,transform .08s
+  }
+  .palette-btn:hover{border-color:var(--accent-line)}
+  .palette-btn:active{transform:translateY(1px)}
+  .palette-dot{
+    width:17px;height:17px;border-radius:50%;background:var(--accent);
+    border:2px solid color-mix(in srgb,var(--text) 72%,transparent);
+    box-shadow:0 0 0 3px var(--accent-soft)
+  }
+
+  #paletteModal{z-index:155}
+  #paletteModal .modalbox{width:min(720px,100%);max-height:90dvh;overflow:auto}
+  .palette-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}
+  .palette-option{
+    display:grid;grid-template-columns:42px 1fr 22px;align-items:center;gap:12px;
+    width:100%;text-align:left;border:1px solid var(--line2);border-radius:13px;
+    background:var(--panel2);color:var(--text);padding:12px;cursor:pointer
+  }
+  .palette-option:hover{border-color:var(--accent-line)}
+  .palette-option.active{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .palette-preview{
+    width:38px;height:38px;border-radius:11px;background:var(--palette-color);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.18),0 8px 20px -12px var(--palette-color)
+  }
+  .palette-option b{display:block;font-size:13px}
+  .palette-option small{display:block;color:var(--muted);margin-top:3px;line-height:1.35}
+  .palette-check{
+    width:18px;height:18px;border-radius:50%;border:1px solid var(--line2);
+    display:grid;place-items:center;color:transparent;font-size:11px;font-weight:900
+  }
+  .palette-option.active .palette-check{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+  .palette-note{
+    margin-top:12px;border:1px solid var(--line2);border-radius:10px;background:var(--panel2);
+    color:var(--muted);padding:10px 12px;font-size:12px;line-height:1.5
+  }
+
+  @media(max-width:760px){
+    .palette-grid{grid-template-columns:1fr}
+    .top .palette-btn{order:2}
+  }
+</style>
+
+
+<style id="rds-admin-excel-only-style">
+  [data-admin-excel-only="1"]{display:none!important}
+  html[data-rds-admin="1"] [data-admin-excel-only="1"]{display:inline-flex!important}
+</style>
+
 </head>
 <body>
 <section class="login" id="login">
@@ -772,10 +886,11 @@ tbody tr:hover{background:var(--accent-soft)}
 <header class="top">
 <div class="brand"><div class="slash"></div><div><b>Rotina de Sucesso</b><small id="mode">missão em andamento</small></div></div>
 <button class="theme-btn" type="button" data-theme-toggle aria-pressed="false" aria-label="Ativar modo claro" title="Alternar modo claro / escuro"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><g class="rays"><path d="M12 2.4v2.3M12 19.3v2.3M2.4 12h2.3M19.3 12h2.3M5.2 5.2l1.6 1.6M17.2 17.2l1.6 1.6M18.8 5.2l-1.6 1.6M6.8 17.2l-1.6 1.6"/></g></svg></button>
+<button class="palette-btn" id="paletteBtn" type="button" aria-label="Escolher paleta de cores" title="Paleta de cores"><span class="palette-dot" aria-hidden="true"></span></button>
 <div class="actions">
 <div class="current-date" id="currentDateGlobal"><small>Data atual</small><span>--/--/----</span></div>
 <div class="current-date" id="systemTimezoneGlobal"><small>Horário do sistema</small><span>São Paulo/Brasília</span></div>
-<button class="btn" id="clearDay">Zerar hoje</button><button class="btn" id="export">Exportar Excel</button>
+<button class="btn" id="clearDay">Zerar hoje</button><button class="btn" id="export" data-admin-excel-only="1">Exportar Excel</button>
 <button class="btn" id="history">Histórico</button>
 <button class="btn hidden" type="button" data-install-app>Instalar app</button>
 <button class="btn ghost" id="logout">Sair</button>
@@ -1429,6 +1544,56 @@ tbody tr:hover{background:var(--accent-soft)}
   </div>
 </div>
 
+
+<div class="modal hidden" id="paletteModal">
+  <div class="modalbox">
+    <div class="kicker">Preferência pessoal</div>
+    <h2>Paleta de cores</h2>
+    <p class="sub">Escolha a identidade visual que combina mais com você. Sua escolha não altera a experiência de ninguém.</p>
+
+    <div class="palette-grid" id="paletteGrid">
+      <button class="palette-option" type="button" data-palette-choice="mission" style="--palette-color:#e43b32">
+        <span class="palette-preview"></span><span><b>Missão</b><small>Vermelho clássico · padrão original</small></span><span class="palette-check">✓</span>
+      </button>
+      <button class="palette-option" type="button" data-palette-choice="blue" style="--palette-color:#3478e5">
+        <span class="palette-preview"></span><span><b>Azul Executivo</b><small>Profissional, sóbrio e tecnológico</small></span><span class="palette-check">✓</span>
+      </button>
+      <button class="palette-option" type="button" data-palette-choice="green" style="--palette-color:#2da873">
+        <span class="palette-preview"></span><span><b>Verde Operação</b><small>Energia, progresso e execução</small></span><span class="palette-check">✓</span>
+      </button>
+      <button class="palette-option" type="button" data-palette-choice="amber" style="--palette-color:#c88824">
+        <span class="palette-preview"></span><span><b>Âmbar</b><small>Dourado discreto e estratégico</small></span><span class="palette-check">✓</span>
+      </button>
+      <button class="palette-option" type="button" data-palette-choice="pink-premium" style="--palette-color:#c94f7d">
+        <span class="palette-preview"></span><span><b>Rosa Premium</b><small>Elegante, sofisticado e equilibrado</small></span><span class="palette-check">✓</span>
+      </button>
+      <button class="palette-option" type="button" data-palette-choice="pink-neon" style="--palette-color:#e52c91">
+        <span class="palette-preview"></span><span><b>Rosa Neon</b><small>Intenso, digital e futurista</small></span><span class="palette-check">✓</span>
+      </button>
+      <button class="palette-option" type="button" data-palette-choice="violet" style="--palette-color:#7258d6">
+        <span class="palette-preview"></span><span><b>Violeta</b><small>Profundo, misterioso e refinado</small></span><span class="palette-check">✓</span>
+      </button>
+      <button class="palette-option" type="button" data-palette-choice="purple-electric" style="--palette-color:#913dd6">
+        <span class="palette-preview"></span><span><b>Roxo Elétrico</b><small>Vibrante, forte e contemporâneo</small></span><span class="palette-check">✓</span>
+      </button>
+      <button class="palette-option" type="button" data-palette-choice="graphite" style="--palette-color:#718092">
+        <span class="palette-preview"></span><span><b>Grafite</b><small>Discreto, técnico e minimalista</small></span><span class="palette-check">✓</span>
+      </button>
+      <button class="palette-option" type="button" data-palette-choice="mono" style="--palette-color:#8c96a1">
+        <span class="palette-preview"></span><span><b>Monocromático</b><small>Neutro, limpo e sem distrações</small></span><span class="palette-check">✓</span>
+      </button>
+    </div>
+
+    <div class="palette-note">
+      O modo claro/escuro continua independente. A preferência fica vinculada ao seu usuário neste navegador/aparelho.
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn" id="closePaletteBtn" type="button">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -1924,6 +2089,8 @@ $$('[data-manager-mode]').forEach(b=>{
 
 function showLogin(){
   stopAdminAlertChannels();
+  if(window.RDSExcelAccess)window.RDSExcelAccess.apply(null);
+  if(window.RDSPalette)window.RDSPalette.resetForLogin();
   currentUser=null;
   role=null;
   if(desktopIdleTimer){clearTimeout(desktopIdleTimer);desktopIdleTimer=null}
@@ -1932,7 +2099,7 @@ function showLogin(){
   $('#user').value='';
   $('#pass').value='';
   $('#msg').textContent='';
-  ['first','hist','userModal','importUsersModal','importUnitsModal','companyModal','unitModal','broadcastAlertModal','alertViewsModal','adminAlertPopup','deleteConfirmModal','mandatoryPasswordModal'].forEach(id=>$('#'+id)?.classList.add('hidden'));
+  ['first','hist','userModal','importUsersModal','importUnitsModal','companyModal','unitModal','broadcastAlertModal','alertViewsModal','adminAlertPopup','deleteConfirmModal','mandatoryPasswordModal','paletteModal'].forEach(id=>$('#'+id)?.classList.add('hidden'));
 }
 function technicalEmailForUsername(username){
   const login=username.trim().toLowerCase();
@@ -2154,6 +2321,8 @@ async function restoreSessionAfterRefresh(){
 
 function loginAsUser(u){
   currentUser=u;
+  if(window.RDSExcelAccess)window.RDSExcelAccess.apply(u);
+  if(window.RDSPalette)window.RDSPalette.applyForUser(u);
   role=u.role;
   u.lastLogin=nowLabel();
   audit('Login',u.username,'Acesso realizado');
@@ -4569,7 +4738,8 @@ async function refreshAfterUserChange(){
   if(currentUser)setMetaForUser(currentUser);
 }
 
-function downloadExcel(rows,filename){const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');const table=`<table><thead><tr><th>Data</th><th>Empresa</th><th>Unidade</th><th>Agente</th><th>Abordagem no Salão</th><th>Captação Online</th><th>Cotações</th><th>Vendas</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.date)}</td><td>${esc(r.company)}</td><td>${esc(r.unit)}</td><td>${esc(r.agent)}</td><td>${r.salao}</td><td>${r.online}</td><td>${r.cotacoes}</td><td>${r.vendas}</td></tr>`).join('')}</tbody></table>`;const blob=new Blob(['\ufeff<html><meta charset="utf-8"><body>'+table+'</body></html>'],{type:'application/vnd.ms-excel;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),200)}
+function downloadExcel(rows,filename){
+  if(!currentUser||currentUser.role!=='performance'){alert('Exportação Excel disponível apenas para o Administrador.');return;}const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');const table=`<table><thead><tr><th>Data</th><th>Empresa</th><th>Unidade</th><th>Agente</th><th>Abordagem no Salão</th><th>Captação Online</th><th>Cotações</th><th>Vendas</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.date)}</td><td>${esc(r.company)}</td><td>${esc(r.unit)}</td><td>${esc(r.agent)}</td><td>${r.salao}</td><td>${r.online}</td><td>${r.cotacoes}</td><td>${r.vendas}</td></tr>`).join('')}</tbody></table>`;const blob=new Blob(['\ufeff<html><meta charset="utf-8"><body>'+table+'</body></html>'],{type:'application/vnd.ms-excel;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),200)}
 $('#export').addEventListener('click',()=>{if(!currentUser)return;if(!$('#collab').classList.contains('hidden'))downloadExcel(userRows(currentUser).filter(r=>r.date===DEMO_TODAY),'rotina_do_sucesso_colaborador.xls');else if(!$('#manager').classList.contains('hidden'))downloadExcel(managerFilteredRows(),'rotina_do_sucesso_gerente.xls');else downloadExcel(performanceFilteredRows(),'rotina_do_sucesso_performance.xls')});
 
 
@@ -4986,6 +5156,152 @@ restoreSessionAfterRefresh();
   paint(cur());
 })();
 </script>
+
+<script id="rds-user-palette">
+(function(){
+  var root=document.documentElement;
+  var VALID=['mission','blue','green','amber','pink-premium','pink-neon','violet','purple-electric','graphite','mono'];
+  var current='mission';
+
+  function userNow(){
+    try{return typeof currentUser!=='undefined'?currentUser:null}catch(e){return null}
+  }
+
+  function identity(user){
+    return user&&(user.id||user.authUserId||user.username)
+      ?String(user.id||user.authUserId||user.username)
+      :null;
+  }
+
+  function keyFor(user){
+    var id=identity(user);
+    return id?'rds-palette:'+id:null;
+  }
+
+  function push(palette){
+    var frame=document.getElementById('liveDashboardFrame');
+    try{
+      if(frame&&frame.contentWindow){
+        frame.contentWindow.postMessage({type:'rotina-palette',palette:palette},window.location.origin);
+      }
+    }catch(e){}
+  }
+
+  function markActive(){
+    document.querySelectorAll('[data-palette-choice]').forEach(function(btn){
+      btn.classList.toggle('active',btn.getAttribute('data-palette-choice')===current);
+    });
+  }
+
+  function paint(palette){
+    if(VALID.indexOf(palette)<0)palette='mission';
+    current=palette;
+    root.setAttribute('data-palette',palette);
+    markActive();
+    push(palette);
+  }
+
+  function savedFor(user){
+    var key=keyFor(user);
+    if(!key)return 'mission';
+    try{
+      var value=localStorage.getItem(key);
+      return VALID.indexOf(value)>=0?value:'mission';
+    }catch(e){return 'mission'}
+  }
+
+  function applyForUser(user){
+    paint(savedFor(user));
+  }
+
+  function resetForLogin(){
+    paint('mission');
+    var modal=document.getElementById('paletteModal');
+    if(modal)modal.classList.add('hidden');
+  }
+
+  function choose(palette){
+    var user=userNow();
+    if(!user)return;
+    paint(palette);
+    var key=keyFor(user);
+    try{if(key)localStorage.setItem(key,palette)}catch(e){}
+  }
+
+  window.RDSPalette={
+    applyForUser:applyForUser,
+    resetForLogin:resetForLogin,
+    paint:paint,
+    current:function(){return current}
+  };
+
+  document.addEventListener('DOMContentLoaded',function(){
+    var btn=document.getElementById('paletteBtn');
+    var modal=document.getElementById('paletteModal');
+    var close=document.getElementById('closePaletteBtn');
+
+    if(btn&&modal){
+      btn.addEventListener('click',function(){
+        markActive();
+        modal.classList.remove('hidden');
+      });
+    }
+
+    if(close&&modal){
+      close.addEventListener('click',function(){modal.classList.add('hidden')});
+    }
+
+    document.querySelectorAll('[data-palette-choice]').forEach(function(choice){
+      choice.addEventListener('click',function(){
+        choose(choice.getAttribute('data-palette-choice'));
+      });
+    });
+
+    var frame=document.getElementById('liveDashboardFrame');
+    if(frame)frame.addEventListener('load',function(){push(current)});
+
+    paint('mission');
+  });
+
+  window.addEventListener('storage',function(e){
+    var user=userNow(),key=keyFor(user);
+    if(key&&e.key===key&&VALID.indexOf(e.newValue)>=0)paint(e.newValue);
+  });
+})();
+</script>
+
+
+<script id="rds-admin-excel-only">
+(function(){
+  function isPerformance(user){
+    return !!user && user.role==='performance';
+  }
+  function apply(user){
+    document.documentElement.setAttribute('data-rds-admin',isPerformance(user)?'1':'0');
+    document.querySelectorAll('[data-admin-excel-only="1"]').forEach(function(el){
+      el.hidden=!isPerformance(user);
+      el.setAttribute('aria-hidden',isPerformance(user)?'false':'true');
+    });
+  }
+  window.RDSExcelAccess={apply:apply};
+  document.addEventListener('DOMContentLoaded',function(){apply(null)});
+})();
+</script>
+
+
+<script id="rds-excel-click-guard">
+document.addEventListener('click',function(e){
+  var el=e.target&&e.target.closest?e.target.closest('[data-admin-excel-only="1"]'):null;
+  if(!el)return;
+  var user=(typeof currentUser!=='undefined')?currentUser:null;
+  if(!user||user.role!=='performance'){
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    alert('Exportação Excel disponível apenas para o Administrador.');
+  }
+},true);
+</script>
+
 <script src="modules/dashboard-ao-vivo/bridge.js"></script>
 <script id="rds-pwa-install">
 (()=>{
