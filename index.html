@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/><meta name="theme-color" content="#050608"/><meta name="color-scheme" content="dark light"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" name="viewport"/>
-<title>Rotina de Sucesso — V9.5.12 Final</title>
+<title>Rotina de Sucesso — V9.5.13 Final</title>
 <script>/* V9 — tema aplicado antes da pintura (evita piscar) */(function(){var t='dark';try{var s=localStorage.getItem('rds-theme');if(s==='light'||s==='dark')t=s}catch(e){}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='light'?'#f2f0ec':'#050608')})();</script>
 <style>
 :root{--bg:#0b0e12;--panel:#12171d;--panel2:#171d24;--line:#27303a;--text:#f5f7fa;--muted:#8d98a5;--red:#e43b32;--green:#61d394;--amber:#e9b45d}
@@ -1418,6 +1418,24 @@ tbody tr:hover{background:var(--accent-soft)}
 }
 </style>
 
+
+<style id="rds-dashboard-filters-v9513">
+  @media(min-width:761px){
+    #performanceDashboard > .filters{
+      grid-template-columns:repeat(3,minmax(0,1fr));
+    }
+    #manager > .filters{
+      grid-template-columns:repeat(5,minmax(0,1fr));
+    }
+  }
+  @media(max-width:760px){
+    #performanceDashboard > .filters,
+    #manager > .filters{
+      grid-template-columns:1fr!important;
+    }
+  }
+</style>
+
 </head>
 <body>
 <section class="login" id="login">
@@ -1583,7 +1601,7 @@ tbody tr:hover{background:var(--accent-soft)}
 <div class="filters">
 <select id="mgrMonth"><option value="2026-10">Outubro/2026</option><option value="2026-09">Setembro/2026</option></select>
 <select id="mgrAgent"><option value="all">Todos os agentes</option><option value="u8">Dayana Souza</option><option value="u9">Renata Costa</option><option value="u10">Bruno Silva</option></select>
-<select id="mgrIndicator"><option value="all">Todos os indicadores</option><option value="salao">Abordagem no Salão</option><option value="online">Captação Online</option><option value="cotacoes">Cotações</option></select>
+<select id="mgrIndicator"><option value="all">Todos os indicadores</option><option value="salao">Abordagem no Salão</option><option value="online">Captação Online</option><option value="cotacoes">Cotações</option><option value="vendas">Vendas</option></select>
 <select id="mgrPeriod"><option value="month">Período atual</option><option value="7">Últimos 7 dias</option><option value="15">Últimos 15 dias</option></select>
 <button class="btn" id="mgrApply">Aplicar filtros</button>
 </div>
@@ -1594,20 +1612,14 @@ tbody tr:hover{background:var(--accent-soft)}
     <span class="slider"></span>
   </label>
 </div>
-<div class="sales-toggle-row sales-visibility-control">
-  <span><b>Ranking por vendas</b><br/>Quando ativado, o Ranking da equipe passa a ordenar pelos volumes de vendas registradas.</span>
-  <label aria-label="Ativar ranking por vendas" class="switch">
-    <input id="rankManagerBySales" type="checkbox"/>
-    <span class="slider"></span>
-  </label>
-</div>
+
 <section class="card pad sales-visibility-box hidden" id="mgrSalesBox">
   <div class="section" style="margin:0">
     <h2 id="mgrSalesTitle">Vendas registradas</h2>
     <span id="mgrSalesContext">Filtro atual</span>
   </div>
   <div class="summary" id="mgrSalesTotal">0</div>
-  <div class="sub">Informação de apoio. Não altera os KPIs nem os totais operacionais. O ranking só muda se a opção “Ranking por vendas” estiver ativada.</div>
+  <div class="sub">Resumo adicional de vendas para o filtro atual. Ao selecionar “Vendas” no indicador, evolução, ranking e detalhamento passam a usar vendas.</div>
 </section>
 <div class="section"><h2>Visão da unidade</h2><span id="mgrUnitLabel">RECIFE · SOS</span></div>
 <div class="stats">
@@ -1675,11 +1687,7 @@ tbody tr:hover{background:var(--accent-soft)}
 <select id="pfUnit"><option value="all">Todas as unidades</option></select>
 <select id="pfAgent"><option value="all">Todos os agentes</option></select>
 <select id="pfMonth"><option value="2026-10">Outubro/2026</option><option value="2026-09">Setembro/2026</option><option value="2026-08">Agosto/2026</option></select>
-<select id="pfIndicator"><option value="all">Todos os indicadores</option><option value="salao">Abordagem no Salão</option><option value="online">Captação Online</option><option value="cotacoes">Cotações</option></select>
-<select id="pfRankingMetric" aria-label="Métrica do ranking">
-  <option value="indicator">Ranking: indicador selecionado</option>
-  <option value="vendas">Ranking: vendas registradas</option>
-</select>
+<select id="pfIndicator"><option value="all">Todos os indicadores</option><option value="salao">Abordagem no Salão</option><option value="online">Captação Online</option><option value="cotacoes">Cotações</option><option value="vendas">Vendas</option></select>
 <button class="btn" id="pfApply">Aplicar filtros</button></div>
 <div class="sales-toggle-row sales-visibility-control">
   <span><b>Vendas registradas</b><br/>Mostrar ou ocultar as vendas do usuário/unidade no filtro atual.</span>
@@ -1694,7 +1702,7 @@ tbody tr:hover{background:var(--accent-soft)}
     <span id="pfSalesContext">Filtro atual</span>
   </div>
   <div class="summary" id="pfSalesTotal">0</div>
-  <div class="sub">Informação de apoio. Não altera os KPIs nem as comparações principais. Os rankings só mudam quando “Ranking: vendas registradas” for selecionado.</div>
+  <div class="sub">Resumo adicional de vendas para o filtro atual. Ao selecionar “Vendas” no indicador, gráficos, comparações e rankings passam a usar vendas.</div>
 </section>
 <div class="section"><h2>Super Dashboard</h2><span>Visão consolidada</span></div>
 <div class="stats">
@@ -1751,7 +1759,7 @@ tbody tr:hover{background:var(--accent-soft)}
 </div>
 
 <div class="hidden" id="liveDashboardContainer">
-  <iframe id="liveDashboardFrame" data-src="modules/dashboard-ao-vivo/index.html?v=9.5.12" title="Dashboard Ao Vivo — Rotina de Sucesso"></iframe>
+  <iframe id="liveDashboardFrame" data-src="modules/dashboard-ao-vivo/index.html?v=9.5.13" title="Dashboard Ao Vivo — Rotina de Sucesso"></iframe>
 </div>
 
 <div class="hidden" id="userManagement">
@@ -2232,8 +2240,8 @@ const UNIT_CATALOG=[
   {id:'un5',company:'Connect',unit:'Guarulhos',short:'GRU CON',active:true,managerId:'u6'},
   {id:'un6',company:'Azul Viagens',unit:'Salvador',short:'SSA AZUL',active:true,managerId:'u7'}
 ];
-const indicatorNames={all:'Todas as ações',salao:'Abordagem no Salão',online:'Captação Online',cotacoes:'Cotações'};
-const indicatorShort={all:'Ações',salao:'Salão',online:'Online',cotacoes:'Cotações'};
+const indicatorNames={all:'Todas as ações',salao:'Abordagem no Salão',online:'Captação Online',cotacoes:'Cotações',vendas:'Vendas'};
+const indicatorShort={all:'Ações',salao:'Salão',online:'Online',cotacoes:'Cotações',vendas:'Vendas'};
 
 let currentUser=null, role=null, state={salao:0,online:0,cotacoes:0,vendas:0,obs:''}, editingUserId=null, performanceMode='dashboard';
 const DESKTOP_IDLE_MS=30*60*1000;
@@ -3449,12 +3457,14 @@ function renderManager(){
     salao:sum(rows,'salao'),
     online:sum(rows,'online'),
     cotacoes:sum(rows,'cotacoes'),
+    vendas:sum(rows,'vendas'),
     all:sum(rows,'all')
   };
   const prevVals={
     salao:sum(prevRows,'salao'),
     online:sum(prevRows,'online'),
     cotacoes:sum(prevRows,'cotacoes'),
+    vendas:sum(prevRows,'vendas'),
     all:sum(prevRows,'all')
   };
 
@@ -3473,27 +3483,24 @@ function renderManager(){
   ['mgrStatSalao','mgrStatOnline','mgrStatCotacoes','mgrStatTotal']
     .forEach(id=>$('#'+id).parentElement.classList.remove('metric-focus'));
 
-  const focus={salao:'mgrStatSalao',online:'mgrStatOnline',cotacoes:'mgrStatCotacoes',all:'mgrStatTotal'}[key];
+  const focus={salao:'mgrStatSalao',online:'mgrStatOnline',cotacoes:'mgrStatCotacoes',vendas:'mgrStatTotal',all:'mgrStatTotal'}[key];
   $('#'+focus).parentElement.classList.add('metric-focus');
 
   const byDate=aggregateByDate(rows,key).sort((a,b)=>a.n.localeCompare(b.n));
   bars($('#mgrchart'),byDate.map(x=>({l:x.n.slice(8,10),v:x.v})));
 
-  const managerRankBySales=$('#rankManagerBySales').checked;
   const byAgent=unique(rows.map(r=>r.userId)).map(id=>{
     const ar=rows.filter(r=>r.userId===id),u=getRuntimeUser(id);
     return {
       n:u?fullName(u):ar[0]?.agent||'—',
-      s:managerRankBySales?'Vendas registradas':label,
-      v:managerRankBySales
-        ? ar.reduce((acc,r)=>acc+(Number(r.vendas)||0),0)
-        : sum(ar,key)
+      s:label,
+      v:sum(ar,key)
     };
   });
   rank($('#mgrrank'),byAgent);
 
   $('#mgrChartLabel').textContent=label;
-  $('#mgrRankLabel').textContent=managerRankBySales?'Vendas registradas':label;
+  $('#mgrRankLabel').textContent=label;
   renderManagerActionTable(rows,key);
 
   const managerSales=rows.reduce((acc,r)=>acc+(Number(r.vendas)||0),0);
@@ -3514,10 +3521,6 @@ function renderManager(){
 }
 ['mgrMonth','mgrAgent','mgrIndicator','mgrPeriod'].forEach(id=>$('#'+id).addEventListener('change',renderManager));
 $('#showManagerSales').addEventListener('change',renderManager);
-$('#rankManagerBySales').addEventListener('change',e=>{
-  if(e.target.checked)$('#showManagerSales').checked=true;
-  renderManager();
-});
 $('#mgrApply').addEventListener('click',()=>currentUser?.source==='supabase'?loadDashboardRoutinesFromSupabase():renderManager());
 
 function eligiblePerformanceUsers({activeOnly=true}={}){
@@ -3604,9 +3607,7 @@ function renderPerformance(){
   $('#pfStatAgents').textContent=formatInt(uniqueAgents.length);
   $('#pfStatActions').textContent=formatInt(actions);
   $('#pfStatFill').textContent=fill+'%';
-  $('#pfStatActions').parentElement.querySelector('.l').textContent=key==='all'?'Ações operacionais':indicatorShort[key];
-
-  const performanceRankBySales=$('#pfRankingMetric').value==='vendas';
+  $('#pfStatActions').parentElement.querySelector('.l').textContent=key==='all'?'Ações operacionais':(key==='vendas'?'Vendas registradas':indicatorShort[key]);
 
   const byUnit=unique(rows.map(r=>r.short)).map(s=>({
     n:s,
@@ -3619,10 +3620,8 @@ function renderPerformance(){
     const ur=rows.filter(r=>r.short===s);
     return {
       n:s,
-      s:performanceRankBySales?'Vendas registradas':label,
-      v:performanceRankBySales
-        ? ur.reduce((acc,r)=>acc+(Number(r.vendas)||0),0)
-        : sum(ur,key)
+      s:label,
+      v:sum(ur,key)
     };
   });
   rank($('#unitrank'),unitRanking);
@@ -3631,17 +3630,15 @@ function renderPerformance(){
     const ar=rows.filter(r=>r.userId===id),u=getRuntimeUser(id);
     return {
       n:u?fullName(u):ar[0]?.agent||'—',
-      s:performanceRankBySales?'Vendas registradas':(ar[0]?.short||''),
-      v:performanceRankBySales
-        ? ar.reduce((acc,r)=>acc+(Number(r.vendas)||0),0)
-        : sum(ar,key)
+      s:key==='vendas'?'Vendas':(ar[0]?.short||''),
+      v:sum(ar,key)
     };
   });
   rank($('#agentrank'),byAgent.slice().sort((a,b)=>b.v-a.v).slice(0,8));
 
   $('#pfChartLabel').textContent=label;
-  $('#pfUnitRankLabel').textContent=performanceRankBySales?'Vendas registradas':label;
-  $('#pfAgentRankLabel').textContent=performanceRankBySales?'Vendas registradas':label;
+  $('#pfUnitRankLabel').textContent=label;
+  $('#pfAgentRankLabel').textContent=label;
 
   const prevMonth=previousMonth(month),prev=sum(performanceFilteredRows(prevMonth),key);
   $('#pfPrevLabel').textContent=monthLabel(prevMonth);
@@ -3673,10 +3670,6 @@ $('#pfCompany').addEventListener('change',()=>{rebuildPerformanceOptions();rende
 $('#pfUnit').addEventListener('change',()=>{rebuildPerformanceOptions();renderPerformance()});
 ['pfAgent','pfMonth','pfIndicator'].forEach(id=>$('#'+id).addEventListener('change',renderPerformance));
 $('#showPerformanceSales').addEventListener('change',renderPerformance);
-$('#pfRankingMetric').addEventListener('change',e=>{
-  if(e.target.value==='vendas')$('#showPerformanceSales').checked=true;
-  renderPerformance();
-});
 $('#pfApply').addEventListener('click',()=>currentUser?.source==='supabase'?loadDashboardRoutinesFromSupabase():renderPerformance());
 
 
@@ -6053,7 +6046,7 @@ document.addEventListener('click',function(e){
 },true);
 </script>
 
-<script src="modules/dashboard-ao-vivo/bridge.js?v=9.5.12"></script>
+<script src="modules/dashboard-ao-vivo/bridge.js?v=9.5.13"></script>
 <script id="rds-pwa-install">
 (()=>{
   let deferredInstallPrompt=null;

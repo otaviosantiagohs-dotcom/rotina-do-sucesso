@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rds-v9-5-12-shell';
+const CACHE_NAME = 'rds-v9-5-13-shell';
 const APP_SHELL = [
   '/',
   '/index.html',
