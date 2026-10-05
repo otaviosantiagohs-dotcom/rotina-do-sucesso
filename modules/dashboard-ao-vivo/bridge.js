@@ -1,31 +1,56 @@
 /* Rotina de Sucesso — Dashboard Ao Vivo
-   V8.9.3 — integração modular otimizada para reduzir leitura e egress.
+   V9.5.8 — sincronização contínua do dia.
 
-   - 1ª abertura: carrega o mês corrente.
-   - Auto refresh (15 min): consulta somente o dia atual.
-   - Atualizar agora: força sincronização completa do mês.
-   - Filtros Hoje/Mês/Empresa/Unidade/Indicador: locais, sem nova consulta.
-   - Fora do módulo: sem polling.
+   Comportamento:
+   - a sincronização inicia quando uma sessão Performance/Supabase entra;
+   - continua mesmo quando o usuário navega para outras áreas do sistema;
+   - alterações em daily_routines disparam atualização por Supabase Realtime;
+   - existe um heartbeat de segurança a cada 15 minutos;
+   - ao retornar ao app/rede, o dia atual é sincronizado imediatamente;
+   - abrir a Dashboard Ao Vivo apenas exibe um estado que já vem sendo mantido;
+   - filtros Hoje/Mês/Empresa/Unidade/Indicador continuam locais.
 */
 
 (function(){
   'use strict';
 
+  const BACKGROUND_SYNC_MS = 15 * 60 * 1000;
+  const ORG_CACHE_MS = 15 * 60 * 1000;
+  const REALTIME_DEBOUNCE_MS = 650;
+  const RESUME_MIN_GAP_MS = 15 * 1000;
+
   const state = {
     busy:false,
-    active:false,
+    active:false,              // visibilidade da Dashboard Ao Vivo
+    sessionSync:false,         // sincronização contínua da sessão
     mounted:false,
     orgCheckedAt:0,
     loadedMonth:null,
     monthRows:[],
     lastFullSyncAt:0,
-    lastTodaySyncAt:0
+    lastTodaySyncAt:0,
+    lastAnySyncAt:0,
+    backgroundTimer:null,
+    realtimeChannel:null,
+    realtimeDebounce:null,
+    pendingReason:null
   };
-
-  const ORG_CACHE_MS = 15 * 60 * 1000;
 
   function frame(){
     return document.getElementById('liveDashboardFrame');
+  }
+
+  function isPerformanceSession(){
+    try{
+      return !!(
+        window.currentUser &&
+        currentUser.role==='performance' &&
+        currentUser.source==='supabase' &&
+        window.supabaseClient
+      );
+    }catch(_){
+      return false;
+    }
   }
 
   function mount(){
@@ -49,6 +74,24 @@
       {type:'rotina-live-visibility',active:state.active},
       window.location.origin
     );
+  }
+
+  function postPayload(payload,targetWindow=null){
+    const target=targetWindow || frame()?.contentWindow;
+    if(!target)return;
+    target.postMessage(
+      {type:'rotina-live-data',payload},
+      window.location.origin
+    );
+  }
+
+  function postError(err,targetWindow=null){
+    const target=targetWindow || frame()?.contentWindow;
+    if(!target)return;
+    target.postMessage({
+      type:'rotina-live-error',
+      message:err?.message||'Falha ao atualizar'
+    },window.location.origin);
   }
 
   async function ensureOrganization(){
@@ -88,10 +131,20 @@
 
     if(error)throw error;
 
-    state.monthRows=[
-      ...state.monthRows.filter(r=>r.routine_date!==today),
-      ...(data||[])
-    ];
+    const month=today.slice(0,7);
+
+    // Se o mês ainda não foi carregado, o dia fica como cache provisório.
+    // A primeira carga completa será feita no start da sessão ou no rollover.
+    if(state.loadedMonth!==month){
+      state.loadedMonth=month;
+      state.monthRows=data||[];
+    }else{
+      state.monthRows=[
+        ...state.monthRows.filter(r=>r.routine_date!==today),
+        ...(data||[])
+      ];
+    }
+
     state.lastTodaySyncAt=Date.now();
   }
 
@@ -99,11 +152,18 @@
     const month=today.slice(0,7);
     const cacheMissing=state.loadedMonth!==month || state.monthRows.length===0;
 
-    if(cacheMissing || reason==='initial' || reason==='manual'){
+    // Carga completa só quando realmente necessária.
+    if(
+      cacheMissing ||
+      reason==='session-start' ||
+      reason==='manual' ||
+      reason==='month-rollover'
+    ){
       await fetchFullMonth(today);
       return;
     }
 
+    // Realtime, heartbeat, abertura e retorno consultam somente o dia atual.
     await fetchTodayOnly(today);
   }
 
@@ -192,16 +252,19 @@
       today,
       month,
       generatedAt:new Date().toISOString(),
+      syncMode:'continuous',
       stores
     };
   }
 
-  async function refresh(targetWindow=null,reason='manual'){
-    if(!state.active || state.busy)return;
+  async function runSync(reason='background',targetWindow=null){
+    if(!isPerformanceSession())return;
 
-    const el=mount();
-    const target=targetWindow||el?.contentWindow;
-    if(!target)return;
+    if(state.busy){
+      // Não perde uma alteração que chegou durante uma consulta.
+      state.pendingReason=reason;
+      return;
+    }
 
     state.busy=true;
 
@@ -209,35 +272,168 @@
       await ensureOrganization();
 
       const today=currentBusinessDate();
-      await syncRows(reason,today);
+      const previousMonth=state.loadedMonth;
+      const currentMonth=today.slice(0,7);
+
+      const effectiveReason=
+        previousMonth && previousMonth!==currentMonth
+          ? 'month-rollover'
+          : reason;
+
+      await syncRows(effectiveReason,today);
 
       const payload=buildPayload(today);
       payload.reason=reason;
+      state.lastAnySyncAt=Date.now();
 
-      target.postMessage(
-        {type:'rotina-live-data',payload},
-        window.location.origin
-      );
+      // Mesmo quando a dashboard está escondida, se o iframe já foi montado,
+      // mantemos o DOM dele sincronizado em segundo plano.
+      postPayload(payload,targetWindow);
+
+      window.dispatchEvent(new CustomEvent('rds-live-sync',{
+        detail:{
+          reason,
+          generatedAt:payload.generatedAt,
+          today:payload.today
+        }
+      }));
     }catch(err){
       console.error('Dashboard Ao Vivo:',err);
-      target.postMessage({
-        type:'rotina-live-error',
-        message:err?.message||'Falha ao atualizar'
-      },window.location.origin);
+      postError(err,targetWindow);
     }finally{
       state.busy=false;
+
+      if(state.pendingReason){
+        const next=state.pendingReason;
+        state.pendingReason=null;
+        setTimeout(()=>runSync(next),50);
+      }
     }
+  }
+
+  function scheduleRealtimeSync(){
+    if(!state.sessionSync)return;
+    clearTimeout(state.realtimeDebounce);
+    state.realtimeDebounce=setTimeout(()=>{
+      runSync('realtime');
+    },REALTIME_DEBOUNCE_MS);
+  }
+
+  function startRealtime(){
+    if(!isPerformanceSession() || state.realtimeChannel)return;
+
+    try{
+      state.realtimeChannel=supabaseClient
+        .channel(`rds-live-routines-${currentUser.id||currentUser.authUserId||currentUser.username||'performance'}`)
+        .on(
+          'postgres_changes',
+          {event:'*',schema:'public',table:'daily_routines'},
+          payload=>{
+            if(!state.sessionSync)return;
+
+            const today=currentBusinessDate();
+            const rowDate=
+              payload?.new?.routine_date ||
+              payload?.old?.routine_date ||
+              null;
+
+            // O foco do modo contínuo é o dia atual.
+            if(rowDate && rowDate!==today)return;
+
+            scheduleRealtimeSync();
+          }
+        )
+        .subscribe(status=>{
+          if(status==='CHANNEL_ERROR' || status==='TIMED_OUT'){
+            console.warn('Dashboard Ao Vivo: Realtime indisponível; heartbeat de 15 min continua ativo.');
+          }
+        });
+    }catch(err){
+      console.warn('Dashboard Ao Vivo: falha ao iniciar Realtime; usando heartbeat.',err);
+    }
+  }
+
+  async function stopRealtime(){
+    clearTimeout(state.realtimeDebounce);
+    state.realtimeDebounce=null;
+
+    if(state.realtimeChannel){
+      try{
+        await supabaseClient.removeChannel(state.realtimeChannel);
+      }catch(_){}
+      state.realtimeChannel=null;
+    }
+  }
+
+  function startHeartbeat(){
+    if(state.backgroundTimer)clearInterval(state.backgroundTimer);
+
+    state.backgroundTimer=setInterval(()=>{
+      if(!state.sessionSync || !isPerformanceSession())return;
+      runSync('heartbeat');
+    },BACKGROUND_SYNC_MS);
+  }
+
+  function stopHeartbeat(){
+    if(state.backgroundTimer){
+      clearInterval(state.backgroundTimer);
+      state.backgroundTimer=null;
+    }
+  }
+
+  function startSession(){
+    if(!isPerformanceSession()){
+      stopSession();
+      return;
+    }
+
+    if(state.sessionSync)return;
+
+    state.sessionSync=true;
+    startHeartbeat();
+    startRealtime();
+
+    // Sincroniza imediatamente no login, sem depender de abrir a dashboard.
+    runSync('session-start');
+  }
+
+  function stopSession(){
+    state.sessionSync=false;
+    state.active=false;
+    stopHeartbeat();
+    stopRealtime();
+    clearTimeout(state.realtimeDebounce);
+    state.realtimeDebounce=null;
+    state.pendingReason=null;
+    sendVisibility();
   }
 
   function setActive(active){
     state.active=active===true;
 
     if(state.active){
-      mount();
+      const el=mount();
       sendVisibility();
+
+      // Se a sessão contínua ainda não iniciou por qualquer motivo, inicia agora.
+      if(!state.sessionSync)startSession();
+
+      // Abertura mostra o cache atual e confirma o dia no banco.
+      if(el?.contentWindow && state.monthRows.length){
+        const today=currentBusinessDate();
+        const payload=buildPayload(today);
+        payload.reason='resume';
+        postPayload(payload,el.contentWindow);
+      }
+      runSync('open');
     }else{
+      // Sair visualmente do módulo NÃO interrompe a sincronização.
       sendVisibility();
     }
+  }
+
+  function refresh(targetWindow=null,reason='manual'){
+    return runSync(reason,targetWindow);
   }
 
   window.addEventListener('message',event=>{
@@ -254,7 +450,7 @@
         ? event.data.reason
         : 'manual';
 
-      refresh(event.source,reason);
+      runSync(reason,event.source);
     }
   });
 
@@ -264,22 +460,65 @@
 
     el.addEventListener('load',()=>{
       sendVisibility();
-      // O iframe solicita a primeira leitura ao receber visibility=true.
-      // Não fazemos uma segunda consulta aqui.
+
+      if(state.monthRows.length){
+        const today=currentBusinessDate();
+        const payload=buildPayload(today);
+        payload.reason='resume';
+        postPayload(payload,el.contentWindow);
+      }
     });
+  });
+
+  document.addEventListener('visibilitychange',()=>{
+    if(
+      !document.hidden &&
+      state.sessionSync &&
+      isPerformanceSession() &&
+      Date.now()-state.lastAnySyncAt>RESUME_MIN_GAP_MS
+    ){
+      runSync('resume');
+    }
+  });
+
+  window.addEventListener('focus',()=>{
+    if(
+      state.sessionSync &&
+      isPerformanceSession() &&
+      Date.now()-state.lastAnySyncAt>RESUME_MIN_GAP_MS
+    ){
+      runSync('resume');
+    }
+  });
+
+  window.addEventListener('online',()=>{
+    if(state.sessionSync && isPerformanceSession()){
+      startRealtime();
+      runSync('online');
+    }
+  });
+
+  window.addEventListener('offline',()=>{
+    // O timer permanece configurado e volta a funcionar quando a rede retornar.
   });
 
   window.LiveDashboardBridge={
     setActive,
     refresh:(reason='manual')=>refresh(null,reason),
+    startSession,
+    stopSession,
     getState:()=>({
       busy:state.busy,
       active:state.active,
+      sessionSync:state.sessionSync,
       mounted:state.mounted,
+      realtimeConnected:!!state.realtimeChannel,
       loadedMonth:state.loadedMonth,
       cachedRows:state.monthRows.length,
       lastFullSyncAt:state.lastFullSyncAt,
-      lastTodaySyncAt:state.lastTodaySyncAt
+      lastTodaySyncAt:state.lastTodaySyncAt,
+      lastAnySyncAt:state.lastAnySyncAt,
+      backgroundIntervalMinutes:15
     })
   };
 })();

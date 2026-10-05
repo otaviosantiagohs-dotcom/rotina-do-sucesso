@@ -851,7 +851,7 @@ html.theme-anim *{transition:background-color .28s ease,color .28s ease,border-c
       <div class="meta-pill meta-date">Data atual: <strong id="currentDateLive">--/--/----</strong></div>
       <div class="meta-pill">Horário do sistema: <strong>São Paulo/Brasília</strong></div>
       <div class="meta-pill meta-upd">Última atualização: <strong id="lastUpdate">--:--:--</strong></div>
-      <div class="meta-pill meta-next">Próxima em <strong id="countdown">30m</strong></div>
+      <div class="meta-pill meta-next">Próxima em <strong id="countdown">15m</strong></div>
     </div>
   </header>
 
@@ -1070,7 +1070,7 @@ html.theme-anim *{transition:background-color .28s ease,color .28s ease,border-c
   let activeAction = 'all';
   let auto = true;
   let hostActive = (window.parent === window);
-  let seconds = 1800;
+  let seconds = 900;
   let timer = null;
   let realMode = false;
   let currentDay = Math.max(1, new Date().getDate());
@@ -1100,7 +1100,7 @@ html.theme-anim *{transition:background-color .28s ease,color .28s ease,border-c
   
   function formatCountdown(totalSeconds){
     const s=Math.max(0,Math.floor(totalSeconds));
-    const h=Math.floor(s/1800);
+    const h=Math.floor(s/900);
     const m=Math.floor((s%3600)/60);
     const sec=s%60;
     if(h>0)return `${h}h ${String(m).padStart(2,'0')}m`;
@@ -1496,8 +1496,8 @@ function formatCurrentDate(){
     refreshView();
     $('lastUpdate').textContent=new Date(ts).toLocaleTimeString('pt-BR',{timeZone:'America/Sao_Paulo'});
     $('currentDateLive').textContent=formatCurrentDate();
-    seconds=3600;
-    $('countdown').textContent='1h';
+    seconds=900;
+    $('countdown').textContent='15m';
   }
 
   function requestRealData(reason='manual'){
@@ -1522,11 +1522,11 @@ function formatCurrentDate(){
     });
     refreshView();
     $('lastUpdate').textContent=new Date().toLocaleTimeString('pt-BR',{timeZone:'America/Sao_Paulo'});
-    seconds=1800;
+    seconds=900;
   }
 
   function refreshData(reason='manual'){
-    seconds=1800;
+    seconds=900;
     $('countdown').textContent=formatCountdown(seconds);
     if(!requestRealData(reason)) fallbackUpdate();
   }
@@ -1555,7 +1555,7 @@ function formatCurrentDate(){
     if(event.data?.type==='rotina-live-visibility'){
       hostActive=event.data.active===true;
       if(hostActive){
-        seconds=1800;
+        seconds=900;
         $('countdown').textContent=formatCountdown(seconds);
         requestRealData('initial');
       }
@@ -1564,8 +1564,9 @@ function formatCurrentDate(){
 
     if(event.data?.type==='rotina-live-data')applyRealPayload(event.data.payload||{});
     if(event.data?.type==='rotina-live-error'){
-      $('last30Text').textContent='falha na atualização · tentando novamente';
-      seconds=3600;
+      $('last30Text').textContent='falha na atualização · nova tentativa automática';
+      seconds=900;
+      $('countdown').textContent=formatCountdown(seconds);
     }
   });
 
@@ -1594,12 +1595,13 @@ function formatCurrentDate(){
   });
 
   $('autoBtn').addEventListener('click',()=>{
-    auto=!auto;
-    $('autoBtn').textContent='Auto: '+(auto?'ON':'OFF');
-    $('autoBtn').classList.toggle('active',auto);
-    $('livePill').classList.toggle('offline',!auto);
-    if(auto)seconds=1800;
-    $('countdown').textContent=auto?formatCountdown(seconds):'pausado';
+    auto=true;
+    $('autoBtn').textContent='Auto: ON';
+    $('autoBtn').classList.add('active');
+    $('livePill').classList.remove('offline');
+    seconds=900;
+    $('countdown').textContent=formatCountdown(seconds);
+    refreshData('manual');
   });
 
   $('refreshBtn').addEventListener('click',()=>refreshData('manual'));
@@ -1625,14 +1627,14 @@ function formatCurrentDate(){
   var boot=$('boot'); if(boot) boot.addEventListener('animationend',function(e){if(e.target===boot)boot.remove()});
 
   /* 2. Linha de contagem acompanha o "Próxima em" */
-  var cd=$('countdown'), line=document.querySelector('.cd-line'), fill=line&&line.firstElementChild, lastSec=1800;
+  var cd=$('countdown'), line=document.querySelector('.cd-line'), fill=line&&line.firstElementChild, lastSec=900;
   function cdSync(){
     var t=cd.textContent.trim(), m=/^(\d+)s$/.exec(t);
     if(!m){line.classList.add('paused');return}
     line.classList.remove('paused');
     var s=+m[1];
-    if(s>lastSec){fill.style.transition='none';fill.style.transform='scaleX('+(s/1800)+')';void fill.offsetWidth;fill.style.transition=''}
-    else fill.style.transform='scaleX('+(s/1800)+')';
+    if(s>lastSec){fill.style.transition='none';fill.style.transform='scaleX('+(s/900)+')';void fill.offsetWidth;fill.style.transition=''}
+    else fill.style.transform='scaleX('+(s/900)+')';
     lastSec=s;
   }
   if(cd&&fill){new MutationObserver(cdSync).observe(cd,{childList:true,characterData:true,subtree:true});cdSync()}
