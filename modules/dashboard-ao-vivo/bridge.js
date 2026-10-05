@@ -1,4 +1,4 @@
-/* Rotina do Sucesso — Dashboard Ao Vivo
+/* Rotina de Sucesso — Dashboard Ao Vivo
    V8.9.3 — integração modular otimizada para reduzir leitura e egress.
 
    - 1ª abertura: carrega o mês corrente.
@@ -207,8 +207,11 @@
       const today=currentBusinessDate();
       await syncRows(reason,today);
 
+      const payload=buildPayload(today);
+      payload.reason=reason;
+
       target.postMessage(
-        {type:'rotina-live-data',payload:buildPayload(today)},
+        {type:'rotina-live-data',payload},
         window.location.origin
       );
     }catch(err){

@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#050608" />
 <meta name="color-scheme" content="dark light" />
 <script>/* V9 — tema aplicado antes da pintura (evita piscar) */(function(){var t='dark';try{var s=localStorage.getItem('rds-theme');if(s==='light'||s==='dark')t=s}catch(e){}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='light'?'#f2f0ec':'#050608')})();</script>
-<title>Rotina do Sucesso — Dashboard Ao Vivo</title>
+<title>Rotina de Sucesso — Dashboard Ao Vivo</title>
 <style>
   :root{
     --bg:#090a0c;
@@ -580,7 +580,7 @@ html.theme-anim *{transition:background-color .28s ease,color .28s ease,border-c
     <div class="brand">
       <div class="mark">RS</div>
       <div class="title-wrap">
-        <div class="eyebrow">Rotina do Sucesso · Sala de Operações</div>
+        <div class="eyebrow">Rotina de Sucesso · Sala de Operações</div>
         <h1>Dashboard Ao Vivo</h1>
       </div>
     </div>
@@ -1196,6 +1196,16 @@ function formatCurrentDate(){
   }
 
   function applyRealPayload(payload){
+    const wasRealMode=realMode;
+
+    // Na primeira carga real e sempre que o Dashboard Ao Vivo é reaberto,
+    // o ranking apenas estabelece a posição atual como linha de base.
+    // Isso evita interpretar a troca do fallback/estado anterior como
+    // uma ultrapassagem real (ex.: VIX aparecendo como "caindo").
+    if(!wasRealMode || payload.reason==='initial' || payload.reason==='resume'){
+      window.__rdsSuppressNextRankingMotion=true;
+    }
+
     realMode=true;
     if(payload.today){
       currentDay=Math.max(1,Number(payload.today.slice(8,10))||currentDay);
@@ -1425,7 +1435,13 @@ function formatCurrentDate(){
   if(big)big.addEventListener('click',hideBig);
 
   function process(){
-    var list=read(), k=keyNow(), same=(k===prevKey&&prevList.length&&list.length), events=[];
+    var list=read(), k=keyNow(),
+        suppress=window.__rdsSuppressNextRankingMotion===true,
+        same=!suppress&&(k===prevKey&&prevList.length&&list.length),
+        events=[];
+
+    if(suppress)window.__rdsSuppressNextRankingMotion=false;
+
     var mx=list.length?Math.max.apply(null,list.map(function(x){return x.val})):1;
     list.forEach(function(x){x.el.style.setProperty('--w',(mx?Math.round(x.val/mx*100):0)+'%')});
 
@@ -1442,7 +1458,7 @@ function formatCurrentDate(){
           if(passed.length) events.push({name:x.name,comp:x.comp,from:o,to:i,passed:passed,info:passed.map(function(n){return {name:n,comp:(prevList[oldIdx.get(n)]||{}).comp||'',from:oldIdx.get(n),to:newIdx.get(n)}})});
         }
       });
-    }else{hl.clear();idle()}
+    }else{hl.clear();clearRows();idle()}
 
     var now=Date.now(), fresh=new Set();
     events.forEach(function(e){

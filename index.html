@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/><meta name="theme-color" content="#050608"/><meta name="color-scheme" content="dark light"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" name="viewport"/>
-<title>Rotina do Sucesso — V9.4.5 Final</title>
+<title>Rotina de Sucesso — V9.4.7 Final</title>
 <script>/* V9 — tema aplicado antes da pintura (evita piscar) */(function(){var t='dark';try{var s=localStorage.getItem('rds-theme');if(s==='light'||s==='dark')t=s}catch(e){}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='light'?'#f2f0ec':'#050608')})();</script>
 <style>
 :root{--bg:#0b0e12;--panel:#12171d;--panel2:#171d24;--line:#27303a;--text:#f5f7fa;--muted:#8d98a5;--red:#e43b32;--green:#61d394;--amber:#e9b45d}
@@ -676,7 +676,7 @@ tbody tr:hover{background:var(--accent-soft)}
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="apple-mobile-web-app-title" content="Rotina do Sucesso"/>
+<meta name="apple-mobile-web-app-title" content="Rotina de Sucesso"/>
 <link rel="apple-touch-icon" href="/icons/icon-192.png"/>
 
 
@@ -727,7 +727,7 @@ tbody tr:hover{background:var(--accent-soft)}
 <form class="authbox" id="loginForm">
 <div class="kicker">Identificação</div>
 <h2>Identifique-se, agente</h2>
-<p>Autenticação conectada ao ambiente seguro da Rotina do Sucesso.</p>
+<p>Autenticação conectada ao ambiente seguro da Rotina de Sucesso.</p>
 <label class="label">Usuário</label><input autocomplete="off" id="user" placeholder="seu.usuario"/>
 <div style="height:10px"></div>
 <label class="label">Senha</label><input autocomplete="new-password" id="pass" placeholder="••••" type="password"/>
@@ -741,7 +741,7 @@ tbody tr:hover{background:var(--accent-soft)}
 <section class="hidden" id="app">
 <div class="wrap">
 <header class="top">
-<div class="brand"><div class="slash"></div><div><b>Rotina do Sucesso</b><small id="mode">missão em andamento</small></div></div>
+<div class="brand"><div class="slash"></div><div><b>Rotina de Sucesso</b><small id="mode">missão em andamento</small></div></div>
 <button class="theme-btn" type="button" data-theme-toggle aria-pressed="false" aria-label="Ativar modo claro" title="Alternar modo claro / escuro"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><g class="rays"><path d="M12 2.4v2.3M12 19.3v2.3M2.4 12h2.3M19.3 12h2.3M5.2 5.2l1.6 1.6M17.2 17.2l1.6 1.6M18.8 5.2l-1.6 1.6M6.8 17.2l-1.6 1.6"/></g></svg></button>
 <div class="actions">
 <div class="current-date" id="currentDateGlobal"><small>Data atual</small><span>--/--/----</span></div>
@@ -824,9 +824,40 @@ tbody tr:hover{background:var(--accent-soft)}
 <span class="slider"></span>
 </label>
 </div>
-<section class="card pad hidden" id="personalSalesBox" style="margin-top:12px">
-<div class="section" style="margin:0"><h2>Vendas registradas</h2><span>Não entra nos KPIs principais</span></div>
-<div class="summary" id="personalSalesTotal" style="font-size:42px">12</div>
+<section class="card pad sales-visibility-box hidden" id="personalSalesBox" style="margin-top:12px">
+  <div class="section" style="margin:0">
+    <h2>Vendas registradas</h2>
+    <span>Indicador de apoio · fora dos KPIs principais</span>
+  </div>
+
+  <div class="personal-highlight" style="margin-top:12px">
+    <div class="card personal-stat">
+      <div class="pl">Período</div>
+      <div class="pv" id="personalSalesTotal">0</div>
+      <div class="pd">vendas registradas</div>
+    </div>
+    <div class="card personal-stat">
+      <div class="pl">Hoje</div>
+      <div class="pv" id="personalSalesToday">0</div>
+      <div class="pd">dia atual</div>
+    </div>
+    <div class="card personal-stat">
+      <div class="pl">Média por dia</div>
+      <div class="pv" id="personalSalesAverage">0,0</div>
+      <div class="pd">no período</div>
+    </div>
+    <div class="card personal-stat">
+      <div class="pl">Melhor dia</div>
+      <div class="pv" id="personalSalesBest">0</div>
+      <div class="pd" id="personalSalesBestDate">—</div>
+    </div>
+  </div>
+
+  <div class="section" style="margin:16px 0 0">
+    <h2>Evolução de vendas</h2>
+    <span>Período selecionado</span>
+  </div>
+  <div class="chart" id="personalSalesChart"></div>
 </section>
 </div>
 </main>
@@ -887,18 +918,15 @@ tbody tr:hover{background:var(--accent-soft)}
 <select id="pfAgent"><option value="all">Todos os agentes</option></select>
 <select id="pfMonth"><option value="2026-10">Outubro/2026</option><option value="2026-09">Setembro/2026</option><option value="2026-08">Agosto/2026</option></select>
 <select id="pfIndicator"><option value="all">Todos os indicadores</option><option value="salao">Abordagem no Salão</option><option value="online">Captação Online</option><option value="cotacoes">Cotações</option></select>
+<select id="pfRankingMetric" aria-label="Métrica do ranking">
+  <option value="indicator">Ranking: indicador selecionado</option>
+  <option value="vendas">Ranking: vendas registradas</option>
+</select>
 <button class="btn" id="pfApply">Aplicar filtros</button></div>
 <div class="sales-toggle-row sales-visibility-control">
   <span><b>Vendas registradas</b><br/>Mostrar ou ocultar as vendas do usuário/unidade no filtro atual.</span>
   <label aria-label="Mostrar ou ocultar vendas registradas" class="switch">
     <input id="showPerformanceSales" type="checkbox"/>
-    <span class="slider"></span>
-  </label>
-</div>
-<div class="sales-toggle-row sales-visibility-control">
-  <span><b>Ranking por vendas</b><br/>Quando ativado, os rankings de unidades e agentes passam a usar as vendas registradas.</span>
-  <label aria-label="Ativar ranking por vendas" class="switch">
-    <input id="rankPerformanceBySales" type="checkbox"/>
     <span class="slider"></span>
   </label>
 </div>
@@ -908,7 +936,7 @@ tbody tr:hover{background:var(--accent-soft)}
     <span id="pfSalesContext">Filtro atual</span>
   </div>
   <div class="summary" id="pfSalesTotal">0</div>
-  <div class="sub">Informação de apoio. Não altera os KPIs nem as comparações principais. Os rankings só mudam se a opção “Ranking por vendas” estiver ativada.</div>
+  <div class="sub">Informação de apoio. Não altera os KPIs nem as comparações principais. Os rankings só mudam quando “Ranking: vendas registradas” for selecionado.</div>
 </section>
 <div class="section"><h2>Super Dashboard</h2><span>Visão consolidada</span></div>
 <div class="stats">
@@ -928,7 +956,7 @@ tbody tr:hover{background:var(--accent-soft)}
 </div>
 
 <div class="hidden" id="liveDashboardContainer">
-  <iframe id="liveDashboardFrame" data-src="modules/dashboard-ao-vivo/index.html" title="Dashboard Ao Vivo — Rotina do Sucesso"></iframe>
+  <iframe id="liveDashboardFrame" data-src="modules/dashboard-ao-vivo/index.html" title="Dashboard Ao Vivo — Rotina de Sucesso"></iframe>
 </div>
 
 <div class="hidden" id="userManagement">
@@ -1020,7 +1048,7 @@ tbody tr:hover{background:var(--accent-soft)}
 </div>
 
 </main>
-<div class="foot">Rotina do Sucesso · Grupo SOS · Esta mensagem não se autodestruirá</div>
+<div class="foot">Rotina de Sucesso · Grupo SOS · Esta mensagem não se autodestruirá</div>
 </div>
 </section>
 <div class="modal hidden" id="first"><div class="modalbox"><div class="kicker">Primeiro acesso</div><h2>Complete seu perfil</h2><p class="sub">Ao confirmar, você será vinculado automaticamente à unidade selecionada. Depois disso, Empresa e Unidade só poderão ser alteradas pelo Performance.</p><form id="firstForm"><div class="rows"><div><label class="label">Nome</label><input id="fn"/></div><div><label class="label">Sobrenome</label><input id="ln"/></div></div><div class="rows" style="margin-top:10px"><div><label class="label">Empresa</label><select id="company"><option value="SOS">SOS</option><option value="Universo">Universo</option><option value="Connect">Connect</option><option value="Azul Viagens">Azul Viagens</option></select></div><div><label class="label">Unidade</label><select id="unit"></select></div></div><div style="margin-top:10px"><label class="label">Capitão vinculado automaticamente</label><input disabled id="captain"/></div><div class="form-error" id="firstAccessError"></div><div class="modal-actions"><button class="btn red" type="submit">CONFIRMAR PERFIL</button></div></form></div></div>
@@ -2320,7 +2348,71 @@ $('#clearDay').addEventListener('click',async()=>{
 });
 
 function personalRows(period){if(!currentUser)return[];return rowsForWindow(userRows(currentUser),$('#personalPeriod').value==='month'?DEMO_TODAY.slice(0,7):DEMO_TODAY.slice(0,7),period)}
-function renderPersonalDashboard(){if(!currentUser||!isOperationalRole(currentUser)||!currentUser.profileComplete)return;const key=$('#personalIndicator').value,period=$('#personalPeriod').value,rows=rowsForWindow(userRows(currentUser),DEMO_TODAY.slice(0,7),period),label=indicatorNames[key];const total=sum(rows,key),byDate=aggregateByDate(rows,key).sort((a,b)=>a.n.localeCompare(b.n)),todayRow=rows.find(r=>r.date===DEMO_TODAY),today=todayRow?metricValue(todayRow,key):0,best=byDate.length?Math.max(...byDate.map(x=>x.v)):0,bestRow=byDate.find(x=>x.v===best);$('#personalIndicatorLabel').textContent=label;$('#personalChartLabel').textContent=label;$('#personalTotal').textContent=formatInt(total);$('#personalToday').textContent=formatInt(today);$('#personalAverage').textContent=format1(byDate.length?total/byDate.length:0);$('#personalBest').textContent=formatInt(best);$('#personalBestDate').textContent=bestRow?(bestRow.n===DEMO_TODAY?'Hoje':bestRow.n.slice(8,10)+'/'+bestRow.n.slice(5,7)):'—';bars($('#personalChart'),byDate.map(x=>({l:x.n===DEMO_TODAY?'Hoje':x.n.slice(8,10),v:x.v})));rank($('#personalBreakdown'),[{n:'Abordagem no Salão',s:'captação presencial',v:sum(rows,'salao')},{n:'Captação Online',s:'prospecção e carteira',v:sum(rows,'online')},{n:'Cotações',s:'oportunidades trabalhadas',v:sum(rows,'cotacoes')}]);$('#personalSalesTotal').textContent=formatInt(rows.reduce((a,r)=>a+r.vendas,0));$('#personalSalesBox').classList.toggle('hidden',!$('#showPersonalSales').checked)}
+function renderPersonalDashboard(){
+  if(!currentUser||!isOperationalRole(currentUser)||!currentUser.profileComplete)return;
+
+  const key=$('#personalIndicator').value,
+        period=$('#personalPeriod').value,
+        rows=rowsForWindow(userRows(currentUser),DEMO_TODAY.slice(0,7),period),
+        label=indicatorNames[key];
+
+  const total=sum(rows,key),
+        byDate=aggregateByDate(rows,key).sort((a,b)=>a.n.localeCompare(b.n)),
+        todayRow=rows.find(r=>r.date===DEMO_TODAY),
+        today=todayRow?metricValue(todayRow,key):0,
+        best=byDate.length?Math.max(...byDate.map(x=>x.v)):0,
+        bestRow=byDate.find(x=>x.v===best);
+
+  $('#personalIndicatorLabel').textContent=label;
+  $('#personalChartLabel').textContent=label;
+  $('#personalTotal').textContent=formatInt(total);
+  $('#personalToday').textContent=formatInt(today);
+  $('#personalAverage').textContent=format1(byDate.length?total/byDate.length:0);
+  $('#personalBest').textContent=formatInt(best);
+  $('#personalBestDate').textContent=bestRow?(bestRow.n===DEMO_TODAY?'Hoje':bestRow.n.slice(8,10)+'/'+bestRow.n.slice(5,7)):'—';
+
+  bars($('#personalChart'),byDate.map(x=>({
+    l:x.n===DEMO_TODAY?'Hoje':x.n.slice(8,10),
+    v:x.v
+  })));
+
+  rank($('#personalBreakdown'),[
+    {n:'Abordagem no Salão',s:'captação presencial',v:sum(rows,'salao')},
+    {n:'Captação Online',s:'prospecção e carteira',v:sum(rows,'online')},
+    {n:'Cotações',s:'oportunidades trabalhadas',v:sum(rows,'cotacoes')}
+  ]);
+
+  // Vendas são apoio: possuem visualização própria e nunca entram nos KPIs acima.
+  const salesByDate=rows
+    .reduce((map,r)=>{
+      map.set(r.date,(map.get(r.date)||0)+(Number(r.vendas)||0));
+      return map;
+    },new Map());
+
+  const salesSeries=[...salesByDate.entries()]
+    .map(([n,v])=>({n,v}))
+    .sort((a,b)=>a.n.localeCompare(b.n));
+
+  const salesTotal=salesSeries.reduce((acc,x)=>acc+x.v,0);
+  const salesToday=salesByDate.get(DEMO_TODAY)||0;
+  const salesBest=salesSeries.length?Math.max(...salesSeries.map(x=>x.v)):0;
+  const salesBestRow=salesSeries.find(x=>x.v===salesBest);
+
+  $('#personalSalesTotal').textContent=formatInt(salesTotal);
+  $('#personalSalesToday').textContent=formatInt(salesToday);
+  $('#personalSalesAverage').textContent=format1(salesSeries.length?salesTotal/salesSeries.length:0);
+  $('#personalSalesBest').textContent=formatInt(salesBest);
+  $('#personalSalesBestDate').textContent=salesBestRow
+    ? (salesBestRow.n===DEMO_TODAY?'Hoje':salesBestRow.n.slice(8,10)+'/'+salesBestRow.n.slice(5,7))
+    : '—';
+
+  bars($('#personalSalesChart'),salesSeries.map(x=>({
+    l:x.n===DEMO_TODAY?'Hoje':x.n.slice(8,10),
+    v:x.v
+  })));
+
+  $('#personalSalesBox').classList.toggle('hidden',!$('#showPersonalSales').checked);
+}
 function setCollabMode(mode){
   const dash=mode==='dashboard';
   $('#collabEntry').classList.toggle('hidden',dash);
@@ -2340,7 +2432,7 @@ function setCollabMode(mode){
     renderPersonalDashboard();
   }else setTopForView('collab');
 }
-$$('.modebtn').forEach(b=>b.addEventListener('click',()=>setCollabMode(b.dataset.collabMode)));$('#personalIndicator').addEventListener('change',renderPersonalDashboard);$('#personalPeriod').addEventListener('change',renderPersonalDashboard);$('#showPersonalSales').addEventListener('change',e=>$('#personalSalesBox').classList.toggle('hidden',!e.target.checked));
+$$('.modebtn').forEach(b=>b.addEventListener('click',()=>setCollabMode(b.dataset.collabMode)));$('#personalIndicator').addEventListener('change',renderPersonalDashboard);$('#personalPeriod').addEventListener('change',renderPersonalDashboard);$('#showPersonalSales').addEventListener('change',renderPersonalDashboard);
 function renderHistory(){if(!currentUser)return;const rows=userRows(currentUser).filter(r=>r.date<=DEMO_TODAY).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);$('#historyBody').innerHTML=rows.map(r=>`<tr><td>${r.date.split('-').reverse().join('/')}</td><td>${r.salao}</td><td>${r.online}</td><td>${r.cotacoes}</td><td>${r.vendas}</td></tr>`).join('')||'<tr><td colspan="5">Sem registros.</td></tr>'}
 $('#history').addEventListener('click',()=>{renderHistory();$('#hist').classList.remove('hidden')});$('#closeHist').addEventListener('click',()=>$('#hist').classList.add('hidden'));$$('.tab').forEach(t=>t.addEventListener('click',()=>view(t.dataset.view)));
 
@@ -2644,7 +2736,7 @@ function renderPerformance(){
   $('#pfStatFill').textContent=fill+'%';
   $('#pfStatActions').parentElement.querySelector('.l').textContent=key==='all'?'Ações operacionais':indicatorShort[key];
 
-  const performanceRankBySales=$('#rankPerformanceBySales').checked;
+  const performanceRankBySales=$('#pfRankingMetric').value==='vendas';
 
   const byUnit=unique(rows.map(r=>r.short)).map(s=>({
     n:s,
@@ -2711,8 +2803,8 @@ $('#pfCompany').addEventListener('change',()=>{rebuildPerformanceOptions();rende
 $('#pfUnit').addEventListener('change',()=>{rebuildPerformanceOptions();renderPerformance()});
 ['pfAgent','pfMonth','pfIndicator'].forEach(id=>$('#'+id).addEventListener('change',renderPerformance));
 $('#showPerformanceSales').addEventListener('change',renderPerformance);
-$('#rankPerformanceBySales').addEventListener('change',e=>{
-  if(e.target.checked)$('#showPerformanceSales').checked=true;
+$('#pfRankingMetric').addEventListener('change',e=>{
+  if(e.target.value==='vendas')$('#showPerformanceSales').checked=true;
   renderPerformance();
 });
 $('#pfApply').addEventListener('click',()=>currentUser?.source==='supabase'?loadDashboardRoutinesFromSupabase():renderPerformance());
