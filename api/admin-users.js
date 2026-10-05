@@ -7,6 +7,12 @@ const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
 function json(res, status, payload) {
   res.status(status).json(payload);
 }
+
+function authPasswordFromPinOrPassword(value) {
+  const raw = String(value || '');
+  return /^\d{4}$/.test(raw) ? `Rds!Pin#${raw}` : raw;
+}
+
 function technicalEmail(username) {
   return `${username.trim().toLowerCase()}@rotina.internal`;
 }
@@ -161,18 +167,24 @@ module.exports = async function handler(req, res) {
         }
       );
 
-      const { data, error } = await authClient.auth.signInWithPassword({
+      const authValue = authPasswordFromPinOrPassword(value);
+      let { data, error } = await authClient.auth.signInWithPassword({
         email: technicalEmail(actorProfile.username),
-        password: value
+        password: authValue
       });
+
+      // Compatibilidade para qualquer conta antiga que eventualmente já
+      // tenha sido criada com PIN cru de 4 dígitos.
+      if (error && /^\d{4}$/.test(value) && authValue !== value) {
+        ({ data, error } = await authClient.auth.signInWithPassword({
+          email: technicalEmail(actorProfile.username),
+          password: value
+        }));
+      }
 
       const ok = !error && data?.user?.id === actor.id;
 
-      // IMPORTANTE:
-      // signOut() sem scope usa "global" no Supabase e revoga TODAS as
-      // sessões do usuário, inclusive a sessão aberta no navegador.
-      // Aqui encerramos somente a sessão temporária criada para validar
-      // a senha administrativa.
+      // Encerra somente a sessão temporária usada para validar a senha.
       if (data?.session) {
         try { await authClient.auth.signOut({ scope: 'local' }); } catch (_) {}
       }
@@ -290,7 +302,7 @@ module.exports = async function handler(req, res) {
 
       const { data: created, error: createError } = await admin.auth.admin.createUser({
         email: technicalEmail(username),
-        password,
+        password: authPasswordFromPinOrPassword(password),
         email_confirm: true,
         user_metadata: {
           username,
@@ -388,7 +400,7 @@ module.exports = async function handler(req, res) {
           last_name: String(u.lastName || '').trim()
         }
       };
-      if (u.password) authUpdate.password = String(u.password);
+      if (u.password) authUpdate.password = authPasswordFromPinOrPassword(u.password);
 
       const { error: authUpdateError } = await admin.auth.admin.updateUserById(userId, authUpdate);
       if (authUpdateError) return json(res, 400, { code: 'AUTH_UPDATE_FAILED', message: authUpdateError.message });
@@ -756,7 +768,7 @@ module.exports = async function handler(req, res) {
 
         const { data: created, error } = await admin.auth.admin.createUser({
           email: technicalEmail(username),
-          password,
+          password: authPasswordFromPinOrPassword(password),
           email_confirm: true,
           user_metadata: { username }
         });

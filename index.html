@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/><meta name="theme-color" content="#050608"/><meta name="color-scheme" content="dark light"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" name="viewport"/>
-<title>Rotina do Sucesso — V9.4.1 Final</title>
+<title>Rotina do Sucesso — V9.4.3 Final</title>
 <script>/* V9 — tema aplicado antes da pintura (evita piscar) */(function(){var t='dark';try{var s=localStorage.getItem('rds-theme');if(s==='light'||s==='dark')t=s}catch(e){}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='light'?'#f2f0ec':'#050608')})();</script>
 <style>
 :root{--bg:#0b0e12;--panel:#12171d;--panel2:#171d24;--line:#27303a;--text:#f5f7fa;--muted:#8d98a5;--red:#e43b32;--green:#61d394;--amber:#e9b45d}
@@ -586,11 +586,53 @@ tbody tr:hover{background:var(--accent-soft)}
     border:1px solid var(--err-line);background:var(--err-bg);color:var(--err);
     padding:11px 12px;border-radius:10px;line-height:1.5;margin:12px 0
   }
-  #adminAlertPopup{z-index:120}
-  #adminAlertPopup .modalbox{width:min(580px,100%)}
+  #adminAlertPopup{z-index:120;overflow:hidden}
+  #adminAlertPopup .modalbox{
+    width:min(580px,100%);
+    max-height:min(90dvh,760px);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  #adminAlertPopup .kicker,
+  #adminAlertPopup h2,
+  #adminAlertPopup #adminAlertMeta,
+  #adminAlertPopup .checkline,
+  #adminAlertPopup #adminAlertStatus,
+  #adminAlertPopup .modal-actions{
+    flex:0 0 auto;
+  }
+  #adminAlertPopup .admin-alert-body{
+    flex:1 1 auto;
+    min-height:90px;
+    max-height:calc(90dvh - 280px);
+    overflow-y:auto;
+    overscroll-behavior:contain;
+  }
+  #adminAlertPopup .modal-actions{
+    position:sticky;
+    bottom:0;
+    z-index:2;
+    margin-top:12px;
+    padding-top:12px;
+    border-top:1px solid var(--line);
+    background:var(--panel);
+  }
+  #adminAlertPopup #adminAlertOk{
+    min-width:120px;
+  }
   #adminAlertOk:disabled{opacity:.45;cursor:not-allowed}
   @media(max-width:760px){
     .recipient-list{max-height:220px}
+    #adminAlertPopup .modalbox{
+      max-height:92dvh;
+    }
+    #adminAlertPopup .admin-alert-body{
+      max-height:calc(92dvh - 300px);
+    }
+    #adminAlertPopup #adminAlertOk{
+      width:100%;
+    }
   }
 </style>
 
@@ -1694,11 +1736,38 @@ async function fetchAuthenticatedProfile(authUser){
     source:'supabase'
   };
 }
+
+function authPasswordFromUserInput(value){
+  const raw=String(value??'');
+  return /^\d{4}$/.test(raw)?`Rds!Pin#${raw}`:raw;
+}
+
+async function signInWithUserPassword(email,password){
+  const raw=String(password??'');
+  const primary=authPasswordFromUserInput(raw);
+
+  let result=await supabaseClient.auth.signInWithPassword({
+    email,
+    password:primary
+  });
+
+  // Compatibilidade: se já existir algum usuário antigo com PIN cru de
+  // 4 dígitos no Auth, tenta o valor original uma única vez.
+  if(result.error&&/^\d{4}$/.test(raw)&&primary!==raw){
+    result=await supabaseClient.auth.signInWithPassword({
+      email,
+      password:raw
+    });
+  }
+
+  return result;
+}
+
 async function authenticateReal(username,password){
   const email=technicalEmailForUsername(username);
   if(!email)throw new Error('INVALID_USERNAME');
 
-  const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+  const {data,error}=await signInWithUserPassword(email,password);
   if(error){
     const e=new Error(error.message||'Falha de autenticação');
     e.code=error.code||'SUPABASE_AUTH_ERROR';
@@ -1979,10 +2048,10 @@ $('#mandatoryPasswordForm').addEventListener('submit',async e=>{
     if(!email)throw new Error('Usuário inválido para revalidação.');
 
     // Revalida a senha temporária antes de permitir a troca.
-    const {data:reauth,error:reauthError}=await supabaseClient.auth.signInWithPassword({
+    const {data:reauth,error:reauthError}=await signInWithUserPassword(
       email,
-      password:currentPassword
-    });
+      currentPassword
+    );
     if(reauthError||reauth?.user?.id!==currentUser.id){
       const err=new Error('Senha atual incorreta.');
       err.code='INVALID_CURRENT_PASSWORD';
@@ -1990,7 +2059,7 @@ $('#mandatoryPasswordForm').addEventListener('submit',async e=>{
     }
 
     const {error:updateError}=await supabaseClient.auth.updateUser({
-      password:newPassword
+      password:authPasswordFromUserInput(newPassword)
     });
     if(updateError)throw updateError;
 
@@ -3254,7 +3323,7 @@ function renderUserImportPreview(){
   $('#importPreviewBody').innerHTML=rows.length?rows.map(x=>`<tr>
     <td>${x.line}</td>
     <td><b>${importEsc(x.username||'—')}</b></td>
-    <td>${x.password?'••••••••':'—'}</td>
+    <td>${x.password?'••••':'—'}</td>
     <td><span class="import-status ${x.status==='ready'?'ok':x.status==='skip'?'skip':'err'}">${x.status==='ready'?'IMPORTAR':x.status==='skip'?'IGNORAR':'ERRO'}</span></td>
     <td>${importEsc(x.reason)}</td>
   </tr>`).join(''):'<tr><td colspan="5">Nenhum registro encontrado.</td></tr>';
@@ -3288,8 +3357,22 @@ async function confirmUserImport(){
     const result=await adminApi('bulkCreate',{users:ready.map(x=>({username:x.username,password:x.password}))});
     $('#importUsersModal').classList.add('hidden');
     await refreshAfterUserChange();
-    const created=result.created||0,failed=(result.results||[]).filter(x=>!x.ok).length;
-    alert(`${created} usuário(s) importado(s).${failed?` ${failed} não foram criados.`:''}`);
+    const created=result.created||0;
+    const failedRows=(result.results||[]).filter(x=>!x.ok);
+    const failed=failedRows.length;
+
+    if(!failed){
+      alert(`${created} usuário(s) importado(s) com sucesso.`);
+    }else{
+      const reasons=[...new Set(failedRows.map(x=>x.message||({
+        INVALID_DATA:'Dados inválidos.',
+        USERNAME_EXISTS:'Usuário já cadastrado.',
+        AUTH_CREATE_FAILED:'Falha no Supabase Auth.',
+        PROFILE_CREATE_FAILED:'Falha ao criar perfil.'
+      }[x.code]||x.code||'Falha desconhecida.')))].slice(0,4);
+
+      alert(`${created} usuário(s) importado(s). ${failed} não foram criados.\n\nMotivo(s):\n- ${reasons.join('\n- ')}`);
+    }
   }catch(err){
     console.error(err);
     $('#importUsersError').textContent=err.message;
