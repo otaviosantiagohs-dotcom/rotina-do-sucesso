@@ -905,6 +905,61 @@ html.theme-anim *{transition:background-color .28s ease,color .28s ease,border-c
   }
 </style>
 
+
+<style id="rds-live-view-v9514">
+  .view-switch{
+    display:flex;
+    align-items:center;
+    gap:3px;
+    padding:3px;
+    border:1px solid var(--line);
+    border-radius:4px;
+    background:#080a0d;
+    min-width:max-content;
+  }
+  .view-btn{
+    height:30px;
+    padding:0 12px;
+    border:0;
+    border-radius:3px;
+    background:transparent;
+    color:var(--muted);
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.04em;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .view-btn.active{
+    background:#1a0b0a;
+    color:#fff;
+    box-shadow:inset 0 -2px 0 var(--red);
+  }
+  html[data-theme="light"] .view-switch{background:#fff}
+  html[data-theme="light"] .view-btn.active{
+    background:var(--palette-soft,#f6efed);
+    color:var(--text);
+  }
+
+  @media(min-width:821px){
+    .filters{
+      grid-template-columns:auto auto minmax(145px,190px) minmax(165px,215px) 1fr!important;
+    }
+  }
+
+  @media(max-width:820px){
+    .view-switch{
+      width:100%;
+      min-width:0;
+    }
+    .view-btn{
+      flex:1 1 50%;
+      min-width:0;
+      padding:0 8px;
+    }
+  }
+</style>
+
 </head>
 <body>
 <div class="cd-line" aria-hidden="true"><i></i></div>
@@ -930,6 +985,11 @@ html.theme-anim *{transition:background-color .28s ease,color .28s ease,border-c
   </header>
 
   <section class="filters" aria-label="Filtros do dashboard">
+    <div class="view-switch" aria-label="Tipo de visão">
+      <button class="view-btn active" id="viewStores" type="button">Visão de Loja</button>
+      <button class="view-btn" id="viewUsers" type="button">Visão de Usuários</button>
+    </div>
+
     <div class="period-switch" aria-label="Período">
       <button class="period-btn active" id="periodDay" type="button">Hoje</button>
       <button class="period-btn" id="periodMonth" type="button">Mês atual</button>
@@ -1046,13 +1106,13 @@ html.theme-anim *{transition:background-color .28s ease,color .28s ease,border-c
           </article>
 
           <article class="pulse-card">
-            <div class="panel-sub">Média por loja</div>
+            <div class="panel-sub" id="avgEntityLabel">Média por loja</div>
             <div class="big" id="avgStore">0</div>
             <div class="small" id="avgStoreText">ações por loja no dia</div>
           </article>
 
           <article class="pulse-card">
-            <div class="panel-sub">Cobertura operacional</div>
+            <div class="panel-sub" id="coverageLabel">Cobertura operacional</div>
             <div class="big" id="coverage">0%</div>
             <div class="small" id="coverageText">0 lojas com atividade</div>
           </article>
@@ -1142,6 +1202,7 @@ html.theme-anim *{transition:background-color .28s ease,color .28s ease,border-c
 
   let period = 'day';
   let activeAction = 'all';
+  let viewMode = 'stores';
   let auto = true;
   let hostActive = (window.parent === window);
   let seconds = 900;
@@ -1153,6 +1214,7 @@ html.theme-anim *{transition:background-color .28s ease,color .28s ease,border-c
   // Produção: a Dashboard Ao Vivo nunca utiliza dados demonstrativos.
   // Até o primeiro payload real chegar, permanece zerada/vazia.
   let stores = [];
+  let users = [];
 
     function formatCountdown(totalSeconds){
     const s=Math.max(0,Math.floor(totalSeconds));
@@ -1185,8 +1247,16 @@ function formatCurrentDate(){
     return Number(obj[key]||0);
   }
 
+  function entityMetric(entity,key,whichPeriod=period){
+    return metricValue(whichPeriod==='day'?entity.day:entity.month,key);
+  }
+
   function storeMetric(store,key,whichPeriod=period){
-    return metricValue(whichPeriod==='day'?store.day:store.month,key);
+    return entityMetric(store,key,whichPeriod);
+  }
+
+  function userMetric(user,key,whichPeriod=period){
+    return entityMetric(user,key,whichPeriod);
   }
 
   function selectedStores(source=stores){
@@ -1198,8 +1268,36 @@ function formatCurrentDate(){
     );
   }
 
-  function sumMetric(key,source=stores,whichPeriod=period){
-    return selectedStores(source).reduce((acc,s)=>acc+storeMetric(s,key,whichPeriod),0);
+  function selectedUsers(source=users){
+    const company=$('companyFilter').value;
+    const unit=$('unitFilter').value;
+    return source.filter(u=>
+      (company==='all'||u.company===company) &&
+      (unit==='all'||u.unitId===unit)
+    );
+  }
+
+  function selectedEntities(){
+    return viewMode==='users'?selectedUsers():selectedStores();
+  }
+
+  function entityName(entity){
+    return entity?.name||'—';
+  }
+
+  function entitySecondary(entity){
+    if(viewMode==='users'){
+      const bits=[entity?.unitShort||entity?.unitName||'',entity?.rank||''].filter(Boolean);
+      return bits.join(' · ');
+    }
+    return entity?.company||'';
+  }
+
+  function sumMetric(key,source=null,whichPeriod=period){
+    const entities=source
+      ? (viewMode==='users'?selectedUsers(source):selectedStores(source))
+      : selectedEntities();
+    return entities.reduce((acc,e)=>acc+entityMetric(e,key,whichPeriod),0);
   }
 
   function scopeLabel(){
@@ -1210,7 +1308,7 @@ function formatCurrentDate(){
       return s?.name||s?.unitName||'Unidade';
     }
     if(company!=='all') return company;
-    return 'Todas as lojas';
+    return viewMode==='users'?'Todos os usuários':'Todas as lojas';
   }
 
   function populateCompanies(preserve=true){
@@ -1241,8 +1339,10 @@ function formatCurrentDate(){
 
   function metricDelta(key){
     if(liveSnapshots.length<2) return null;
-    const prev=liveSnapshots[liveSnapshots.length-2].stores;
-    return sumMetric(key,stores,period)-sumMetric(key,prev,period);
+    const snap=liveSnapshots[liveSnapshots.length-2];
+    const prev=viewMode==='users'?(snap.users||[]):(snap.stores||[]);
+    const current=viewMode==='users'?users:stores;
+    return sumMetric(key,current,period)-sumMetric(key,prev,period);
   }
 
   function formatDelta(v){
@@ -1253,17 +1353,36 @@ function formatCurrentDate(){
   function updateLabels(){
     const monthName=new Intl.DateTimeFormat('pt-BR',{month:'long',timeZone:'America/Sao_Paulo'}).format(new Date());
     const periodName=period==='day'?'Hoje':`Mês atual · ${monthName}`;
+    const userView=viewMode==='users';
+
     $('totalActionsLabel').textContent=period==='day'?'Ações totais hoje':'Ações no mês atual';
-    $('activeAgentsLabel').textContent=period==='day'?'Colaboradores ativos hoje':'Colaboradores ativos no mês';
-    $('rankingTitle').textContent=period==='day'?'Top 5 lojas do dia':'Top 5 lojas do mês';
+    $('activeAgentsLabel').textContent=userView
+      ? (period==='day'?'Usuários com atividade hoje':'Usuários com atividade no mês')
+      : (period==='day'?'Colaboradores ativos hoje':'Colaboradores ativos no mês');
+
+    $('rankingTitle').textContent=userView
+      ? (period==='day'?'Top 5 usuários do dia':'Top 5 usuários do mês')
+      : (period==='day'?'Top 5 lojas do dia':'Top 5 lojas do mês');
+
     $('rankingSubtitle').textContent=`${scopeLabel()} · ${activeAction==='vendas'?'ranking por vendas registradas':'ranking por volume de ações'}`;
     $('actionsTitle').textContent=period==='day'?'Ações do dia':'Ações do mês';
     $('paceTitle').textContent='Ritmo da operação';
     $('paceSubtitle').textContent=period==='day'?'Leitura consolidada do dia':'Leitura consolidada do mês';
-    if($('evolutionTitle')) $('evolutionTitle').textContent=period==='day'?'Produção por loja hoje':'Evolução diária do mês';
-    $('chartLegend').textContent=period==='day'
-      ? `${scopeLabel()} · produção real por loja`
-      : `${periodName} · produção real por dia`;
+
+    if($('evolutionTitle')){
+      $('evolutionTitle').textContent=userView
+        ? (period==='day'?'Produção por usuário hoje':'Produção por usuário no mês')
+        : (period==='day'?'Produção por loja hoje':'Evolução diária do mês');
+    }
+
+    $('chartLegend').textContent=userView
+      ? `${scopeLabel()} · produção real por usuário`
+      : (period==='day'
+          ? `${scopeLabel()} · produção real por loja`
+          : `${periodName} · produção real por dia`);
+
+    $('avgEntityLabel').textContent=userView?'Média por usuário':'Média por loja';
+    $('coverageLabel').textContent=userView?'Cobertura de usuários':'Cobertura operacional';
   }
 
   function previousSnapshotStoreDelta(storeId){
@@ -1297,27 +1416,28 @@ function formatCurrentDate(){
 
   function updateRecentActivity(scoped){
     const total=sumMetric('all');
-    const activeStores=scoped.filter(s=>storeMetric(s,'all')>0).length;
+    const activeCount=scoped.filter(e=>entityMetric(e,'all')>0).length;
+    const noun=viewMode==='users'?'usuário':'loja';
+    const nounPlural=viewMode==='users'?'usuários':'lojas';
 
     $('recentActionsLabel').textContent=period==='day'?'Ações no dia':'Ações no mês';
     $('last30').textContent=fmt.format(total);
     $('last30Text').textContent=period==='day'
-      ? `${activeStores} ${activeStores===1?'loja com atividade':'lojas com atividade'} hoje`
-      : `${activeStores} ${activeStores===1?'loja com atividade':'lojas com atividade'} no mês`;
+      ? `${activeCount} ${activeCount===1?noun+' com atividade':nounPlural+' com atividade'} hoje`
+      : `${activeCount} ${activeCount===1?noun+' com atividade':nounPlural+' com atividade'} no mês`;
 
     let series=[];
     if(period==='day'){
-      // Não inferimos horário de lançamento. No dia, o spark representa a
-      // distribuição real atual das ações entre as lojas do filtro.
-      series=scoped.map(s=>storeMetric(s,'all','day'));
+      series=scoped.map(e=>entityMetric(e,'all','day'));
+    }else if(viewMode==='users'){
+      series=scoped.map(e=>entityMetric(e,'all','month'));
     }else{
-      // No mês, há histórico por data e usamos a evolução acumulada real.
       let cumulative=0;
       for(let d=1;d<=currentDay;d++){
         const key=String(d).padStart(2,'0');
         let dayValue=0;
-        scoped.forEach(s=>{
-          dayValue+=metricValue(s.daily?.[key]||blankMetric(),'all');
+        scoped.forEach(e=>{
+          dayValue+=metricValue(e.daily?.[key]||blankMetric(),'all');
         });
         cumulative+=dayValue;
         series.push(cumulative);
@@ -1346,19 +1466,25 @@ function formatCurrentDate(){
       }
     });
 
-    const scoped=selectedStores();
-    const activeAgents=scoped.reduce((a,s)=>a+Number(period==='day'?s.dayActiveAgents||0:s.monthActiveAgents||0),0);
-    const capacity=scoped.reduce((a,s)=>a+Number(s.capacity||0),0);
+    const scoped=selectedEntities();
+    const activeAgents=viewMode==='users'
+      ? scoped.filter(u=>entityMetric(u,'all')>0).length
+      : scoped.reduce((a,s)=>a+Number(period==='day'?s.dayActiveAgents||0:s.monthActiveAgents||0),0);
+
+    const capacity=viewMode==='users'
+      ? scoped.length
+      : scoped.reduce((a,s)=>a+Number(s.capacity||0),0);
+
     $('activeAgents').textContent=fmt.format(activeAgents);
     $('activeCoverage').textContent=(capacity?Math.round(activeAgents/capacity*100):0)+'%';
 
     const leaders={};
     ['salao','online','cotacoes'].forEach(key=>{
-      leaders[key]=[...scoped].sort((a,b)=>storeMetric(b,key)-storeMetric(a,key))[0];
+      leaders[key]=[...scoped].sort((a,b)=>entityMetric(b,key)-entityMetric(a,key))[0];
     });
-    $('leaderSalao').textContent=leaders.salao?.name||'—';
-    $('leaderOnline').textContent=leaders.online?.name||'—';
-    $('leaderCotacoes').textContent=leaders.cotacoes?.name||'—';
+    $('leaderSalao').textContent=entityName(leaders.salao);
+    $('leaderOnline').textContent=entityName(leaders.online);
+    $('leaderCotacoes').textContent=entityName(leaders.cotacoes);
 
     const shareSalao=total?Math.round(salao/total*100):0;
     const shareOnline=total?Math.round(online/total*100):0;
@@ -1374,7 +1500,9 @@ function formatCurrentDate(){
     // Ritmo da operação = período completo selecionado.
     // Dia: tudo registrado hoje. Mês: tudo registrado no mês atual.
     $('avgStore').textContent=fmt.format(scoped.length?Math.round(total/scoped.length):0);
-    $('avgStoreText').textContent=period==='day'?'ações por loja no dia':'ações por loja no mês';
+    $('avgStoreText').textContent=viewMode==='users'
+      ? (period==='day'?'ações por usuário no dia':'ações por usuário no mês')
+      : (period==='day'?'ações por loja no dia':'ações por loja no mês');
 
     $('totalDelta').textContent=formatDelta(metricDelta('all'));
     $('deltaSalao').textContent=formatDelta(metricDelta('salao'));
@@ -1384,27 +1512,30 @@ function formatCurrentDate(){
     updateRecentActivity(scoped);
 
     let fastest=null, fastestTotal=-Infinity;
-    scoped.forEach(s=>{
-      const value=storeMetric(s,'all');
+    scoped.forEach(e=>{
+      const value=entityMetric(e,'all');
       if(value>fastestTotal){
-        fastest=s;
+        fastest=e;
         fastestTotal=value;
       }
     });
 
-    $('fastestStoreLabel').textContent=period==='day'?'Loja líder no dia':'Loja líder no mês';
-    $('fastestStore').textContent=fastest?.name||'—';
+    $('fastestStoreLabel').textContent=viewMode==='users'
+      ? (period==='day'?'Usuário líder no dia':'Usuário líder no mês')
+      : (period==='day'?'Loja líder no dia':'Loja líder no mês');
+
+    $('fastestStore').textContent=entityName(fastest);
     $('fastestText').textContent=fastest
       ? `${fmt.format(Math.max(0,fastestTotal))} ações ${period==='day'?'hoje':'no mês'}`
       : 'sem atividade no período';
 
     let leaderSeries=[];
     if(fastest){
-      if(period==='day'){
+      if(period==='day' || viewMode==='users'){
         leaderSeries=[
-          Number(fastest.day?.salao||0),
-          Number(fastest.day?.online||0),
-          Number(fastest.day?.cotacoes||0)
+          Number((period==='day'?fastest.day:fastest.month)?.salao||0),
+          Number((period==='day'?fastest.day:fastest.month)?.online||0),
+          Number((period==='day'?fastest.day:fastest.month)?.cotacoes||0)
         ];
       }else{
         let cumulative=0;
@@ -1417,23 +1548,25 @@ function formatCurrentDate(){
     }
     renderMiniSpark('sparkFast',leaderSeries);
 
-    const activeStores=scoped.filter(s=>storeMetric(s,'all')>0).length;
-    const coveragePct=scoped.length?Math.round(activeStores/scoped.length*100):0;
+    const activeCount=scoped.filter(e=>entityMetric(e,'all')>0).length;
+    const coveragePct=scoped.length?Math.round(activeCount/scoped.length*100):0;
     $('coverage').textContent=coveragePct+'%';
-    $('coverageText').textContent=`${activeStores} de ${scoped.length} lojas com atividade ${period==='day'?'hoje':'no mês'}`;
+    $('coverageText').textContent=viewMode==='users'
+      ? `${activeCount} de ${scoped.length} usuários com atividade ${period==='day'?'hoje':'no mês'}`
+      : `${activeCount} de ${scoped.length} lojas com atividade ${period==='day'?'hoje':'no mês'}`;
   }
 
   function renderRanking(){
-    const top=[...selectedStores()]
-      .filter(s=>storeMetric(s,activeAction)>0)
-      .sort((a,b)=>storeMetric(b,activeAction)-storeMetric(a,activeAction))
+    const top=[...selectedEntities()]
+      .filter(e=>entityMetric(e,activeAction)>0)
+      .sort((a,b)=>entityMetric(b,activeAction)-entityMetric(a,activeAction))
       .slice(0,5);
 
-    $('ranking').innerHTML=top.length?top.map((s,i)=>`
+    $('ranking').innerHTML=top.length?top.map((e,i)=>`
       <div class="rank-row">
         <div class="rank-pos">${String(i+1).padStart(2,'0')}</div>
-        <div class="rank-name">${escapeHtml(s.name)}<span class="rank-company">${escapeHtml(s.company)}</span></div>
-        <div class="rank-value">${fmt.format(storeMetric(s,activeAction))}</div>
+        <div class="rank-name">${escapeHtml(entityName(e))}<span class="rank-company">${escapeHtml(entitySecondary(e))}</span></div>
+        <div class="rank-value">${fmt.format(entityMetric(e,activeAction))}</div>
       </div>
     `).join(''):'<div class="panel-sub">Nenhum dado registrado neste período.</div>';
   }
@@ -1447,10 +1580,10 @@ function formatCurrentDate(){
   }
 
   function realDayChart(){
-    const rows=selectedStores()
-      .map(s=>({
-        label:s.name,
-        value:storeMetric(s,activeAction,'day')
+    const rows=selectedEntities()
+      .map(e=>({
+        label:entityName(e),
+        value:entityMetric(e,activeAction,'day')
       }))
       .filter(x=>x.value>0)
       .sort((a,b)=>b.value-a.value)
@@ -1464,9 +1597,26 @@ function formatCurrentDate(){
   }
 
   function realMonthChart(){
-    const scoped=selectedStores();
-    const values=[],labels=[];
+    const scoped=selectedEntities();
 
+    if(viewMode==='users'){
+      const rows=scoped
+        .map(u=>({
+          label:entityName(u),
+          value:entityMetric(u,activeAction,'month')
+        }))
+        .filter(x=>x.value>0)
+        .sort((a,b)=>b.value-a.value)
+        .slice(0,12);
+
+      return {
+        kind:'bars',
+        values:rows.map(x=>x.value),
+        labels:rows.map(x=>x.label)
+      };
+    }
+
+    const values=[],labels=[];
     for(let d=1;d<=currentDay;d++){
       const date=String(d).padStart(2,'0');
       let dayValue=0;
@@ -1568,15 +1718,19 @@ function formatCurrentDate(){
       vendas:'Vendas'
     };
 
-    $('chartLegend').textContent=period==='day'
-      ? `${names[activeAction]} · ${scopeLabel()} · por loja`
-      : `${names[activeAction]} · ${scopeLabel()} · por dia`;
+    $('chartLegend').textContent=viewMode==='users'
+      ? `${names[activeAction]} · ${scopeLabel()} · por usuário`
+      : (period==='day'
+          ? `${names[activeAction]} · ${scopeLabel()} · por loja`
+          : `${names[activeAction]} · ${scopeLabel()} · por dia`);
 
     $('mainChart').setAttribute(
       'aria-label',
-      period==='day'
-        ? `Produção por loja hoje — ${names[activeAction]}`
-        : `Evolução diária do mês — ${names[activeAction]}`
+      viewMode==='users'
+        ? `Produção por usuário — ${names[activeAction]}`
+        : (period==='day'
+            ? `Produção por loja hoje — ${names[activeAction]}`
+            : `Evolução diária do mês — ${names[activeAction]}`)
     );
   }
 
@@ -1602,11 +1756,12 @@ function formatCurrentDate(){
     renderChart();
   }
 
-  function cloneStoresForSnapshot(source){
-    return source.map(s=>({
-      id:s.id,name:s.name,unitName:s.unitName,company:s.company,capacity:s.capacity,
-      dayActiveAgents:s.dayActiveAgents,monthActiveAgents:s.monthActiveAgents,
-      day:{...s.day},month:{...s.month},daily:s.daily?JSON.parse(JSON.stringify(s.daily)):{}
+  function cloneEntitiesForSnapshot(source){
+    return source.map(e=>({
+      ...e,
+      day:{...e.day},
+      month:{...e.month},
+      daily:e.daily?JSON.parse(JSON.stringify(e.daily)):{}
     }));
   }
 
@@ -1640,8 +1795,30 @@ function formatCurrentDate(){
       daily:s.daily||{}
     }));
 
+    users=(payload.users||[])
+      .filter(u=>u && u.id)
+      .map(u=>({
+        id:String(u.id),
+        name:u.name||u.username||'Usuário',
+        username:u.username||'',
+        rank:u.rank||'Usuário',
+        role:u.role||'colaborador',
+        active:u.active!==false,
+        unitId:String(u.unitId||''),
+        unitName:u.unitName||'',
+        unitShort:u.unitShort||u.unitName||'',
+        company:u.company||'',
+        day:{...blankMetric(),...(u.day||{})},
+        month:{...blankMetric(),...(u.month||{})},
+        daily:u.daily||{}
+      }));
+
     const ts=payload.generatedAt?new Date(payload.generatedAt).getTime():Date.now();
-    liveSnapshots.push({ts,stores:cloneStoresForSnapshot(stores)});
+    liveSnapshots.push({
+      ts,
+      stores:cloneEntitiesForSnapshot(stores),
+      users:cloneEntitiesForSnapshot(users)
+    });
     if(liveSnapshots.length>121)liveSnapshots=liveSnapshots.slice(-121);
 
     populateCompanies(true);
@@ -1674,6 +1851,7 @@ function formatCurrentDate(){
     // Produção: nunca simula, incrementa ou inventa dados.
     realMode=false;
     stores=[];
+    users=[];
     liveSnapshots=[];
     populateCompanies(false);
     populateUnits(false);
@@ -1689,6 +1867,14 @@ function formatCurrentDate(){
     seconds=900;
     $('countdown').textContent=formatCountdown(seconds);
     if(!requestRealData(reason))fallbackUpdate();
+  }
+
+  function setViewMode(next){
+    viewMode=next==='users'?'users':'stores';
+    $('viewStores').classList.toggle('active',viewMode==='stores');
+    $('viewUsers').classList.toggle('active',viewMode==='users');
+    window.__rdsSuppressNextRankingMotion=true;
+    refreshView();
   }
 
   function setPeriod(next){
@@ -1732,6 +1918,7 @@ function formatCurrentDate(){
 
       if(!realMode){
         stores=[];
+        users=[];
         liveSnapshots=[];
         populateCompanies(false);
         populateUnits(false);
@@ -1749,6 +1936,8 @@ function formatCurrentDate(){
     }
   });
 
+  $('viewStores').addEventListener('click',()=>setViewMode('stores'));
+  $('viewUsers').addEventListener('click',()=>setViewMode('users'));
   $('periodDay').addEventListener('click',()=>setPeriod('day'));
   $('periodMonth').addEventListener('click',()=>setPeriod('month'));
 
@@ -1836,7 +2025,7 @@ function formatCurrentDate(){
   var HL=9000, prevKey=null, prevList=[], prevTop=new Map(), hl=new Map(), stTimer=null, flashTimer=null;
 
   function activeTab(){var t=document.querySelector('#rankingTabs .tab.active');return t?t.dataset.action:'all'}
-  function keyNow(){return [activeTab(),$('periodMonth').classList.contains('active')?'m':'d',$('companyFilter').value,$('unitFilter').value].join('|')}
+  function keyNow(){return [viewMode,activeTab(),$('periodMonth').classList.contains('active')?'m':'d',$('companyFilter').value,$('unitFilter').value].join('|')}
   function clearRows(){hl.clear();Array.prototype.forEach.call(rk.querySelectorAll('.rank-row'),function(r){r.classList.remove('ov-up','ov-down','ov-hit');var t=r.querySelector('.ov-tag');if(t)t.remove()})}
   function idle(){st.classList.remove('alert');stTxt.textContent='Monitorando ultrapassagens · '+(MOD[activeTab()]||'')}
   function read(){
@@ -1946,7 +2135,7 @@ function formatCurrentDate(){
     }
     prevTop=tops;prevList=list.map(function(x){return {name:x.name,comp:x.comp,val:x.val}});prevKey=k;
   }
-  ['rankingTabs','periodDay','periodMonth'].forEach(function(id){$(id).addEventListener('click',function(){if(big)hideBig()})});
+  ['rankingTabs','periodDay','periodMonth','viewStores','viewUsers'].forEach(function(id){$(id).addEventListener('click',function(){if(big)hideBig()})});
   ['companyFilter','unitFilter'].forEach(function(id){$(id).addEventListener('change',function(){if(big)hideBig()})});
   new MutationObserver(process).observe(rk,{childList:true});
   process();

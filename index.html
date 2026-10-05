@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/><meta name="theme-color" content="#050608"/><meta name="color-scheme" content="dark light"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" name="viewport"/>
-<title>Rotina de Sucesso — V9.5.13 Final</title>
+<title>Rotina de Sucesso — V9.5.14 Final</title>
 <script>/* V9 — tema aplicado antes da pintura (evita piscar) */(function(){var t='dark';try{var s=localStorage.getItem('rds-theme');if(s==='light'||s==='dark')t=s}catch(e){}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='light'?'#f2f0ec':'#050608')})();</script>
 <style>
 :root{--bg:#0b0e12;--panel:#12171d;--panel2:#171d24;--line:#27303a;--text:#f5f7fa;--muted:#8d98a5;--red:#e43b32;--green:#61d394;--amber:#e9b45d}
@@ -1759,7 +1759,7 @@ tbody tr:hover{background:var(--accent-soft)}
 </div>
 
 <div class="hidden" id="liveDashboardContainer">
-  <iframe id="liveDashboardFrame" data-src="modules/dashboard-ao-vivo/index.html?v=9.5.13" title="Dashboard Ao Vivo — Rotina de Sucesso"></iframe>
+  <iframe id="liveDashboardFrame" data-src="modules/dashboard-ao-vivo/index.html?v=9.5.14" title="Dashboard Ao Vivo — Rotina de Sucesso"></iframe>
 </div>
 
 <div class="hidden" id="userManagement">
@@ -5784,9 +5784,62 @@ window.RDSLiveDataProvider={
       });
     });
 
+    const unitById=new Map(ORG_UNITS_DB.map(u=>[u.id,u]));
+    const profileById=new Map(ORG_PROFILES_DB.map(p=>[p.user_id,p]));
+    const userMap=new Map();
+
+    // Pré-carrega os usuários operacionais para a chave
+    // "Visão de Usuários": Capitão, Tenente e Aspirante.
+    ORG_PROFILES_DB.forEach(p=>{
+      if(!['colaborador','gerente'].includes(p.role) || !p.unit_id)return;
+
+      const unit=unitById.get(p.unit_id);
+      const company=unit?companyById.get(unit.company_id):null;
+
+      userMap.set(p.user_id,{
+        id:p.user_id,
+        name:profileFullName(p),
+        username:p.username||'',
+        rank:careerRankLabel(p),
+        role:p.role,
+        active:p.active!==false,
+        unitId:p.unit_id,
+        unitName:unit?.name||'',
+        unitShort:unit?.short_code||unit?.name||'',
+        company:company?.name||'',
+        day:{salao:0,online:0,cotacoes:0,vendas:0},
+        month:{salao:0,online:0,cotacoes:0,vendas:0},
+        daily:{}
+      });
+    });
+
     rawRows.forEach(r=>{
       const store=storeMap.get(r.unit_id);
-      if(!store)return;
+
+      const profile=profileById.get(r.user_id);
+      let user=userMap.get(r.user_id);
+
+      // Preserva histórico real mesmo que o usuário esteja inativo hoje.
+      if(!user){
+        const unit=unitById.get(r.unit_id);
+        const company=unit?companyById.get(unit.company_id):null;
+        user={
+          id:r.user_id,
+          name:profile?profileFullName(profile):'Usuário',
+          username:profile?.username||'',
+          rank:profile?careerRankLabel(profile):'Usuário',
+          role:profile?.role||'colaborador',
+          active:profile?.active!==false,
+          unitId:r.unit_id,
+          unitName:unit?.name||'',
+          unitShort:unit?.short_code||unit?.name||'',
+          company:company?.name||'',
+          day:{salao:0,online:0,cotacoes:0,vendas:0},
+          month:{salao:0,online:0,cotacoes:0,vendas:0},
+          daily:{}
+        };
+        userMap.set(r.user_id,user);
+      }
 
       const salao=Number(r.floor_approaches||0);
       const online=Number(r.online_captures||0);
@@ -5794,30 +5847,54 @@ window.RDSLiveDataProvider={
       const vendas=Number(r.sales||0);
       const operational=salao+online+cotacoes;
 
-      store.month.salao+=salao;
-      store.month.online+=online;
-      store.month.cotacoes+=cotacoes;
-      store.month.vendas+=vendas;
+      if(store){
+        store.month.salao+=salao;
+        store.month.online+=online;
+        store.month.cotacoes+=cotacoes;
+        store.month.vendas+=vendas;
+      }
+
+      user.month.salao+=salao;
+      user.month.online+=online;
+      user.month.cotacoes+=cotacoes;
+      user.month.vendas+=vendas;
 
       const dayKey=String(r.routine_date||'').slice(8,10);
       if(dayKey){
-        if(!store.daily[dayKey]){
-          store.daily[dayKey]={salao:0,online:0,cotacoes:0,vendas:0};
+        if(store){
+          if(!store.daily[dayKey]){
+            store.daily[dayKey]={salao:0,online:0,cotacoes:0,vendas:0};
+          }
+          store.daily[dayKey].salao+=salao;
+          store.daily[dayKey].online+=online;
+          store.daily[dayKey].cotacoes+=cotacoes;
+          store.daily[dayKey].vendas+=vendas;
         }
-        store.daily[dayKey].salao+=salao;
-        store.daily[dayKey].online+=online;
-        store.daily[dayKey].cotacoes+=cotacoes;
-        store.daily[dayKey].vendas+=vendas;
+
+        if(!user.daily[dayKey]){
+          user.daily[dayKey]={salao:0,online:0,cotacoes:0,vendas:0};
+        }
+        user.daily[dayKey].salao+=salao;
+        user.daily[dayKey].online+=online;
+        user.daily[dayKey].cotacoes+=cotacoes;
+        user.daily[dayKey].vendas+=vendas;
       }
 
-      if(operational>0)store.monthActive.add(r.user_id);
+      if(store && operational>0)store.monthActive.add(r.user_id);
 
       if(r.routine_date===today){
-        store.day.salao+=salao;
-        store.day.online+=online;
-        store.day.cotacoes+=cotacoes;
-        store.day.vendas+=vendas;
-        if(operational>0)store.dayActive.add(r.user_id);
+        if(store){
+          store.day.salao+=salao;
+          store.day.online+=online;
+          store.day.cotacoes+=cotacoes;
+          store.day.vendas+=vendas;
+          if(operational>0)store.dayActive.add(r.user_id);
+        }
+
+        user.day.salao+=salao;
+        user.day.online+=online;
+        user.day.cotacoes+=cotacoes;
+        user.day.vendas+=vendas;
       }
     });
 
@@ -5839,6 +5916,21 @@ window.RDSLiveDataProvider={
         day:s.day,
         month:s.month,
         daily:s.daily
+      })),
+      users:[...userMap.values()].map(u=>({
+        id:u.id,
+        name:u.name,
+        username:u.username,
+        rank:u.rank,
+        role:u.role,
+        active:u.active,
+        unitId:u.unitId,
+        unitName:u.unitName,
+        unitShort:u.unitShort,
+        company:u.company,
+        day:u.day,
+        month:u.month,
+        daily:u.daily
       }))
     };
   },
@@ -6046,7 +6138,7 @@ document.addEventListener('click',function(e){
 },true);
 </script>
 
-<script src="modules/dashboard-ao-vivo/bridge.js?v=9.5.13"></script>
+<script src="modules/dashboard-ao-vivo/bridge.js?v=9.5.14"></script>
 <script id="rds-pwa-install">
 (()=>{
   let deferredInstallPrompt=null;
