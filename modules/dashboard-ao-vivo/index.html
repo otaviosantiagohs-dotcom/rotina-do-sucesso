@@ -850,7 +850,7 @@ html.theme-anim *{transition:background-color .28s ease,color .28s ease,border-c
       <div class="live-pill" id="livePill"><span class="dot"></span><strong>AO VIVO</strong></div>
       <div class="meta-pill meta-date">Data atual: <strong id="currentDateLive">--/--/----</strong></div>
       <div class="meta-pill">Horário do sistema: <strong>São Paulo/Brasília</strong></div>
-      <div class="meta-pill meta-upd">Última atualização: <strong id="lastUpdate">--:--:--</strong></div>
+      <div class="meta-pill meta-upd">Última atualização: <strong id="lastUpdate">aguardando</strong></div>
       <div class="meta-pill meta-next">Próxima em <strong id="countdown">15m</strong></div>
     </div>
   </header>
@@ -944,43 +944,43 @@ html.theme-anim *{transition:background-color .28s ease,color .28s ease,border-c
         <div class="panel-head">
           <div>
             <div class="panel-title"><span id="paceTitle">Ritmo da operação</span></div>
-            <div class="panel-sub">Leitura rápida do momento</div>
+            <div class="panel-sub" id="paceSubtitle">Leitura consolidada do dia</div>
           </div>
         </div>
 
         <div class="pulse-grid">
           <article class="pulse-card">
-            <div class="panel-sub" id="recentActionsLabel">Ações desde abertura</div>
-            <div class="big" id="last30">146</div>
-            <div class="small" id="last30Text">+12% acima da média</div>
+            <div class="panel-sub" id="recentActionsLabel">Ações no dia</div>
+            <div class="big" id="last30">0</div>
+            <div class="small" id="last30Text">aguardando dados reais</div>
             <div class="spark">
               <svg viewBox="0 0 120 42" preserveAspectRatio="none">
-                <polyline id="spark30" points="0,35 15,31 30,33 45,22 60,24 75,16 90,18 105,9 120,12"></polyline>
+                <polyline id="spark30" points="0,36 120,36"></polyline>
               </svg>
             </div>
           </article>
 
           <article class="pulse-card">
-            <div class="panel-sub">Loja mais acelerada</div>
-            <div class="big" id="fastestStore">REC SOS</div>
-            <div class="small" id="fastestText">+38 ações na última atualização</div>
+            <div class="panel-sub" id="fastestStoreLabel">Loja líder no dia</div>
+            <div class="big" id="fastestStore">—</div>
+            <div class="small" id="fastestText">sem atividade no período</div>
             <div class="spark">
               <svg viewBox="0 0 120 42" preserveAspectRatio="none">
-                <polyline id="sparkFast" points="0,34 15,30 30,29 45,25 60,20 75,22 90,13 105,11 120,6"></polyline>
+                <polyline id="sparkFast" points="0,36 120,36"></polyline>
               </svg>
             </div>
           </article>
 
           <article class="pulse-card">
             <div class="panel-sub">Média por loja</div>
-            <div class="big" id="avgStore">39</div>
-            <div class="small">ações registradas hoje</div>
+            <div class="big" id="avgStore">0</div>
+            <div class="small" id="avgStoreText">ações por loja no dia</div>
           </article>
 
           <article class="pulse-card">
             <div class="panel-sub">Cobertura operacional</div>
-            <div class="big" id="coverage">91%</div>
-            <div class="small" id="coverageText">29 de 32 lojas com atividade</div>
+            <div class="big" id="coverage">0%</div>
+            <div class="small" id="coverageText">0 lojas com atividade</div>
           </article>
         </div>
       </section>
@@ -996,36 +996,36 @@ html.theme-anim *{transition:background-color .28s ease,color .28s ease,border-c
           <article class="action-card">
             <div>
               <div class="action-name">Abordagem no salão</div>
-              <div class="action-total" id="cardSalao">524</div>
-              <div class="leader">Líder: <b id="leaderSalao">REC SOS</b></div>
+              <div class="action-total" id="cardSalao">0</div>
+              <div class="leader">Líder: <b id="leaderSalao">—</b></div>
             </div>
             <div>
               <div class="mini-track"><span id="barSalao" style="width:82%"></span></div>
-              <div class="mini-foot" id="footSalao">42% das ações do dia</div>
+              <div class="mini-foot" id="footSalao">0% das ações do dia</div>
             </div>
           </article>
 
           <article class="action-card">
             <div>
               <div class="action-name">Captação online</div>
-              <div class="action-total" id="cardOnline">318</div>
-              <div class="leader">Líder: <b id="leaderOnline">SOS 1</b></div>
+              <div class="action-total" id="cardOnline">0</div>
+              <div class="leader">Líder: <b id="leaderOnline">—</b></div>
             </div>
             <div>
               <div class="mini-track"><span id="barOnline" style="width:64%"></span></div>
-              <div class="mini-foot" id="footOnline">25% das ações do dia</div>
+              <div class="mini-foot" id="footOnline">0% das ações do dia</div>
             </div>
           </article>
 
           <article class="action-card">
             <div>
               <div class="action-name">Cotações</div>
-              <div class="action-total" id="cardCotacoes">406</div>
-              <div class="leader">Líder: <b id="leaderCotacoes">SDU SOS</b></div>
+              <div class="action-total" id="cardCotacoes">0</div>
+              <div class="leader">Líder: <b id="leaderCotacoes">—</b></div>
             </div>
             <div>
               <div class="mini-track"><span id="barCotacoes" style="width:71%"></span></div>
-              <div class="mini-foot" id="footCotacoes">33% das ações do dia</div>
+              <div class="mini-foot" id="footCotacoes">0% das ações do dia</div>
             </div>
           </article>
         </div>
@@ -1076,31 +1076,13 @@ html.theme-anim *{transition:background-color .28s ease,color .28s ease,border-c
   let currentDay = Math.max(1, new Date().getDate());
   let liveSnapshots = [];
 
-  // Fallback somente para abrir o HTML isolado fora do sistema principal.
-  let stores = [
-    {id:'demo1',name:'REC SOS',unitName:'Recife',company:'SOS',capacity:10,dayActiveAgents:9,monthActiveAgents:10,day:{salao:72,online:41,cotacoes:59,vendas:14},month:{salao:824,online:471,cotacoes:672,vendas:151},daily:{}},
-    {id:'demo2',name:'SDU SOS',unitName:'SDU',company:'SOS',capacity:10,dayActiveAgents:8,monthActiveAgents:10,day:{salao:61,online:34,cotacoes:62,vendas:13},month:{salao:705,online:390,cotacoes:712,vendas:142},daily:{}},
-    {id:'demo3',name:'SOS 1',unitName:'SOS 1',company:'SOS',capacity:10,dayActiveAgents:9,monthActiveAgents:10,day:{salao:55,online:48,cotacoes:51,vendas:12},month:{salao:640,online:552,cotacoes:590,vendas:133},daily:{}},
-    {id:'demo4',name:'FOR CONNECT',unitName:'Fortaleza',company:'Connect',capacity:10,dayActiveAgents:8,monthActiveAgents:9,day:{salao:49,online:42,cotacoes:47,vendas:11},month:{salao:570,online:488,cotacoes:545,vendas:124},daily:{}},
-    {id:'demo5',name:'VIX SOS',unitName:'Vitória',company:'SOS',capacity:10,dayActiveAgents:8,monthActiveAgents:9,day:{salao:46,online:37,cotacoes:44,vendas:10},month:{salao:528,online:425,cotacoes:505,vendas:118},daily:{}},
-    {id:'demo6',name:'UNI REC',unitName:'Recife',company:'Universo',capacity:10,dayActiveAgents:8,monthActiveAgents:9,day:{salao:43,online:31,cotacoes:40,vendas:9},month:{salao:494,online:356,cotacoes:460,vendas:106},daily:{}},
-    {id:'demo7',name:'BEL CONNECT',unitName:'Belém',company:'Connect',capacity:10,dayActiveAgents:7,monthActiveAgents:9,day:{salao:39,online:33,cotacoes:36,vendas:9},month:{salao:448,online:379,cotacoes:414,vendas:101},daily:{}},
-    {id:'demo8',name:'SOS THE',unitName:'Teresina',company:'SOS',capacity:10,dayActiveAgents:7,monthActiveAgents:9,day:{salao:37,online:27,cotacoes:32,vendas:8},month:{salao:425,online:310,cotacoes:368,vendas:94},daily:{}},
-    {id:'demo9',name:'AZUL',unitName:'Azul',company:'Azul Viagens',capacity:10,dayActiveAgents:7,monthActiveAgents:8,day:{salao:35,online:25,cotacoes:31,vendas:7},month:{salao:402,online:287,cotacoes:356,vendas:86},daily:{}},
-    {id:'demo10',name:'UNI BEL',unitName:'Belém',company:'Universo',capacity:10,dayActiveAgents:7,monthActiveAgents:8,day:{salao:34,online:20,cotacoes:29,vendas:7},month:{salao:390,online:230,cotacoes:333,vendas:82},daily:{}}
-  ];
+  // Produção: a Dashboard Ao Vivo nunca utiliza dados demonstrativos.
+  // Até o primeiro payload real chegar, permanece zerada/vazia.
+  let stores = [];
 
-  const demoDaySeries = {
-    salao:[34,71,112,158,211,263,316,371,426,478,524],
-    online:[19,40,67,96,128,161,195,230,260,290,318],
-    cotacoes:[29,60,94,132,169,208,245,282,329,369,406],
-    vendas:[1,2,3,4,6,7,9,10,11,13,14]
-  };
-
-  
-  function formatCountdown(totalSeconds){
+    function formatCountdown(totalSeconds){
     const s=Math.max(0,Math.floor(totalSeconds));
-    const h=Math.floor(s/900);
+    const h=Math.floor(s/3600);
     const m=Math.floor((s%3600)/60);
     const sec=s%60;
     if(h>0)return `${h}h ${String(m).padStart(2,'0')}m`;
@@ -1202,7 +1184,8 @@ function formatCurrentDate(){
     $('rankingTitle').textContent=period==='day'?'Top 5 lojas do dia':'Top 5 lojas do mês';
     $('rankingSubtitle').textContent=`${scopeLabel()} · ${activeAction==='vendas'?'ranking por vendas registradas':'ranking por volume de ações'}`;
     $('actionsTitle').textContent=period==='day'?'Ações do dia':'Ações do mês';
-    $('paceTitle').textContent=period==='day'?'Ritmo da operação':'Competição do mês';
+    $('paceTitle').textContent='Ritmo da operação';
+    $('paceSubtitle').textContent=period==='day'?'Leitura consolidada do dia':'Leitura consolidada do mês';
     if($('evolutionTitle')) $('evolutionTitle').textContent=period==='day'?'Evolução do dia':'Evolução do mês';
     $('chartLegend').textContent=`${periodName} · ${scopeLabel()}`;
   }
@@ -1215,42 +1198,56 @@ function formatCurrentDate(){
     return storeMetric(curr,'all','day')-(prev?storeMetric(prev,'all','day'):0);
   }
 
+  function renderMiniSpark(id,values){
+    const el=$(id);
+    if(!el)return;
+    const data=(values||[]).map(Number).filter(Number.isFinite);
+    if(!data.length){
+      el.setAttribute('points','0,36 120,36');
+      return;
+    }
+    const max=Math.max(...data,1);
+    const min=Math.min(...data,0);
+    const range=Math.max(1,max-min);
+    const W=120,H=42,pad=5;
+    const step=(W-pad*2)/Math.max(1,data.length-1);
+    const pts=data.map((v,i)=>{
+      const x=data.length===1?W/2:pad+i*step;
+      const y=H-pad-((v-min)/range)*(H-pad*2);
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+    el.setAttribute('points',pts);
+  }
+
   function updateRecentActivity(scoped){
-    if(!realMode){
-      const total=sumMetric('all');
-      $('last30').textContent=fmt.format(Math.max(0,Math.round(total*.11)));
-      $('last30Text').textContent='+12% acima da média';
-      return;
-    }
+    const total=sumMetric('all');
+    const activeStores=scoped.filter(s=>storeMetric(s,'all')>0).length;
 
-    if(liveSnapshots.length<2){
-      $('recentActionsLabel').textContent='Ações desde abertura';
-      $('last30').textContent='0';
-      $('last30Text').textContent='aguardando próxima leitura';
-      return;
-    }
+    $('recentActionsLabel').textContent=period==='day'?'Ações no dia':'Ações no mês';
+    $('last30').textContent=fmt.format(total);
+    $('last30Text').textContent=period==='day'
+      ? `${activeStores} ${activeStores===1?'loja com atividade':'lojas com atividade'} hoje`
+      : `${activeStores} ${activeStores===1?'loja com atividade':'lojas com atividade'} no mês`;
 
-    const nowTs=liveSnapshots.at(-1).ts;
-    const target=nowTs-(15*60*1000);
-    let base=liveSnapshots[0];
-    for(const snap of liveSnapshots){
-      if(snap.ts<=target) base=snap;
-      else break;
-    }
-
-    const currentTotal=sumMetric('all',stores,'day');
-    const baseTotal=sumMetric('all',base.stores,'day');
-    const elapsed=Math.max(0,nowTs-base.ts);
-
-    if(elapsed>=29*60*1000){
-      $('recentActionsLabel').textContent='Ações nos últimos 15 min';
-      $('last30Text').textContent='variação real da operação';
+    let series=[];
+    if(period==='day'){
+      // Não inferimos horário de lançamento. No dia, o spark representa a
+      // distribuição real atual das ações entre as lojas do filtro.
+      series=scoped.map(s=>storeMetric(s,'all','day'));
     }else{
-      const mins=Math.max(1,Math.round(elapsed/60000));
-      $('recentActionsLabel').textContent='Ações desde abertura';
-      $('last30Text').textContent=`janela disponível: ${mins} min`;
+      // No mês, há histórico por data e usamos a evolução acumulada real.
+      let cumulative=0;
+      for(let d=1;d<=currentDay;d++){
+        const key=String(d).padStart(2,'0');
+        let dayValue=0;
+        scoped.forEach(s=>{
+          dayValue+=metricValue(s.daily?.[key]||blankMetric(),'all');
+        });
+        cumulative+=dayValue;
+        series.push(cumulative);
+      }
     }
-    $('last30').textContent=fmt.format(Math.max(0,currentTotal-baseTotal));
+    renderMiniSpark('spark30',series);
   }
 
   function updateSummary(){
@@ -1298,7 +1295,10 @@ function formatCurrentDate(){
     $('barOnline').style.width=Math.min(100,shareOnline*2)+'%';
     $('barCotacoes').style.width=Math.min(100,shareCotacoes*2)+'%';
 
+    // Ritmo da operação = período completo selecionado.
+    // Dia: tudo registrado hoje. Mês: tudo registrado no mês atual.
     $('avgStore').textContent=fmt.format(scoped.length?Math.round(total/scoped.length):0);
+    $('avgStoreText').textContent=period==='day'?'ações por loja no dia':'ações por loja no mês';
 
     $('totalDelta').textContent=formatDelta(metricDelta('all'));
     $('deltaSalao').textContent=formatDelta(metricDelta('salao'));
@@ -1307,24 +1307,49 @@ function formatCurrentDate(){
 
     updateRecentActivity(scoped);
 
-    let fastest=null, fastestDelta=-Infinity;
+    let fastest=null, fastestTotal=-Infinity;
     scoped.forEach(s=>{
-      const d=realMode?previousSnapshotStoreDelta(s.id):storeMetric(s,'all');
-      if(d>fastestDelta){fastest=s;fastestDelta=d}
+      const value=storeMetric(s,'all');
+      if(value>fastestTotal){
+        fastest=s;
+        fastestTotal=value;
+      }
     });
+
+    $('fastestStoreLabel').textContent=period==='day'?'Loja líder no dia':'Loja líder no mês';
     $('fastestStore').textContent=fastest?.name||'—';
-    $('fastestText').textContent=realMode
-      ? `${fastestDelta>0?'+':''}${fmt.format(Math.max(0,fastestDelta))} ações na última atualização`
-      : `${fmt.format(fastest?storeMetric(fastest,'all'):0)} ações`;
+    $('fastestText').textContent=fastest
+      ? `${fmt.format(Math.max(0,fastestTotal))} ações ${period==='day'?'hoje':'no mês'}`
+      : 'sem atividade no período';
+
+    let leaderSeries=[];
+    if(fastest){
+      if(period==='day'){
+        leaderSeries=[
+          Number(fastest.day?.salao||0),
+          Number(fastest.day?.online||0),
+          Number(fastest.day?.cotacoes||0)
+        ];
+      }else{
+        let cumulative=0;
+        for(let d=1;d<=currentDay;d++){
+          const key=String(d).padStart(2,'0');
+          cumulative+=metricValue(fastest.daily?.[key]||blankMetric(),'all');
+          leaderSeries.push(cumulative);
+        }
+      }
+    }
+    renderMiniSpark('sparkFast',leaderSeries);
 
     const activeStores=scoped.filter(s=>storeMetric(s,'all')>0).length;
     const coveragePct=scoped.length?Math.round(activeStores/scoped.length*100):0;
     $('coverage').textContent=coveragePct+'%';
-    $('coverageText').textContent=`${activeStores} de ${scoped.length} lojas com atividade`;
+    $('coverageText').textContent=`${activeStores} de ${scoped.length} lojas com atividade ${period==='day'?'hoje':'no mês'}`;
   }
 
   function renderRanking(){
     const top=[...selectedStores()]
+      .filter(s=>storeMetric(s,activeAction)>0)
       .sort((a,b)=>storeMetric(b,activeAction)-storeMetric(a,activeAction))
       .slice(0,5);
 
@@ -1334,7 +1359,7 @@ function formatCurrentDate(){
         <div class="rank-name">${escapeHtml(s.name)}<span class="rank-company">${escapeHtml(s.company)}</span></div>
         <div class="rank-value">${fmt.format(storeMetric(s,activeAction))}</div>
       </div>
-    `).join(''):'<div class="panel-sub">Nenhuma loja para este filtro.</div>';
+    `).join(''):'<div class="panel-sub">Nenhum dado registrado neste período.</div>';
   }
 
   function snapshotMetric(snap,key){
@@ -1372,23 +1397,7 @@ function formatCurrentDate(){
   }
 
   function fallbackChart(){
-    if(period==='day'){
-      let values;
-      if(activeAction==='all'){
-        values=demoDaySeries.salao.map((_,i)=>demoDaySeries.salao[i]+demoDaySeries.online[i]+demoDaySeries.cotacoes[i]);
-      }else values=demoDaySeries[activeAction].slice();
-      return {values,labels:['08h','09h','10h','11h','12h','13h','14h','15h','16h','17h','18h']};
-    }
-    const values=[],labels=[];
-    let cumulative=0;
-    const target=sumMetric(activeAction);
-    for(let d=1;d<=currentDay;d++){
-      cumulative+=target/currentDay;
-      values.push(Math.round(cumulative));
-      labels.push(String(d).padStart(2,'0'));
-    }
-    if(values.length)values[values.length-1]=target;
-    return {values,labels};
+    return {values:[0],labels:['sem dados']};
   }
 
   function renderChart(){
@@ -1474,7 +1483,9 @@ function formatCurrentDate(){
     if(payload.today){
       currentDay=Math.max(1,Number(payload.today.slice(8,10))||currentDay);
     }
-    stores=(payload.stores||[]).map(s=>({
+    stores=(payload.stores||[])
+      .filter(s=>s && s.id && !String(s.id).startsWith('demo'))
+      .map(s=>({
       id:String(s.id),
       name:s.name||s.unitName||'Unidade',
       unitName:s.unitName||s.name||'Unidade',
@@ -1510,25 +1521,24 @@ function formatCurrentDate(){
   }
 
   function fallbackUpdate(){
-    stores.forEach(s=>{
-      s.day.salao+=Math.floor(Math.random()*3);
-      s.day.online+=Math.floor(Math.random()*3);
-      s.day.cotacoes+=Math.floor(Math.random()*3);
-      s.day.vendas+=Math.floor(Math.random()*2);
-      s.month.salao+=Math.floor(Math.random()*3);
-      s.month.online+=Math.floor(Math.random()*3);
-      s.month.cotacoes+=Math.floor(Math.random()*3);
-      s.month.vendas+=Math.floor(Math.random()*2);
-    });
+    // Produção: nunca simula, incrementa ou inventa dados.
+    realMode=false;
+    stores=[];
+    liveSnapshots=[];
+    populateCompanies(false);
+    populateUnits(false);
     refreshView();
-    $('lastUpdate').textContent=new Date().toLocaleTimeString('pt-BR',{timeZone:'America/Sao_Paulo'});
+    $('lastUpdate').textContent='aguardando dados reais';
+    $('last30Text').textContent='nenhum dado recebido do banco';
+    $('ovText').textContent='Aguardando sincronização';
     seconds=900;
+    $('countdown').textContent=formatCountdown(seconds);
   }
 
   function refreshData(reason='manual'){
     seconds=900;
     $('countdown').textContent=formatCountdown(seconds);
-    if(!requestRealData(reason)) fallbackUpdate();
+    if(!requestRealData(reason))fallbackUpdate();
   }
 
   function setPeriod(next){
@@ -1564,7 +1574,16 @@ function formatCurrentDate(){
 
     if(event.data?.type==='rotina-live-data')applyRealPayload(event.data.payload||{});
     if(event.data?.type==='rotina-live-error'){
-      $('last30Text').textContent='falha na atualização · nova tentativa automática';
+      $('last30Text').textContent=realMode
+        ? 'falha temporária · mantendo último dado confirmado'
+        : 'falha na sincronização · nenhum dado fictício exibido';
+      if(!realMode){
+        stores=[];
+        liveSnapshots=[];
+        populateCompanies(false);
+        populateUnits(false);
+        refreshView();
+      }
       seconds=900;
       $('countdown').textContent=formatCountdown(seconds);
     }
@@ -1610,10 +1629,12 @@ function formatCurrentDate(){
   populateUnits(false);
   syncActionTabs();
   $('currentDateLive').textContent=formatCurrentDate();
-  $('lastUpdate').textContent=new Date().toLocaleTimeString('pt-BR',{timeZone:'America/Sao_Paulo'});
+  $('lastUpdate').textContent='aguardando';
   refreshView();
   startTimer();
-  if(hostActive)requestRealData('initial');
+  if(hostActive){
+    if(!requestRealData('initial'))fallbackUpdate();
+  }
 })();
 </script>
 <script>
