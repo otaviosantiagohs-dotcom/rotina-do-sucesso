@@ -1577,6 +1577,7 @@ function formatCurrentDate(){
       $('last30Text').textContent=realMode
         ? 'falha temporária · mantendo último dado confirmado'
         : 'falha na sincronização · nenhum dado fictício exibido';
+      $('lastUpdate').textContent=realMode?'último dado confirmado':'falha de sincronização';
       if(!realMode){
         stores=[];
         liveSnapshots=[];

@@ -40,17 +40,31 @@
     return document.getElementById('liveDashboardFrame');
   }
 
-  function isPerformanceSession(){
+  function getSessionUser(){
     try{
-      return !!(
-        window.currentUser &&
-        currentUser.role==='performance' &&
-        currentUser.source==='supabase' &&
-        window.supabaseClient
-      );
+      return typeof currentUser!=='undefined' ? currentUser : null;
     }catch(_){
-      return false;
+      return null;
     }
+  }
+
+  function getSupabase(){
+    try{
+      return typeof supabaseClient!=='undefined' ? supabaseClient : null;
+    }catch(_){
+      return null;
+    }
+  }
+
+  function isPerformanceSession(){
+    const user=getSessionUser();
+    const sb=getSupabase();
+    return !!(
+      user &&
+      user.role==='performance' &&
+      user.source==='supabase' &&
+      sb
+    );
   }
 
   function mount(){
@@ -90,7 +104,8 @@
     if(!target)return;
     target.postMessage({
       type:'rotina-live-error',
-      message:err?.message||'Falha ao atualizar'
+      message:err?.message||'Falha ao atualizar',
+      at:new Date().toISOString()
     },window.location.origin);
   }
 
@@ -107,8 +122,10 @@
   async function fetchFullMonth(today){
     const month=today.slice(0,7);
     const monthStart=`${month}-01`;
+    const sb=getSupabase();
+    if(!sb)throw new Error('Cliente Supabase indisponível.');
 
-    const {data,error}=await supabaseClient
+    const {data,error}=await sb
       .from('daily_routines')
       .select('user_id,unit_id,routine_date,floor_approaches,online_captures,quotations,sales')
       .gte('routine_date',monthStart)
@@ -124,7 +141,10 @@
   }
 
   async function fetchTodayOnly(today){
-    const {data,error}=await supabaseClient
+    const sb=getSupabase();
+    if(!sb)throw new Error('Cliente Supabase indisponível.');
+
+    const {data,error}=await sb
       .from('daily_routines')
       .select('user_id,unit_id,routine_date,floor_approaches,online_captures,quotations,sales')
       .eq('routine_date',today);
@@ -322,9 +342,13 @@
   function startRealtime(){
     if(!isPerformanceSession() || state.realtimeChannel)return;
 
+    const user=getSessionUser();
+    const sb=getSupabase();
+    if(!user || !sb)return;
+
     try{
-      state.realtimeChannel=supabaseClient
-        .channel(`rds-live-routines-${currentUser.id||currentUser.authUserId||currentUser.username||'performance'}`)
+      state.realtimeChannel=sb
+        .channel(`rds-live-routines-${user.id||user.authUserId||user.username||'performance'}`)
         .on(
           'postgres_changes',
           {event:'*',schema:'public',table:'daily_routines'},
@@ -359,7 +383,8 @@
 
     if(state.realtimeChannel){
       try{
-        await supabaseClient.removeChannel(state.realtimeChannel);
+        const sb=getSupabase();
+        if(sb)await sb.removeChannel(state.realtimeChannel);
       }catch(_){}
       state.realtimeChannel=null;
     }
@@ -415,17 +440,18 @@
       const el=mount();
       sendVisibility();
 
-      // Se a sessão contínua ainda não iniciou por qualquer motivo, inicia agora.
+      // A abertura da tela é sempre um gatilho de segurança.
       if(!state.sessionSync)startSession();
 
-      // Abertura mostra o cache atual e confirma o dia no banco.
       if(el?.contentWindow && state.monthRows.length){
         const today=currentBusinessDate();
         const payload=buildPayload(today);
         payload.reason='resume';
         postPayload(payload,el.contentWindow);
       }
-      runSync('open');
+
+      // Consulta real imediata. Não depende de Realtime nem do timer.
+      setTimeout(()=>runSync('open'),0);
     }else{
       // Sair visualmente do módulo NÃO interrompe a sincronização.
       sendVisibility();
@@ -521,4 +547,16 @@
       backgroundIntervalMinutes:15
     })
   };
+
+  // O script do bridge é carregado depois do script principal.
+  // Se uma sessão foi restaurada antes da ponte existir, inicia aqui.
+  function bootstrapSessionSync(){
+    if(isPerformanceSession())startSession();
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',()=>setTimeout(bootstrapSessionSync,0),{once:true});
+  }else{
+    setTimeout(bootstrapSessionSync,0);
+  }
 })();
