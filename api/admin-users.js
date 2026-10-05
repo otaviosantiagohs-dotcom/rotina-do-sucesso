@@ -23,6 +23,44 @@ function normalizeRole(role) {
   return ['performance','gerente','colaborador'].includes(role) ? role : 'colaborador';
 }
 
+function normalizeCareerRank(value, role) {
+  if (role === 'performance') return 'performance';
+  if (role === 'gerente') return 'capitao';
+  return value === 'aspirante' ? 'aspirante' : 'tenente';
+}
+
+function derivedCareerRank(profile) {
+  if (profile?.career_rank) return profile.career_rank;
+  if (profile?.role === 'performance') return 'performance';
+  if (profile?.role === 'gerente') return 'capitao';
+  return 'tenente';
+}
+
+function isoDateToday() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function addMonthsClampedUTC(dateText, months) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(dateText || '').slice(0, 10));
+  if (!m) return null;
+  const year = Number(m[1]), month = Number(m[2]) - 1, day = Number(m[3]);
+  const targetIndex = month + months;
+  const targetYear = year + Math.floor(targetIndex / 12);
+  const targetMonth = ((targetIndex % 12) + 12) % 12;
+  const lastDay = new Date(Date.UTC(targetYear, targetMonth + 1, 0)).getUTCDate();
+  return new Date(Date.UTC(targetYear, targetMonth, Math.min(day, lastDay)));
+}
+
+function aspirantIsEligible(profile) {
+  if (derivedCareerRank(profile) !== 'aspirante' || !profile?.aspirant_started_at) return false;
+  const eligible = addMonthsClampedUTC(profile.aspirant_started_at, 3);
+  if (!eligible) return false;
+  const now = new Date();
+  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  return today.getTime() >= eligible.getTime();
+}
+
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return json(res, 405, { code: 'METHOD_NOT_ALLOWED', message: 'Método não permitido.' });
   if (!SUPABASE_URL || !SUPABASE_SECRET_KEY) {
@@ -282,6 +320,7 @@ module.exports = async function handler(req, res) {
       const username = String(u.username || '').trim().toLowerCase();
       const password = String(u.password || '');
       const role = normalizeRole(u.role);
+      const careerRank = normalizeCareerRank(u.careerRank, role);
       const active = u.active !== false;
       let complete = !!u.firstAccessCompleted;
       let companyId = u.companyId || null;
@@ -336,6 +375,9 @@ module.exports = async function handler(req, res) {
         first_name: String(u.firstName || '').trim() || null,
         last_name: String(u.lastName || '').trim() || null,
         role,
+        career_rank: careerRank,
+        aspirant_started_at: careerRank === 'aspirante' ? isoDateToday() : null,
+        promoted_to_tenente_at: null,
         company_id: companyId,
         unit_id: unitId,
         active,
@@ -350,7 +392,7 @@ module.exports = async function handler(req, res) {
       }
 
       await syncManager(userId, role, active, unitId);
-      await audit('USUARIO_CRIADO', username, JSON.stringify({ role, active, companyId, unitId, firstAccessCompleted: complete, mustChangePassword: true }));
+      await audit('USUARIO_CRIADO', username, JSON.stringify({ role, careerRank, active, companyId, unitId, firstAccessCompleted: complete, mustChangePassword: true }));
       return json(res, 200, { ok: true, userId });
     }
 
@@ -364,6 +406,7 @@ module.exports = async function handler(req, res) {
 
       const username = String(u.username || '').trim().toLowerCase();
       const role = normalizeRole(u.role);
+      const careerRank = normalizeCareerRank(u.careerRank, role);
       const active = u.active !== false;
       let complete = !!u.firstAccessCompleted;
       let companyId = u.companyId || null;
@@ -379,6 +422,21 @@ module.exports = async function handler(req, res) {
       if (oldProfile.role === 'performance' && oldProfile.active && (role !== 'performance' || !active)) {
         if ((await activePerformanceCount()) <= 1) {
           return json(res, 400, { code: 'LAST_PERFORMANCE', message: 'É necessário manter pelo menos um Performance ativo.' });
+        }
+      }
+
+      const oldCareerRank = derivedCareerRank(oldProfile);
+
+      if (oldCareerRank === 'aspirante' && careerRank !== 'aspirante') {
+        if (careerRank !== 'tenente') {
+          return json(res, 400, { code: 'INVALID_ASPIRANT_TRANSITION', message: 'Aspirante deve evoluir primeiro para Tenente.' });
+        }
+        if (!aspirantIsEligible(oldProfile)) {
+          const eligible = addMonthsClampedUTC(oldProfile.aspirant_started_at, 3);
+          return json(res, 400, {
+            code: 'ASPIRANT_NOT_ELIGIBLE',
+            message: `A promoção para Tenente só pode ocorrer após 3 meses de experiência (${eligible ? eligible.toISOString().slice(0,10) : 'data indisponível'}).`
+          });
         }
       }
 
@@ -410,11 +468,21 @@ module.exports = async function handler(req, res) {
         first_name: String(u.firstName || '').trim() || null,
         last_name: String(u.lastName || '').trim() || null,
         role,
+        career_rank: careerRank,
         company_id: companyId,
         unit_id: unitId,
         active,
         first_access_completed: complete
       };
+
+      if (careerRank === 'aspirante' && derivedCareerRank(oldProfile) !== 'aspirante') {
+        profilePatch.aspirant_started_at = isoDateToday();
+        profilePatch.promoted_to_tenente_at = null;
+      }
+
+      if (derivedCareerRank(oldProfile) === 'aspirante' && careerRank === 'tenente') {
+        profilePatch.promoted_to_tenente_at = new Date().toISOString();
+      }
 
       // Se um Administrador redefinir a senha de um usuário,
       // essa senha volta a ser temporária.
@@ -425,10 +493,59 @@ module.exports = async function handler(req, res) {
       if (profileError) return json(res, 400, { code: 'PROFILE_UPDATE_FAILED', message: profileError.message });
 
       await syncManager(userId, role, active, unitId);
-      await audit('USUARIO_EDITADO', username, JSON.stringify({ role, active, companyId, unitId, firstAccessCompleted: complete, passwordResetRequiresChange: !!u.password }), JSON.stringify({
+      await audit('USUARIO_EDITADO', username, JSON.stringify({ role, careerRank, active, companyId, unitId, firstAccessCompleted: complete, passwordResetRequiresChange: !!u.password }), JSON.stringify({
         role: oldProfile.role, active: oldProfile.active, companyId: oldProfile.company_id, unitId: oldProfile.unit_id
       }));
       return json(res, 200, { ok: true });
+    }
+
+    if (action === 'promoteAspirant') {
+      const userId = String(body.userId || '');
+      if (!userId) return json(res, 400, { code: 'MISSING_USER', message: 'Usuário não informado.' });
+
+      const { data: profile, error: profileError } = await admin
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (profileError) throw profileError;
+      if (!profile) return json(res, 404, { code: 'USER_NOT_FOUND', message: 'Usuário não encontrado.' });
+      if (derivedCareerRank(profile) !== 'aspirante') {
+        return json(res, 400, { code: 'NOT_ASPIRANT', message: 'Este usuário não está cadastrado como Aspirante.' });
+      }
+      if (!aspirantIsEligible(profile)) {
+        const eligible = addMonthsClampedUTC(profile.aspirant_started_at, 3);
+        return json(res, 400, {
+          code: 'ASPIRANT_NOT_ELIGIBLE',
+          message: `O Aspirante só poderá ser promovido após 3 meses (${eligible ? eligible.toISOString().slice(0,10) : 'data indisponível'}).`
+        });
+      }
+
+      const promotedAt = new Date().toISOString();
+      const { error } = await admin
+        .from('profiles')
+        .update({
+          career_rank: 'tenente',
+          promoted_to_tenente_at: promotedAt
+        })
+        .eq('user_id', userId);
+
+      if (error) throw error;
+
+      await audit(
+        'ASPIRANTE_PROMOVIDO_A_TENENTE',
+        profile.username,
+        JSON.stringify({
+          from: 'aspirante',
+          to: 'tenente',
+          aspirantStartedAt: profile.aspirant_started_at,
+          promotedAt
+        }),
+        JSON.stringify({ careerRank: 'aspirante' })
+      );
+
+      return json(res, 200, { ok: true, promotedAt });
     }
 
     if (action === 'toggle') {
@@ -794,6 +911,9 @@ module.exports = async function handler(req, res) {
           user_id: userId,
           username,
           role: 'colaborador',
+          career_rank: 'tenente',
+          aspirant_started_at: null,
+          promoted_to_tenente_at: null,
           active: true,
           first_access_completed: false,
           must_change_password: true,

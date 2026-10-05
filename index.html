@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/><meta name="theme-color" content="#050608"/><meta name="color-scheme" content="dark light"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" name="viewport"/>
-<title>Rotina de Sucesso — V9.5.1 Final</title>
+<title>Rotina de Sucesso — V9.5.2 Final</title>
 <script>/* V9 — tema aplicado antes da pintura (evita piscar) */(function(){var t='dark';try{var s=localStorage.getItem('rds-theme');if(s==='light'||s==='dark')t=s}catch(e){}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='light'?'#f2f0ec':'#050608')})();</script>
 <style>
 :root{--bg:#0b0e12;--panel:#12171d;--panel2:#171d24;--line:#27303a;--text:#f5f7fa;--muted:#8d98a5;--red:#e43b32;--green:#61d394;--amber:#e9b45d}
@@ -962,7 +962,7 @@ tbody tr:hover{background:var(--accent-soft)}
       <button class="btn" id="mgrGoalCurrentTeam" type="button">Redistribuir para equipe atual</button>
       <button class="btn red" id="mgrGoalSave" type="button">Salvar metas</button>
     </div>
-    <div class="goal-note" id="mgrGoalTeamNote">A divisão considera Colaboradores e Gerente ativos da unidade. Alterações futuras na equipe não mudam a meta silenciosamente.</div>
+    <div class="goal-note" id="mgrGoalTeamNote">A divisão considera Tenentes, Aspirantes e o Capitão ativos da unidade. Alterações futuras na equipe não mudam a meta silenciosamente.</div>
   </section>
 
   <section class="card pad" style="margin-top:14px">
@@ -1075,22 +1075,22 @@ tbody tr:hover{background:var(--accent-soft)}
 
 <div class="hidden" id="userManagement">
 <div class="section" style="margin-top:0"><div><h2>Gestão de Usuários</h2><div class="sub">Cadastros, perfis, unidades e acesso ao sistema.</div></div><div class="user-head-actions"><button class="btn" id="broadcastAlertBtn">Disparar alerta</button><button class="btn" id="alertViewsBtn">Visualizações de alertas</button><button class="btn" id="downloadUserTemplateBtn">Baixar modelo</button><button class="btn" id="importUsersBtn">Importar planilha</button><button class="btn red" id="newUserBtn">+ Novo usuário</button></div></div>
-<div class="user-link-note"><b>Vínculo automático por unidade:</b> o Gerente visualiza todos os colaboradores ativos vinculados à mesma Empresa + Unidade. O Capitão é identificado automaticamente pelo usuário marcado como Gerente daquela unidade. Usuários inativos permanecem no histórico, mas não conseguem entrar.</div>
+<div class="user-link-note"><b>Vínculo automático por unidade:</b> o Capitão visualiza todos os Tenentes e Aspirantes ativos vinculados à mesma Empresa + Unidade. Internamente, o Capitão mantém as permissões do perfil Gerente. Usuários inativos permanecem no histórico, mas não conseguem entrar.</div>
 <div class="user-summary">
 <div class="card"><div class="t">Usuários ativos</div><div class="n" id="umActiveCount">0</div></div>
-<div class="card"><div class="t">Colaboradores</div><div class="n" id="umCollabCount">0</div></div>
-<div class="card"><div class="t">Gerentes</div><div class="n" id="umManagerCount">0</div></div>
-<div class="card"><div class="t">Primeiro acesso pendente</div><div class="n" id="umPendingCount">0</div></div>
+<div class="card"><div class="t">Tenentes</div><div class="n" id="umCollabCount">0</div></div>
+<div class="card"><div class="t">Capitães</div><div class="n" id="umManagerCount">0</div></div>
+<div class="card"><div class="t">Aspirantes</div><div class="n" id="umAspirantCount">0</div></div><div class="card"><div class="t">Primeiro acesso pendente</div><div class="n" id="umPendingCount">0</div></div>
 </div>
 <div class="user-toolbar">
 <input id="umSearch" placeholder="Buscar nome ou usuário..."/>
-<select id="umRole"><option value="all">Todos os perfis</option><option value="colaborador">Colaborador</option><option value="gerente">Gerente</option><option value="performance">Performance</option></select>
+<select id="umRole"><option value="all">Todos os perfis</option><option value="aspirante">Aspirante</option><option value="tenente">Tenente</option><option value="capitao">Capitão</option><option value="performance">Performance</option></select>
 <select id="umStatus"><option value="all">Todos os status</option><option value="active">Ativos</option><option value="inactive">Inativos</option><option value="pending">Primeiro acesso pendente</option></select>
 <select id="umCompany"><option value="all">Todas as empresas</option><option value="SOS">SOS</option><option value="Universo">Universo</option><option value="Connect">Connect</option><option value="Azul Viagens">Azul Viagens</option></select>
 <select id="umUnit"><option value="all">Todas as unidades</option></select>
 <button class="btn" id="umClearFilters">Limpar filtros</button>
 </div>
-<div class="table"><table><thead><tr><th>Usuário</th><th>Nome</th><th>Perfil</th><th>Empresa</th><th>Unidade</th><th>Capitão</th><th>Status</th><th>Último acesso</th><th>Ações</th></tr></thead><tbody id="userTableBody"></tbody></table></div>
+<div class="table"><table><thead><tr><th>Usuário</th><th>Nome</th><th>Perfil</th><th>Evolução</th><th>Empresa</th><th>Unidade</th><th>Capitão</th><th>Status</th><th>Último acesso</th><th>Ações</th></tr></thead><tbody id="userTableBody"></tbody></table></div>
 <section class="card pad" style="margin-top:14px"><div class="section" style="margin:0"><h2>Auditoria de usuários</h2><span>Alterações desta sessão</span></div><div class="audit-list" id="userAuditList"></div></section>
 </div>
 </div>
@@ -1119,8 +1119,8 @@ tbody tr:hover{background:var(--accent-soft)}
   <div class="org-summary">
     <div class="card"><div class="t">Empresas ativas</div><div class="n" id="orgCompanyCount">0</div></div>
     <div class="card"><div class="t">Unidades ativas</div><div class="n" id="orgUnitCount">0</div></div>
-    <div class="card"><div class="t">Colaboradores vinculados</div><div class="n" id="orgLinkedCount">0</div></div>
-    <div class="card"><div class="t">Unidades sem gerente</div><div class="n" id="orgNoManagerCount">0</div></div>
+    <div class="card"><div class="t">Tenentes/Aspirantes vinculados</div><div class="n" id="orgLinkedCount">0</div></div>
+    <div class="card"><div class="t">Unidades sem Capitão</div><div class="n" id="orgNoManagerCount">0</div></div>
   </div>
 
   <div class="org-toolbar">
@@ -1138,7 +1138,7 @@ tbody tr:hover{background:var(--accent-soft)}
       <div class="section" style="margin:0"><h2>Empresas</h2><span>Estrutura corporativa</span></div>
       <div class="table">
         <table>
-          <thead><tr><th>Empresa</th><th>Unidades</th><th>Colaboradores</th><th>Status</th><th>Ações</th></tr></thead>
+          <thead><tr><th>Empresa</th><th>Unidades</th><th>Equipe operacional</th><th>Status</th><th>Ações</th></tr></thead>
           <tbody id="companyTableBody"></tbody>
         </table>
       </div>
@@ -1148,7 +1148,7 @@ tbody tr:hover{background:var(--accent-soft)}
       <div class="section" style="margin:0"><h2>Unidades/Lojas</h2><span>Vínculo operacional</span></div>
       <div class="table">
         <table>
-          <thead><tr><th>Empresa</th><th>Unidade/Loja</th><th>Código</th><th>Gerente/Capitão</th><th>Colaboradores</th><th>Status</th><th>Ações</th></tr></thead>
+          <thead><tr><th>Empresa</th><th>Unidade/Loja</th><th>Código</th><th>Capitão</th><th>Tenentes/Aspirantes</th><th>Status</th><th>Ações</th></tr></thead>
           <tbody id="unitTableBody"></tbody>
         </table>
       </div>
@@ -1166,7 +1166,7 @@ tbody tr:hover{background:var(--accent-soft)}
 </div>
 </section>
 <div class="modal hidden" id="first"><div class="modalbox"><div class="kicker">Primeiro acesso</div><h2>Complete seu perfil</h2><p class="sub">Ao confirmar, você será vinculado automaticamente à unidade selecionada. Depois disso, Empresa e Unidade só poderão ser alteradas pelo Performance.</p><form id="firstForm"><div class="rows"><div><label class="label">Nome</label><input id="fn"/></div><div><label class="label">Sobrenome</label><input id="ln"/></div></div><div class="rows" style="margin-top:10px"><div><label class="label">Empresa</label><select id="company"><option value="SOS">SOS</option><option value="Universo">Universo</option><option value="Connect">Connect</option><option value="Azul Viagens">Azul Viagens</option></select></div><div><label class="label">Unidade</label><select id="unit"></select></div></div><div style="margin-top:10px"><label class="label">Capitão vinculado automaticamente</label><input disabled id="captain"/></div><div class="form-error" id="firstAccessError"></div><div class="modal-actions"><button class="btn red" type="submit">CONFIRMAR PERFIL</button></div></form></div></div>
-<div class="modal hidden" id="hist"><div class="modalbox"><div class="kicker">Histórico</div><h2>Últimos registros</h2><p class="sub">Dados anteriores ficam bloqueados para edição pelo colaborador.</p><div class="table"><table><thead><tr><th>Data</th><th>Salão</th><th>Online</th><th>Cotações</th><th>Vendas</th></tr></thead><tbody id="historyBody"><tr><td>02/10/2026</td><td>12</td><td>7</td><td>9</td><td>3</td></tr><tr><td>01/10/2026</td><td>9</td><td>11</td><td>8</td><td>2</td></tr><tr><td>30/09/2026</td><td>14</td><td>6</td><td>10</td><td>4</td></tr></tbody></table></div><div class="modal-actions"><button class="btn" id="closeHist">Fechar</button></div></div></div>
+<div class="modal hidden" id="hist"><div class="modalbox"><div class="kicker">Histórico</div><h2>Últimos registros</h2><p class="sub">Dados anteriores ficam bloqueados para edição pelo usuário.</p><div class="table"><table><thead><tr><th>Data</th><th>Salão</th><th>Online</th><th>Cotações</th><th>Vendas</th></tr></thead><tbody id="historyBody"><tr><td>02/10/2026</td><td>12</td><td>7</td><td>9</td><td>3</td></tr><tr><td>01/10/2026</td><td>9</td><td>11</td><td>8</td><td>2</td></tr><tr><td>30/09/2026</td><td>14</td><td>6</td><td>10</td><td>4</td></tr></tbody></table></div><div class="modal-actions"><button class="btn" id="closeHist">Fechar</button></div></div></div>
 <div class="modal hidden" id="userModal"><div class="modalbox user-editor"><div class="kicker" id="userModalKicker">Novo cadastro</div><h2 id="userModalTitle">Cadastrar usuário</h2><p class="sub">As alterações entram em vigor imediatamente nesta sessão do protótipo.</p><form id="userForm">
 <input type="hidden" id="editUserId"/>
 <div class="user-modal-grid">
@@ -1174,7 +1174,7 @@ tbody tr:hover{background:var(--accent-soft)}
 <div><label class="label">Senha</label><input id="userPassword" type="password" autocomplete="new-password" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="4 dígitos"/><div class="form-hint" id="passwordHint">Obrigatória para novo usuário.</div></div>
 <div><label class="label">Nome</label><input id="userFirstName" placeholder="Nome"/></div>
 <div><label class="label">Sobrenome</label><input id="userLastName" placeholder="Sobrenome"/></div>
-<div><label class="label">Perfil</label><select id="userRole"><option value="colaborador">Colaborador</option><option value="gerente">Gerente</option><option value="performance">Performance</option></select></div>
+<div><label class="label">Perfil operacional</label><select id="userRole"><option value="tenente">Tenente</option><option value="aspirante">Aspirante · experiência</option><option value="capitao">Capitão</option><option value="performance">Performance</option></select><div class="form-hint" id="userRankHint">Aspirante permanece em experiência por 3 meses antes de poder ser promovido a Tenente.</div></div>
 <div><label class="label">Status</label><select id="userStatus"><option value="active">Ativo</option><option value="inactive">Inativo</option></select></div>
 <div><label class="label">Empresa</label><select id="userCompany"><option value="">Definir no primeiro acesso</option><option value="SOS">SOS</option><option value="Universo">Universo</option><option value="Connect">Connect</option><option value="Azul Viagens">Azul Viagens</option></select></div>
 <div><label class="label">Unidade</label><select id="userUnit"><option value="">Definir no primeiro acesso</option></select></div>
@@ -1221,9 +1221,9 @@ tbody tr:hover{background:var(--accent-soft)}
       </div>
       <div class="sub" style="margin-top:8px">O sistema aplica automaticamente o prefixo da empresa. Ex.: BSB → SOS - BSB | 2 - BEL → SOS 2 - BEL.</div>
       <div style="margin-top:10px">
-        <label class="label">Gerente / Capitão responsável</label>
-        <select id="orgUnitManager"><option value="">Sem gerente definido</option></select>
-        <div class="sub" style="margin-top:6px">Ao trocar o gerente aqui, o vínculo Empresa + Unidade do gerente selecionado é atualizado automaticamente.</div>
+        <label class="label">Capitão responsável</label>
+        <select id="orgUnitManager"><option value="">Sem Capitão definido</option></select>
+        <div class="sub" style="margin-top:6px">Ao trocar o Capitão aqui, o vínculo Empresa + Unidade do usuário selecionado é atualizado automaticamente.</div>
       </div>
       <div class="form-error" id="unitFormError"></div>
       <div class="modal-actions">
@@ -1285,7 +1285,7 @@ tbody tr:hover{background:var(--accent-soft)}
   <div class="modalbox user-editor" style="width:min(760px,100%)">
     <div class="kicker">Importação em lote</div>
     <h2>Importar usuários</h2>
-    <p class="import-help">A planilha precisa ter apenas as colunas <b>usuario</b> e <b>senha</b>. Os novos registros entram como <b>Colaborador ativo</b> e ficam com <b>primeiro acesso pendente</b>, para que Nome, Sobrenome, Empresa e Unidade sejam definidos no primeiro login.</p>
+    <p class="import-help">A planilha precisa ter apenas as colunas <b>usuario</b> e <b>senha</b>. Os novos registros entram como <b>Tenente ativo</b> e ficam com <b>primeiro acesso pendente</b>, para que Nome, Sobrenome, Empresa e Unidade sejam definidos no primeiro login.</p>
 
     <div class="import-drop">
       <input id="importUsersFile" type="file" accept=".xlsx,.xls,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"/>
@@ -1838,8 +1838,8 @@ function pulse(){const el=$('#savestatus');if(!el)return;el.textContent='● sal
 function setMetaForUser(u){
   $('#uname').textContent=fullName(u);$('#avatar').textContent=initials(fullName(u));
   if(u.role==='performance')$('#meta').innerHTML='<span class="chip">Administrador</span><span class="chip">Todas as empresas</span><span class="chip">Todas as unidades</span>';
-  else if(u.role==='gerente')$('#meta').innerHTML=`<span class="chip">Gerente</span><span class="chip">${u.company||'—'}</span><span class="chip">${u.unit||'—'}</span>`;
-  else {const mgr=managerFor(u.company,u.unit);$('#meta').innerHTML=`<span class="chip">${u.company||'Não definido'}</span><span class="chip">${u.unit||'Não definido'}</span><span class="chip">Capitão: ${mgr?fullName(mgr):'Não definido'}</span>`}
+  else if(u.role==='gerente')$('#meta').innerHTML=`<span class="chip">Capitão</span><span class="chip">${u.company||'—'}</span><span class="chip">${u.unit||'—'}</span>`;
+  else {const mgr=managerFor(u.company,u.unit);$('#meta').innerHTML=`<span class="chip">${careerRankLabel(u)}</span><span class="chip">${u.company||'Não definido'}</span><span class="chip">${u.unit||'Não definido'}</span><span class="chip">Capitão: ${mgr?fullName(mgr):'Não definido'}</span>`}
 }
 function renderEntry(){if(!currentUser||!isOperationalRole(currentUser))return;['salao','online','cotacoes','vendas'].forEach(k=>{const el=$('#c-'+k);if(el)el.textContent=state[k]});$('#total').textContent=state.salao+state.online+state.cotacoes;$('#obs').value=state.obs||''}
 function render(){renderEntry();if(isOperationalRole(currentUser)){renderPersonalDashboard();renderPersonalGoalProgress()}if(!$('#manager').classList.contains('hidden'))renderManager();if(!$('#managerGoals').classList.contains('hidden'))renderManagerGoals();if(!$('#performance').classList.contains('hidden')){renderPerformance();renderUserManagement();renderOrgManagement();if(performanceMode==='goals')renderPerformanceGoals()}}
@@ -1857,7 +1857,7 @@ function setTopForView(v){
     $('#clearDay').classList.toggle('hidden',!operational);
     $('#collabModeNav').classList.toggle('hidden',!isCollaborator);
   }
-  else if(v==='manager'){const c=managerContext();$('#kick').textContent='Comando da unidade';$('#title').textContent='Dashboard do Gerente';$('#subtitle').textContent=c?`${c.unit} · ${c.company} · acompanhamento da equipe`:'Selecione uma unidade';$('#mode').textContent='comando da unidade';$('#history').classList.add('hidden');$('#clearDay').classList.add('hidden');$('#collabModeNav').classList.add('hidden')}
+  else if(v==='manager'){const c=managerContext();$('#kick').textContent='Comando da unidade';$('#title').textContent='Dashboard do Capitão';$('#subtitle').textContent=c?`${c.unit} · ${c.company} · acompanhamento da equipe`:'Selecione uma unidade';$('#mode').textContent='comando da unidade';$('#history').classList.add('hidden');$('#clearDay').classList.add('hidden');$('#collabModeNav').classList.add('hidden')}
   else if(v==='managerGoals'){const c=managerContext();$('#kick').textContent='Planejamento operacional';$('#title').textContent='Metas da Unidade';$('#subtitle').textContent=c?`${c.unit} · ${c.company} · metas mensais e ritmo diário`:'Metas da unidade';$('#mode').textContent='metas operacionais';$('#history').classList.add('hidden');$('#clearDay').classList.add('hidden');$('#collabModeNav').classList.add('hidden')}
   else{
     $('#kick').textContent='Central de comando';
@@ -1942,7 +1942,7 @@ function technicalEmailForUsername(username){
 async function fetchAuthenticatedProfile(authUser){
   const {data:profile,error}=await supabaseClient
     .from('profiles')
-    .select('user_id,username,first_name,last_name,role,company_id,unit_id,active,first_access_completed,must_change_password,last_access_at')
+    .select('user_id,username,first_name,last_name,role,career_rank,aspirant_started_at,promoted_to_tenente_at,company_id,unit_id,active,first_access_completed,must_change_password,last_access_at')
     .eq('user_id',authUser.id)
     .single();
   if(error||!profile)return null;
@@ -1963,6 +1963,9 @@ async function fetchAuthenticatedProfile(authUser){
     firstName:profile.first_name||'',
     lastName:profile.last_name||'',
     role:profile.role,
+    careerRank:profile.career_rank||null,
+    aspirantStartedAt:profile.aspirant_started_at||null,
+    promotedToTenenteAt:profile.promoted_to_tenente_at||null,
     company:companyName,
     unit:unitName,
     active:profile.active===true,
@@ -2363,7 +2366,7 @@ function fillFirstAccessUnits(){
 
 function updateFirstCaptain(){
   const unit=FIRST_ACCESS_UNITS.find(u=>u.id===$('#unit').value);
-  $('#captain').value=unit?.manager_user_id?'Gerente definido automaticamente pela unidade':'Nenhum gerente ativo definido';
+  $('#captain').value=unit?.manager_user_id?'Capitão definido automaticamente pela unidade':'Nenhum Capitão ativo definido';
 }
 
 async function openFirstAccess(){
@@ -2574,7 +2577,7 @@ async function loadDashboardReferenceData(){
       supabaseClient.from('companies').select('id,name,active').order('name'),
       supabaseClient.from('units').select('id,company_id,name,short_code,manager_user_id,active').order('name'),
       supabaseClient.from('profiles')
-        .select('user_id,username,first_name,last_name,role,company_id,unit_id,active,first_access_completed,must_change_password,last_access_at')
+        .select('user_id,username,first_name,last_name,role,career_rank,aspirant_started_at,promoted_to_tenente_at,company_id,unit_id,active,first_access_completed,must_change_password,last_access_at')
         .order('username')
     ]);
 
@@ -2592,7 +2595,7 @@ async function loadDashboardReferenceData(){
     supabaseClient.from('companies').select('id,name,active').eq('id',currentUser.companyId).maybeSingle(),
     supabaseClient.from('units').select('id,company_id,name,short_code,manager_user_id,active').eq('id',currentUser.unitId).maybeSingle(),
     supabaseClient.from('profiles')
-      .select('user_id,username,first_name,last_name,role,company_id,unit_id,active,first_access_completed,must_change_password,last_access_at')
+      .select('user_id,username,first_name,last_name,role,career_rank,aspirant_started_at,promoted_to_tenente_at,company_id,unit_id,active,first_access_completed,must_change_password,last_access_at')
       .order('username')
   ]);
 
@@ -3065,12 +3068,13 @@ function goalDraftFromStored(unitId,month){
       name:a.user_name_snapshot||a.username_snapshot||'Usuário',
       username:a.username_snapshot||'',
       role:(a.user_id&&ORG_PROFILES_DB.find(p=>p.user_id===a.user_id)?.role)||'snapshot',
+      career_rank:(a.user_id&&profileCareerRank(ORG_PROFILES_DB.find(p=>p.user_id===a.user_id)))||'',
       floor_goal:Number(a.floor_goal||0),online_goal:Number(a.online_goal||0),quotation_goal:Number(a.quotation_goal||0),mode:a.distribution_mode||'auto'
     }));
     return {key:`${unitId}|${month}`,unitId,month,floor_goal:Number(goal.floor_goal||0),online_goal:Number(goal.online_goal||0),quotation_goal:Number(goal.quotation_goal||0),allocations,stored:true,goalId:goal.id};
   }
   const team=activeGoalTeam(unitId);
-  return {key:`${unitId}|${month}`,unitId,month,floor_goal:0,online_goal:0,quotation_goal:0,allocations:team.map(p=>({user_id:p.user_id,name:orgDbFullName(p),username:p.username||'',role:p.role,floor_goal:0,online_goal:0,quotation_goal:0,mode:'auto'})),stored:false,goalId:null};
+  return {key:`${unitId}|${month}`,unitId,month,floor_goal:0,online_goal:0,quotation_goal:0,allocations:team.map(p=>({user_id:p.user_id,name:orgDbFullName(p),username:p.username||'',role:p.role,career_rank:profileCareerRank(p),floor_goal:0,online_goal:0,quotation_goal:0,mode:'auto'})),stored:false,goalId:null};
 }
 function ensureGoalDraft(scope,unitId,month,force=false){
   const key=`${unitId}|${month}`;
@@ -3081,7 +3085,7 @@ function redistributeGoalDraft(scope,unitId,month){
   const d=ensureGoalDraft(scope,unitId,month);
   const team=activeGoalTeam(unitId);
   const a=evenDistribution(d.floor_goal,team.length),o=evenDistribution(d.online_goal,team.length),q=evenDistribution(d.quotation_goal,team.length);
-  d.allocations=team.map((p,i)=>({user_id:p.user_id,name:orgDbFullName(p),username:p.username||'',role:p.role,floor_goal:a[i]||0,online_goal:o[i]||0,quotation_goal:q[i]||0,mode:'auto'}));
+  d.allocations=team.map((p,i)=>({user_id:p.user_id,name:orgDbFullName(p),username:p.username||'',role:p.role,career_rank:profileCareerRank(p),floor_goal:a[i]||0,online_goal:o[i]||0,quotation_goal:q[i]||0,mode:'auto'}));
   d.stored=false;
   return d;
 }
@@ -3093,13 +3097,13 @@ function readGoalTotalsFromInputs(scope,d){
 }
 function goalDraftSums(d){return {floor_goal:d.allocations.reduce((s,a)=>s+Number(a.floor_goal||0),0),online_goal:d.allocations.reduce((s,a)=>s+Number(a.online_goal||0),0),quotation_goal:d.allocations.reduce((s,a)=>s+Number(a.quotation_goal||0),0)}}
 function goalDraftValid(d){const s=goalDraftSums(d);return d.allocations.length>0&&s.floor_goal===d.floor_goal&&s.online_goal===d.online_goal&&s.quotation_goal===d.quotation_goal}
-function rolePt(role){return role==='gerente'?'Gerente':role==='colaborador'?'Colaborador':'Histórico'}
+function rolePt(role,careerRank=''){return role==='gerente'?'Capitão':role==='colaborador'?(careerRank==='aspirante'?'Aspirante':'Tenente'):'Histórico'}
 function renderGoalEditor(scope,unitId,month){
   const pre=scope==='manager'?'mgr':'pf',d=ensureGoalDraft(scope,unitId,month);
   $(`#${pre}GoalSalao`).value=d.floor_goal;$(`#${pre}GoalOnline`).value=d.online_goal;$(`#${pre}GoalCotacoes`).value=d.quotation_goal;
   const totalDays=monthDays(month);
   $(`#${pre}GoalTeamBody`).innerHTML=d.allocations.map((a,i)=>`<tr>
-    <td><b>${escapeAlertHtml(a.name)}</b><div class="muted">${escapeAlertHtml(a.username||'')}</div></td><td>${rolePt(a.role)}</td>
+    <td><b>${escapeAlertHtml(a.name)}</b><div class="muted">${escapeAlertHtml(a.username||'')}</div></td><td>${rolePt(a.role,a.career_rank)}</td>
     <td><input type="number" min="0" step="1" value="${a.floor_goal}" data-goal-scope="${scope}" data-goal-index="${i}" data-goal-field="floor_goal"/></td>
     <td><input type="number" min="0" step="1" value="${a.online_goal}" data-goal-scope="${scope}" data-goal-index="${i}" data-goal-field="online_goal"/></td>
     <td><input type="number" min="0" step="1" value="${a.quotation_goal}" data-goal-scope="${scope}" data-goal-index="${i}" data-goal-field="quotation_goal"/></td>
@@ -3276,7 +3280,7 @@ async function loadOrganizationFromSupabase(){
     const [companiesRes,unitsRes,profilesRes]=await Promise.all([
       supabaseClient.from('companies').select('id,name,active,created_at,updated_at').order('name'),
       supabaseClient.from('units').select('id,company_id,name,short_code,manager_user_id,timezone,active,created_at,updated_at').order('name'),
-      supabaseClient.from('profiles').select('user_id,username,first_name,last_name,role,company_id,unit_id,active,first_access_completed,must_change_password,last_access_at').order('username')
+      supabaseClient.from('profiles').select('user_id,username,first_name,last_name,role,career_rank,aspirant_started_at,promoted_to_tenente_at,company_id,unit_id,active,first_access_completed,must_change_password,last_access_at').order('username')
     ]);
     if(companiesRes.error)throw companiesRes.error;
     if(unitsRes.error)throw unitsRes.error;
@@ -3542,7 +3546,7 @@ function rebuildOrgManagerOptionsDb(selected=''){
   const managers=ORG_PROFILES_DB
     .filter(p=>p.role==='gerente'&&p.active)
     .sort((a,b)=>orgDbFullName(a).localeCompare(orgDbFullName(b),'pt-BR'));
-  el.innerHTML='<option value="">Sem gerente definido</option>'+
+  el.innerHTML='<option value="">Sem Capitão definido</option>'+
     managers.map(m=>{
       const c=orgDbCompanyById(m.company_id),u=orgDbUnitById(m.unit_id);
       const suffix=c&&u?` · ${c.name} / ${u.name}`:'';
@@ -3859,7 +3863,7 @@ function filteredUsers(){
   return ORG_PROFILES_DB.filter(p=>{
     const text=`${p.username} ${profileFullName(p)}`.toLowerCase();
     if(q&&!text.includes(q))return false;
-    if(r!=='all'&&p.role!==r)return false;
+    if(r!=='all'&&profileCareerRank(p)!==r)return false;
     if(s==='active'&&!p.active)return false;
     if(s==='inactive'&&p.active)return false;
     if(s==='pending'&&p.first_access_completed&&!p.must_change_password)return false;
@@ -3868,7 +3872,66 @@ function filteredUsers(){
     return true;
   });
 }
-function roleLabel(r){return r==='performance'?'Performance':r==='gerente'?'Gerente':'Colaborador'}
+function profileCareerRank(p){
+  if(!p)return 'tenente';
+  const explicit=p.career_rank||p.careerRank;
+  if(['performance','capitao','tenente','aspirante'].includes(explicit))return explicit;
+  const r=typeof p==='string'?p:p.role;
+  if(r==='performance')return 'performance';
+  if(r==='gerente')return 'capitao';
+  return 'tenente';
+}
+function careerRankLabel(p){
+  const rank=profileCareerRank(p);
+  return rank==='performance'?'Performance':rank==='capitao'?'Capitão':rank==='aspirante'?'Aspirante':'Tenente';
+}
+function roleLabel(value){
+  if(typeof value==='object')return careerRankLabel(value);
+  return value==='performance'?'Performance':value==='gerente'?'Capitão':value==='aspirante'?'Aspirante':'Tenente';
+}
+function uiRankToRole(rank){
+  if(rank==='performance')return 'performance';
+  if(rank==='capitao')return 'gerente';
+  return 'colaborador';
+}
+function addMonthsClamped(dateText,months){
+  if(!dateText)return null;
+  const [y,m,d]=String(dateText).slice(0,10).split('-').map(Number);
+  if(!y||!m||!d)return null;
+  const targetIndex=(m-1)+months;
+  const ty=y+Math.floor(targetIndex/12);
+  const tm=((targetIndex%12)+12)%12;
+  const lastDay=new Date(Date.UTC(ty,tm+1,0)).getUTCDate();
+  return new Date(Date.UTC(ty,tm,Math.min(d,lastDay)));
+}
+function aspirantEligibleDate(p){
+  return addMonthsClamped(p?.aspirant_started_at||p?.aspirantStartedAt,3);
+}
+function isAspirantEligible(p){
+  if(profileCareerRank(p)!=='aspirante')return false;
+  const dt=aspirantEligibleDate(p);
+  if(!dt)return false;
+  const today=new Date();
+  const utcToday=new Date(Date.UTC(today.getFullYear(),today.getMonth(),today.getDate()));
+  return utcToday.getTime()>=dt.getTime();
+}
+function formatCareerDate(d){
+  if(!d)return '—';
+  return new Intl.DateTimeFormat('pt-BR',{timeZone:'UTC'}).format(d instanceof Date?d:new Date(`${String(d).slice(0,10)}T00:00:00Z`));
+}
+function careerEvolutionMarkup(p){
+  const rank=profileCareerRank(p);
+  if(rank==='aspirante'){
+    const eligible=aspirantEligibleDate(p);
+    return isAspirantEligible(p)
+      ? '<span class="status-badge active">Apto a Tenente</span>'
+      : `<span class="status-badge pending">Apto em ${formatCareerDate(eligible)}</span>`;
+  }
+  if(rank==='tenente'&&p.promoted_to_tenente_at){
+    return `<span class="status-badge active">Promovido a Tenente</span>`;
+  }
+  return '—';
+}
 function renderUserManagement(){
   if(!$('#userTableBody'))return;
   rebuildUserMgmtCompanyFilter();
@@ -3876,8 +3939,9 @@ function renderUserManagement(){
   const rows=filteredUsers();
 
   $('#umActiveCount').textContent=ORG_PROFILES_DB.filter(p=>p.active).length;
-  $('#umCollabCount').textContent=ORG_PROFILES_DB.filter(p=>p.active&&p.role==='colaborador').length;
-  $('#umManagerCount').textContent=ORG_PROFILES_DB.filter(p=>p.active&&p.role==='gerente').length;
+  $('#umCollabCount').textContent=ORG_PROFILES_DB.filter(p=>p.active&&profileCareerRank(p)==='tenente').length;
+  $('#umManagerCount').textContent=ORG_PROFILES_DB.filter(p=>p.active&&profileCareerRank(p)==='capitao').length;
+  $('#umAspirantCount').textContent=ORG_PROFILES_DB.filter(p=>p.active&&profileCareerRank(p)==='aspirante').length;
   $('#umPendingCount').textContent=ORG_PROFILES_DB.filter(p=>p.active&&(!p.first_access_completed||p.must_change_password)).length;
 
   $('#userTableBody').innerHTML=rows.map(p=>{
@@ -3886,7 +3950,8 @@ function renderUserManagement(){
     return `<tr data-inactive="${p.active?0:1}">
       <td><b>${p.username}</b></td>
       <td>${profileFullName(p)}</td>
-      <td>${roleLabel(p.role)}</td>
+      <td>${roleLabel(p)}</td>
+      <td>${careerEvolutionMarkup(p)}</td>
       <td>${profileCompanyName(p)||'—'}</td>
       <td>${profileUnitName(p)||'—'}</td>
       <td>${p.role==='colaborador'?(manager?profileFullName(manager):'Não definido'):'—'}</td>
@@ -3894,11 +3959,12 @@ function renderUserManagement(){
       <td>${formatLastAccess(p.last_access_at)}</td>
       <td><div class="user-actions">
         <button class="btn" data-edit-user="${p.user_id}">Editar</button>
+        ${profileCareerRank(p)==='aspirante'&&isAspirantEligible(p)?`<button class="btn red" data-promote-aspirant="${p.user_id}">Promover a Tenente</button>`:''}
         <button class="btn ghost" data-toggle-user="${p.user_id}">${p.active?'Inativar':'Ativar'}</button>
         <button class="btn ghost danger-action" data-delete-user="${p.user_id}">Excluir</button>
       </div></td>
     </tr>`;
-  }).join('')||'<tr><td colspan="9">Nenhum usuário encontrado.</td></tr>';
+  }).join('')||'<tr><td colspan="10">Nenhum usuário encontrado.</td></tr>';
 
   loadUserAuditFromSupabase();
 }
@@ -4297,19 +4363,27 @@ function fillUserEditorUnits(selected=''){
   updateUserCaptainPreview();
 }
 function updateUserCaptainPreview(){
-  const role=$('#userRole').value,unit=orgDbUnitById($('#userUnit').value);
+  const rank=$('#userRole').value,role=uiRankToRole(rank),unit=orgDbUnitById($('#userUnit').value);
   if(role==='performance'){$('#userCaptainPreview').value='Acesso global';return}
-  if(role==='gerente'){$('#userCaptainPreview').value=unit?`Será o gerente de ${unit.name}`:'Defina uma unidade';return}
+  if(role==='gerente'){$('#userCaptainPreview').value=unit?`Será o Capitão de ${unit.name}`:'Defina uma unidade';return}
   const m=unit?.manager_user_id?orgDbProfileById(unit.manager_user_id):null;
-  $('#userCaptainPreview').value=m?profileFullName(m):'Nenhum gerente ativo definido';
+  $('#userCaptainPreview').value=m?profileFullName(m):'Nenhum Capitão ativo definido';
 }
 function syncUserRoleFields(){
-  const role=$('#userRole').value;
+  const rank=$('#userRole').value,role=uiRankToRole(rank);
   if(role==='performance'){
     $('#userCompany').value='';
     fillUserEditorUnits('');
     $('#userProfileComplete').checked=true;
-  }else updateUserCaptainPreview();
+  }
+  $('#userRankHint').textContent=rank==='aspirante'
+    ? 'Aspirante permanece em experiência por 3 meses. Depois desse período o Administrador poderá promovê-lo a Tenente.'
+    : rank==='tenente'
+      ? 'Tenente possui as permissões operacionais do antigo perfil Colaborador/Agente.'
+      : rank==='capitao'
+        ? 'Capitão possui as permissões do antigo perfil Gerente e responde pela unidade.'
+        : 'Performance mantém acesso administrativo global.';
+  updateUserCaptainPreview();
 }
 function openUserEditor(profile=null){
   editingUserId=profile?.user_id||null;
@@ -4321,7 +4395,7 @@ function openUserEditor(profile=null){
   $('#passwordHint').textContent=profile?'Deixe em branco para manter a senha atual. Se redefinir, use 4 dígitos numéricos.':'Obrigatória para novo usuário: 4 dígitos numéricos.';
   $('#userFirstName').value=profile?.first_name||'';
   $('#userLastName').value=profile?.last_name||'';
-  $('#userRole').value=profile?.role||'colaborador';
+  $('#userRole').value=profile?profileCareerRank(profile):'tenente';
   $('#userStatus').value=profile?.active===false?'inactive':'active';
   fillUserEditorCompanies(profile?.company_id||'');
   fillUserEditorUnits(profile?.unit_id||'');
@@ -4335,7 +4409,8 @@ function validateUserForm(existing){
         password=$('#userPassword').value,
         first=$('#userFirstName').value.trim(),
         last=$('#userLastName').value.trim(),
-        r=$('#userRole').value,
+        rank=$('#userRole').value,
+        r=uiRankToRole(rank),
         active=$('#userStatus').value==='active',
         complete=$('#userProfileComplete').checked,
         companyId=r==='performance'?null:($('#userCompany').value||null),
@@ -4345,13 +4420,17 @@ function validateUserForm(existing){
   if(ORG_PROFILES_DB.some(p=>p.user_id!==existing?.user_id&&p.username.toLowerCase()===username))return 'Esse usuário já existe.';
   if(!existing&&!/^\d{4}$/.test(password))return 'Defina uma senha com exatamente 4 dígitos numéricos.';
   if(existing&&password&&!/^\d{4}$/.test(password))return 'A nova senha precisa ter exatamente 4 dígitos numéricos.';
-  if(r==='gerente'&&(!companyId||!unitId))return 'Gerente precisa estar vinculado a uma Empresa e Unidade.';
+  if(existing&&profileCareerRank(existing)==='aspirante'&&rank!=='aspirante'){
+    if(rank!=='tenente')return 'Aspirante deve evoluir primeiro para Tenente.';
+    if(!isAspirantEligible(existing))return `Este Aspirante só poderá ser promovido a Tenente em ${formatCareerDate(aspirantEligibleDate(existing))}.`;
+  }
+  if(r==='gerente'&&(!companyId||!unitId))return 'Capitão precisa estar vinculado a uma Empresa e Unidade.';
   if(complete&&r!=='performance'&&(!first||!last||!companyId||!unitId))return 'Cadastro concluído exige Nome, Sobrenome, Empresa e Unidade.';
   if(r==='gerente'&&active){
     const unit=orgDbUnitById(unitId);
     if(unit?.manager_user_id&&unit.manager_user_id!==existing?.user_id){
       const other=orgDbProfileById(unit.manager_user_id);
-      return `A unidade ${unit.name} já possui o gerente ${other?profileFullName(other):'definido'}.`;
+      return `A unidade ${unit.name} já possui o Capitão ${other?profileFullName(other):'definido'}.`;
     }
   }
   return null;
@@ -4366,10 +4445,34 @@ $('#userRole').addEventListener('change',syncUserRoleFields);
 $('#userTableBody').addEventListener('click',async e=>{
   const edit=e.target.closest('[data-edit-user]'),
         toggle=e.target.closest('[data-toggle-user]'),
+        promote=e.target.closest('[data-promote-aspirant]'),
         del=e.target.closest('[data-delete-user]');
 
   if(edit){
     openUserEditor(orgDbProfileById(edit.dataset.editUser));
+    return;
+  }
+
+  if(promote){
+    const p=orgDbProfileById(promote.dataset.promoteAspirant);
+    if(!p)return;
+    if(!isAspirantEligible(p)){
+      alert(`Este Aspirante só poderá ser promovido em ${formatCareerDate(aspirantEligibleDate(p))}.`);
+      return;
+    }
+    if(!confirm(`Promover ${profileFullName(p)} de Aspirante para Tenente?`))return;
+    promote.disabled=true;
+    try{
+      await adminApi('promoteAspirant',{userId:p.user_id});
+      await refreshAfterUserChange();
+    }catch(err){
+      console.error(err);
+      const map={
+        ASPIRANT_NOT_ELIGIBLE:'O período mínimo de 3 meses ainda não foi concluído.',
+        NOT_ASPIRANT:'Este usuário não está cadastrado como Aspirante.'
+      };
+      alert(map[err.code]||err.message);
+    }finally{promote.disabled=false}
     return;
   }
 
@@ -4412,7 +4515,8 @@ $('#userForm').addEventListener('submit',async e=>{
   const err=validateUserForm(existing);
   if(err){$('#userFormError').textContent=err;return}
 
-  const role=$('#userRole').value,
+  const careerRank=$('#userRole').value,
+        role=uiRankToRole(careerRank),
         complete=$('#userProfileComplete').checked,
         companyId=role==='performance'?null:($('#userCompany').value||null),
         unitId=role==='performance'?null:($('#userUnit').value||null),
@@ -4422,6 +4526,7 @@ $('#userForm').addEventListener('submit',async e=>{
           firstName:$('#userFirstName').value.trim(),
           lastName:$('#userLastName').value.trim(),
           role,
+          careerRank,
           active:$('#userStatus').value==='active',
           firstAccessCompleted:role==='performance'?true:complete,
           companyId,
@@ -4542,7 +4647,7 @@ function renderBroadcastRecipients(){
     const unit=profileUnitName(p);
     return `<label class="recipient-row">
       <input type="checkbox" value="${p.user_id}" data-alert-recipient/>
-      <span><b>${profileFullName(p)}</b><small>${p.username} · ${roleLabel(p.role)}${unit?` · ${unit}`:''}</small></span>
+      <span><b>${profileFullName(p)}</b><small>${p.username} · ${roleLabel(p)}${unit?` · ${unit}`:''}</small></span>
     </label>`;
   }).join('')||'<div class="sub" style="padding:10px">Nenhum usuário ativo.</div>';
 }
