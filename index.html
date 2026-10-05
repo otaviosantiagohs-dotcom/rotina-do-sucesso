@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/><meta name="theme-color" content="#050608"/><meta name="color-scheme" content="dark light"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" name="viewport"/>
-<title>Rotina de Sucesso — V9.4.7 Final</title>
+<title>Rotina de Sucesso — V9.5.1 Final</title>
 <script>/* V9 — tema aplicado antes da pintura (evita piscar) */(function(){var t='dark';try{var s=localStorage.getItem('rds-theme');if(s==='light'||s==='dark')t=s}catch(e){}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='light'?'#f2f0ec':'#050608')})();</script>
 <style>
 :root{--bg:#0b0e12;--panel:#12171d;--panel2:#171d24;--line:#27303a;--text:#f5f7fa;--muted:#8d98a5;--red:#e43b32;--green:#61d394;--amber:#e9b45d}
@@ -709,6 +709,35 @@ tbody tr:hover{background:var(--accent-soft)}
   }
 </style>
 
+
+<style id="v9-5-operational-goals">
+  .goal-progress-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}
+  .goal-card{padding:16px;min-width:0}
+  .goal-card .goal-name{font-size:12px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.5px}
+  .goal-card .goal-main{font-size:28px;font-weight:900;margin-top:6px;letter-spacing:-.8px}
+  .goal-card .goal-sub{font-size:12px;color:var(--muted);line-height:1.5;margin-top:5px}
+  .goal-track{height:8px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);overflow:hidden;margin-top:12px}
+  .goal-fill{height:100%;width:0;background:linear-gradient(90deg,var(--red),#ff746b);border-radius:999px;transition:width .25s ease}
+  .goal-status{display:inline-flex;align-items:center;gap:5px;margin-top:10px;padding:5px 8px;border:1px solid var(--line);border-radius:999px;font-size:11px;font-weight:800}
+  .goal-status.ok{color:var(--green);border-color:rgba(75,209,139,.28);background:rgba(75,209,139,.07)}
+  .goal-status.warn{color:var(--amber);border-color:rgba(255,184,77,.28);background:rgba(255,184,77,.07)}
+  .goal-status.hit{color:#fff;border-color:rgba(228,59,50,.45);background:rgba(228,59,50,.15)}
+  .goal-editor-head{display:grid;grid-template-columns:minmax(180px,.8fr) repeat(3,minmax(140px,1fr));gap:10px;align-items:end}
+  .goal-editor-head label,.goal-input-wrap label{display:block;font-size:11px;color:var(--muted);font-weight:800;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}
+  .goal-editor-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .goal-team-table input{width:110px;min-width:90px;text-align:right}
+  .goal-team-table tfoot td{font-weight:900;background:var(--panel2)}
+  .goal-check{font-size:12px;margin-top:8px;color:var(--muted)}
+  .goal-check.error{color:#ff8c85}.goal-check.ok{color:var(--green)}
+  .goal-note{margin-top:12px;border:1px solid var(--line);border-radius:12px;padding:11px 12px;background:var(--panel2);font-size:12px;color:var(--muted);line-height:1.55}
+  .goal-overview-row{display:grid;grid-template-columns:minmax(160px,1.4fr) repeat(3,minmax(100px,.7fr)) minmax(120px,.8fr);gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}
+  .goal-overview-row:last-child{border-bottom:0}
+  .goal-overview-row.head{font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase}
+  .goal-empty{padding:18px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);text-align:center}
+  @media(max-width:900px){.goal-progress-grid{grid-template-columns:1fr}.goal-editor-head{grid-template-columns:1fr 1fr}.goal-overview-row{grid-template-columns:1fr 1fr}.goal-overview-row.head{display:none}}
+  @media(max-width:620px){.goal-editor-head{grid-template-columns:1fr}.goal-team-table{overflow:auto}.goal-team-table table{min-width:680px}.goal-editor-actions .btn{flex:1 1 100%}}
+</style>
+
 </head>
 <body>
 <section class="login" id="login">
@@ -717,7 +746,7 @@ tbody tr:hover{background:var(--accent-soft)}
 <div class="hero">
 <div>
 <div class="kicker" style="color:#d9a09c">● acesso restrito · uso interno</div>
-<h1>ROTINA<br/>DO SUCESSO</h1>
+<h1>ROTINA<br/>DE SUCESSO</h1>
 <p>Acompanhamento diário da operação comercial do Grupo SOS. Cada ação registrada conta para a missão.</p><div class="stamp">CONFIDENCIAL</div><div class="boot" aria-hidden="true"><div style="--n:28">Identificação necessária</div><div style="--n:29">Canal seguro estabelecido</div><div style="--n:24">Sua missão: executar</div></div>
 </div>
 <div class="kicker">GRUPO SOS · OPERAÇÃO COMERCIAL</div>
@@ -764,6 +793,7 @@ tbody tr:hover{background:var(--accent-soft)}
 <div class="tabs hidden" id="tabs" aria-hidden="true"></div>
 <div class="admin-nav hidden" id="managerModeNav">
   <button class="active" data-manager-mode="dashboard">Dashboard da unidade</button>
+  <button data-manager-mode="goals">Metas da unidade</button>
   <button data-manager-mode="entry">Registrar atividade</button>
   <button data-manager-mode="personal">Minha Dashboard</button>
 </div>
@@ -800,6 +830,13 @@ tbody tr:hover{background:var(--accent-soft)}
 <option value="month">Mês atual</option>
 </select>
 </div>
+<section class="card pad hidden" id="personalGoalBox" style="margin-bottom:14px">
+  <div class="section" style="margin:0">
+    <div><h2>Minha meta do mês</h2><div class="sub" id="personalGoalMonthLabel">Ritmo mensal</div></div>
+    <span id="personalGoalOverall">Meta operacional</span>
+  </div>
+  <div class="goal-progress-grid" id="personalGoalCards"></div>
+</section>
 <div class="section"><h2>Minha produção</h2><span id="personalIndicatorLabel">Todas as ações</span></div>
 <div class="personal-highlight">
 <div class="card personal-stat"><div class="pl">Período</div><div class="pv" id="personalTotal">0</div><div class="pd" id="personalDelta">inclui o dia atual</div></div>
@@ -898,15 +935,55 @@ tbody tr:hover{background:var(--accent-soft)}
 <div class="card stat"><div class="l">Cotações</div><div class="v" id="mgrStatCotacoes">174</div><div class="d" id="mgrStatCotacoesDelta">+4%</div></div>
 <div class="card stat"><div class="l">Ações totais</div><div class="v" id="mgrStatTotal">658</div><div class="d" id="mgrStatTotalDelta">atividade consolidada</div></div>
 </div>
+<section class="card pad" id="mgrGoalProgressBox" style="margin-top:14px">
+  <div class="section" style="margin:0"><div><h2>Ritmo das metas operacionais</h2><div class="sub" id="mgrGoalProgressMonth">Mês selecionado</div></div><span id="mgrGoalProgressStatus">Meta da unidade</span></div>
+  <div class="goal-progress-grid" id="mgrGoalProgressCards"></div>
+</section>
 <div class="grid g2" style="margin-top:14px">
 <section class="card pad"><div class="section" style="margin:0"><h2>Evolução por dia</h2><span id="mgrChartLabel">Todas as ações</span></div><div class="chart" id="mgrchart"></div></section>
 <section class="card pad"><div class="section" style="margin:0"><h2>Ranking da equipe</h2><span id="mgrRankLabel">Todas as ações</span></div><div id="mgrrank"></div></section>
 </div>
 <section class="card pad" style="margin-top:14px"><div class="section" style="margin:0"><h2>Ranking de ações</h2><span>Quem executa cada atividade</span></div><div class="table"><table><thead id="mgrActionHead"><tr><th>Agente</th><th>Salão</th><th>Online</th><th>Cotações</th><th>Total</th></tr></thead><tbody id="mgrActionBody"><tr><td><b>Dayana Souza</b></td><td>68</td><td>54</td><td>42</td><td><b>164</b></td></tr><tr><td><b>Marina Alves</b></td><td>61</td><td>49</td><td>46</td><td><b>156</b></td></tr><tr><td><b>João Lima</b></td><td>58</td><td>44</td><td>43</td><td><b>145</b></td></tr><tr><td><b>Renata Costa</b></td><td>52</td><td>39</td><td>43</td><td><b>134</b></td></tr></tbody></table></div></section>
 </main>
+<main class="hidden" id="managerGoals">
+  <section class="card pad">
+    <div class="section" style="margin:0">
+      <div><h2>Metas operacionais da unidade</h2><div class="sub" id="mgrGoalUnitLabel">Defina o objetivo mensal e distribua entre a equipe.</div></div>
+      <span>Abordagem · Captação · Cotação</span>
+    </div>
+    <div class="goal-editor-head" style="margin-top:14px">
+      <div class="goal-input-wrap"><label>Mês da meta</label><input id="mgrGoalMonth" type="month"/></div>
+      <div class="goal-input-wrap"><label>Meta de abordagens</label><input id="mgrGoalSalao" type="number" min="0" step="1" value="0"/></div>
+      <div class="goal-input-wrap"><label>Meta de captações</label><input id="mgrGoalOnline" type="number" min="0" step="1" value="0"/></div>
+      <div class="goal-input-wrap"><label>Meta de cotações</label><input id="mgrGoalCotacoes" type="number" min="0" step="1" value="0"/></div>
+    </div>
+    <div class="goal-editor-actions">
+      <button class="btn" id="mgrGoalEqual" type="button">Dividir igualmente</button>
+      <button class="btn" id="mgrGoalCurrentTeam" type="button">Redistribuir para equipe atual</button>
+      <button class="btn red" id="mgrGoalSave" type="button">Salvar metas</button>
+    </div>
+    <div class="goal-note" id="mgrGoalTeamNote">A divisão considera Colaboradores e Gerente ativos da unidade. Alterações futuras na equipe não mudam a meta silenciosamente.</div>
+  </section>
+
+  <section class="card pad" style="margin-top:14px">
+    <div class="section" style="margin:0"><h2>Distribuição individual</h2><span id="mgrGoalTeamCount">0 pessoas</span></div>
+    <div class="table goal-team-table"><table>
+      <thead><tr><th>Pessoa</th><th>Perfil</th><th>Abordagens</th><th>Captações</th><th>Cotações</th><th>Ritmo diário</th></tr></thead>
+      <tbody id="mgrGoalTeamBody"></tbody>
+      <tfoot id="mgrGoalTeamFoot"></tfoot>
+    </table></div>
+    <div class="goal-check" id="mgrGoalCheck"></div>
+  </section>
+
+  <section class="card pad" style="margin-top:14px">
+    <div class="section" style="margin:0"><h2>Acompanhamento da meta</h2><span>Realizado × ritmo esperado</span></div>
+    <div class="goal-progress-grid" id="mgrGoalEditorProgress"></div>
+  </section>
+</main>
 <main class="hidden" id="performance">
 <div class="admin-nav" id="performanceModeNav">
 <button class="active" data-performance-mode="dashboard">Super Dashboard</button>
+<button data-performance-mode="goals">Metas operacionais</button>
 <button data-performance-mode="live">Dashboard Ao Vivo</button>
 <button data-performance-mode="users">Gestão de Usuários</button>
 <button data-performance-mode="org">Empresas e Unidades</button>
@@ -953,6 +1030,43 @@ tbody tr:hover{background:var(--accent-soft)}
 <section class="card pad"><div class="section" style="margin:0"><h2>Comparação de períodos</h2><span>Período anterior × atual</span></div><div class="stats" style="grid-template-columns:1fr 1fr;margin-top:10px"><div class="card stat"><div class="l" id="pfPrevLabel">—</div><div class="v" id="pfPrevValue">0</div></div><div class="card stat"><div class="l" id="pfCurrLabel">—</div><div class="v" id="pfCurrValue">0</div><div class="d" id="pfPeriodDelta">0%</div></div></div></section>
 <section class="card pad"><div class="section" style="margin:0"><h2>Comparação entre agentes</h2><span id="pfAgentRankLabel">Todas as ações</span></div><div id="agentrank"></div></section>
 </div>
+</div>
+
+<div class="hidden" id="performanceGoals">
+  <section class="card pad">
+    <div class="section" style="margin:0"><div><h2>Metas operacionais</h2><div class="sub">Visão consolidada e correção administrativa das metas mensais.</div></div><span>Performance</span></div>
+    <div class="filters" style="margin-top:14px">
+      <select id="pfGoalCompany"><option value="all">Todas as empresas</option></select>
+      <select id="pfGoalUnit"><option value="all">Todas as unidades</option></select>
+      <input id="pfGoalMonth" type="month"/>
+      <button class="btn" id="pfGoalReload" type="button">Atualizar</button>
+    </div>
+    <div id="pfGoalOverview" style="margin-top:12px"></div>
+  </section>
+
+  <section class="card pad hidden" id="pfGoalEditor" style="margin-top:14px">
+    <div class="section" style="margin:0"><div><h2 id="pfGoalEditorTitle">Editar meta da unidade</h2><div class="sub">Ajustes administrativos ficam registrados na auditoria.</div></div><span id="pfGoalEditorMonthLabel">—</span></div>
+    <div class="goal-editor-head" style="margin-top:14px">
+      <div class="goal-input-wrap"><label>Unidade</label><input id="pfGoalUnitName" disabled/></div>
+      <div class="goal-input-wrap"><label>Meta de abordagens</label><input id="pfGoalSalao" type="number" min="0" step="1" value="0"/></div>
+      <div class="goal-input-wrap"><label>Meta de captações</label><input id="pfGoalOnline" type="number" min="0" step="1" value="0"/></div>
+      <div class="goal-input-wrap"><label>Meta de cotações</label><input id="pfGoalCotacoes" type="number" min="0" step="1" value="0"/></div>
+    </div>
+    <div class="goal-editor-actions">
+      <button class="btn" id="pfGoalEqual" type="button">Dividir igualmente</button>
+      <button class="btn" id="pfGoalCurrentTeam" type="button">Redistribuir para equipe atual</button>
+      <button class="btn red" id="pfGoalSave" type="button">Salvar metas</button>
+    </div>
+    <div class="goal-note" id="pfGoalTeamNote">Selecione uma unidade para editar.</div>
+    <div class="table goal-team-table" style="margin-top:12px"><table>
+      <thead><tr><th>Pessoa</th><th>Perfil</th><th>Abordagens</th><th>Captações</th><th>Cotações</th><th>Ritmo diário</th></tr></thead>
+      <tbody id="pfGoalTeamBody"></tbody>
+      <tfoot id="pfGoalTeamFoot"></tfoot>
+    </table></div>
+    <div class="goal-check" id="pfGoalCheck"></div>
+    <div class="section" style="margin:16px 0 0"><h2>Acompanhamento da unidade</h2><span>Realizado × ritmo esperado</span></div>
+    <div class="goal-progress-grid" id="pfGoalEditorProgress"></div>
+  </section>
 </div>
 
 <div class="hidden" id="liveDashboardContainer">
@@ -1407,6 +1521,9 @@ let idCounter=100, orgCounter=100;
 let ORG_COMPANIES_DB=[];
 let ORG_UNITS_DB=[];
 let ORG_PROFILES_DB=[];
+let OPERATIONAL_UNIT_GOALS=[];
+let OPERATIONAL_PERSON_GOALS=[];
+const GOAL_DRAFTS={manager:null,performance:null};
 
 
 const userStore=[
@@ -1725,7 +1842,7 @@ function setMetaForUser(u){
   else {const mgr=managerFor(u.company,u.unit);$('#meta').innerHTML=`<span class="chip">${u.company||'Não definido'}</span><span class="chip">${u.unit||'Não definido'}</span><span class="chip">Capitão: ${mgr?fullName(mgr):'Não definido'}</span>`}
 }
 function renderEntry(){if(!currentUser||!isOperationalRole(currentUser))return;['salao','online','cotacoes','vendas'].forEach(k=>{const el=$('#c-'+k);if(el)el.textContent=state[k]});$('#total').textContent=state.salao+state.online+state.cotacoes;$('#obs').value=state.obs||''}
-function render(){renderEntry();if(isOperationalRole(currentUser))renderPersonalDashboard();if(!$('#manager').classList.contains('hidden'))renderManager();if(!$('#performance').classList.contains('hidden')){renderPerformance();renderUserManagement();renderOrgManagement()}}
+function render(){renderEntry();if(isOperationalRole(currentUser)){renderPersonalDashboard();renderPersonalGoalProgress()}if(!$('#manager').classList.contains('hidden'))renderManager();if(!$('#managerGoals').classList.contains('hidden'))renderManagerGoals();if(!$('#performance').classList.contains('hidden')){renderPerformance();renderUserManagement();renderOrgManagement();if(performanceMode==='goals')renderPerformanceGoals()}}
 
 function setTopForView(v){
   if(v==='collab'){
@@ -1741,24 +1858,25 @@ function setTopForView(v){
     $('#collabModeNav').classList.toggle('hidden',!isCollaborator);
   }
   else if(v==='manager'){const c=managerContext();$('#kick').textContent='Comando da unidade';$('#title').textContent='Dashboard do Gerente';$('#subtitle').textContent=c?`${c.unit} · ${c.company} · acompanhamento da equipe`:'Selecione uma unidade';$('#mode').textContent='comando da unidade';$('#history').classList.add('hidden');$('#clearDay').classList.add('hidden');$('#collabModeNav').classList.add('hidden')}
+  else if(v==='managerGoals'){const c=managerContext();$('#kick').textContent='Planejamento operacional';$('#title').textContent='Metas da Unidade';$('#subtitle').textContent=c?`${c.unit} · ${c.company} · metas mensais e ritmo diário`:'Metas da unidade';$('#mode').textContent='metas operacionais';$('#history').classList.add('hidden');$('#clearDay').classList.add('hidden');$('#collabModeNav').classList.add('hidden')}
   else{
     $('#kick').textContent='Central de comando';
-    const org=performanceMode==='org',users=performanceMode==='users';
-    $('#title').textContent=org?'Empresas e Unidades':users?'Gestão de Usuários':'Performance';
-    $('#subtitle').textContent=org?'Estrutura de empresas, lojas, unidades e responsáveis.':users?'Cadastros, acessos e vínculos por unidade.':'Todas as lojas, agentes e períodos em uma única visão.';
-    $('#mode').textContent='central de comando';$('#history').classList.add('hidden');$('#clearDay').classList.add('hidden');$('#collabModeNav').classList.add('hidden')
+    const org=performanceMode==='org',users=performanceMode==='users',goals=performanceMode==='goals';
+    $('#title').textContent=org?'Empresas e Unidades':users?'Gestão de Usuários':goals?'Metas Operacionais':'Performance';
+    $('#subtitle').textContent=org?'Estrutura de empresas, lojas, unidades e responsáveis.':users?'Cadastros, acessos e vínculos por unidade.':goals?'Metas mensais, distribuição por pessoa e ritmo de execução.':'Todas as lojas, agentes e períodos em uma única visão.';
+    $('#mode').textContent=goals?'gestão de metas':'central de comando';$('#history').classList.add('hidden');$('#clearDay').classList.add('hidden');$('#collabModeNav').classList.add('hidden')
   }
 }
 function view(v){
   if(currentUser){
     if(currentUser.role==='performance')v='performance';
-    else if(currentUser.role==='gerente'&&!['manager','collab'].includes(v))v='manager';
+    else if(currentUser.role==='gerente'&&!['manager','managerGoals','collab'].includes(v))v='manager';
     else if(currentUser.role==='colaborador')v='collab';
   }
 
   $('#managerModeNav')?.classList.toggle('hidden',currentUser?.role!=='gerente');
 
-  ['collab','manager','performance'].forEach(x=>$('#'+x).classList.add('hidden'));
+  ['collab','manager','managerGoals','performance'].forEach(x=>$('#'+x).classList.add('hidden'));
   $('#'+v).classList.remove('hidden');
   $$('.tab').forEach(x=>x.classList.toggle('active',x.dataset.view===v));
   setTopForView(v);
@@ -1766,6 +1884,9 @@ function view(v){
   if(v==='manager'){
     rebuildManagerAgentOptions();
     renderManager();
+  }
+  if(v==='managerGoals'){
+    renderManagerGoals();
   }
   if(v==='performance'){
     renderPerformance();
@@ -1785,6 +1906,11 @@ function setManagerMode(mode){
 
   if(mode==='dashboard'){
     view('manager');
+    return;
+  }
+  if(mode==='goals'){
+    view('managerGoals');
+    renderManagerGoals();
     return;
   }
 
@@ -1912,11 +2038,14 @@ async function loadRoleData(u){
   if(u.role==='performance'){
     await loadOrganizationFromSupabase();
     await loadDashboardRoutinesFromSupabase();
+    await loadOperationalGoalsFromSupabase();
   }else if(u.role==='gerente'){
     await loadDashboardRoutinesFromSupabase();
     if(u.profileComplete)await loadMyRoutinesFromSupabase();
+    await loadOperationalGoalsFromSupabase();
   }else if(u.role==='colaborador'&&u.profileComplete){
     await loadMyRoutinesFromSupabase();
+    await loadOperationalGoalsFromSupabase();
   }
 }
 
@@ -2641,6 +2770,7 @@ function renderManager(){
   }
 
   $('#mgrSalesBox').classList.toggle('hidden',!$('#showManagerSales').checked);
+  renderManagerGoalDashboard(c,$('#mgrMonth').value);
 }
 ['mgrMonth','mgrAgent','mgrIndicator','mgrPeriod'].forEach(id=>$('#'+id).addEventListener('change',renderManager));
 $('#showManagerSales').addEventListener('change',renderManager);
@@ -2811,16 +2941,275 @@ $('#pfApply').addEventListener('click',()=>currentUser?.source==='supabase'?load
 
 
 
+// ============================================================
+// V9.5 — METAS OPERACIONAIS MENSAIS
+// ============================================================
+const GOAL_METRICS=[
+  {key:'salao',goalField:'floor_goal',label:'Abordagem no Salão',short:'Abordagens'},
+  {key:'online',goalField:'online_goal',label:'Captação Online',short:'Captações'},
+  {key:'cotacoes',goalField:'quotation_goal',label:'Cotações',short:'Cotações'}
+];
+
+function currentMonthKey(){return DEMO_TODAY.slice(0,7)}
+function goalMonthDate(month){return `${month}-01`}
+function goalMonthKey(value){return String(value||'').slice(0,7)}
+function monthDays(month){const [y,m]=month.split('-').map(Number);return new Date(y,m,0).getDate()}
+function monthDayProgress(month){
+  const current=currentMonthKey();
+  if(month<current)return {elapsed:monthDays(month),total:monthDays(month),remaining:0,fraction:1};
+  if(month>current)return {elapsed:0,total:monthDays(month),remaining:monthDays(month),fraction:0};
+  const total=monthDays(month),elapsed=Math.min(Number(DEMO_TODAY.slice(8,10)),total);
+  return {elapsed,total,remaining:Math.max(0,total-elapsed),fraction:total?elapsed/total:0};
+}
+function goalByUnitMonth(unitId,month){return OPERATIONAL_UNIT_GOALS.find(g=>g.unit_id===unitId&&goalMonthKey(g.goal_month)===month)||null}
+function goalAllocations(goalId){return OPERATIONAL_PERSON_GOALS.filter(a=>a.unit_goal_id===goalId)}
+function myGoalAllocation(month=currentMonthKey()){
+  if(!currentUser?.unitId)return null;
+  const g=goalByUnitMonth(currentUser.unitId,month);if(!g)return null;
+  const a=goalAllocations(g.id).find(x=>x.user_id===currentUser.id);return a?{goal:g,allocation:a}:null;
+}
+function goalActual(rows,key){return rows.reduce((acc,r)=>acc+(Number(r[key])||0),0)}
+function goalStatus(goalValue,actual,month){
+  const pace=monthDayProgress(month),target=Number(goalValue||0);
+  const expected=target*pace.fraction;
+  const pct=target?actual/target*100:0;
+  const expectedPct=pace.fraction*100;
+  const remaining=Math.max(0,target-actual);
+  const required=pace.remaining?remaining/pace.remaining:(remaining?remaining:0);
+  const projection=pace.elapsed?actual/pace.elapsed*pace.total:0;
+  const status=target>0&&actual>=target?'hit':actual+0.0001>=expected?'ok':'warn';
+  return {target,actual,expected,pct,expectedPct,remaining,required,projection,status,pace};
+}
+function goalStatusLabel(s){return s.status==='hit'?'Meta atingida':s.status==='ok'?'Acima do ritmo':'Abaixo do ritmo'}
+function goalCardHtml(metric,stat){
+  const width=Math.max(0,Math.min(100,stat.pct));
+  const expected=format1(stat.expected);
+  const required=stat.pace.remaining?format1(stat.required):'—';
+  return `<article class="card goal-card">
+    <div class="goal-name">${metric.label}</div>
+    <div class="goal-main">${formatInt(stat.actual)} <span style="font-size:14px;color:var(--muted)">/ ${formatInt(stat.target)}</span></div>
+    <div class="goal-track"><div class="goal-fill" style="width:${width}%"></div></div>
+    <div class="goal-status ${stat.status}">${goalStatusLabel(stat)} · ${format1(stat.pct)}%</div>
+    <div class="goal-sub">Esperado até agora: <b>${expected}</b> · Faltam: <b>${formatInt(stat.remaining)}</b><br/>Ritmo necessário daqui pra frente: <b>${required}/dia</b> · Projeção: <b>${formatInt(Math.round(stat.projection))}</b></div>
+  </article>`;
+}
+function rowsForGoalScope({unitId=null,userId=null,month=currentMonthKey()}={}){
+  return rowsWithLive().filter(r=>r.date.startsWith(month)&&(!unitId||r.unitId===unitId||(!r.unitId&&currentUser?.unitId===unitId&&r.userId===currentUser.id))&&(!userId||r.userId===userId));
+}
+
+async function loadOperationalGoalsFromSupabase(){
+  if(!currentUser||currentUser.source!=='supabase')return;
+  try{
+    const [goalsRes,allocRes]=await Promise.all([
+      supabaseClient.from('operational_unit_goals')
+        .select('id,unit_id,goal_month,floor_goal,online_goal,quotation_goal,team_size,created_by,updated_by,created_at,updated_at')
+        .order('goal_month',{ascending:false}),
+      supabaseClient.from('individual_operational_goals')
+        .select('id,unit_goal_id,user_id,user_name_snapshot,username_snapshot,floor_goal,online_goal,quotation_goal,distribution_mode,created_at,updated_at')
+        .order('user_name_snapshot')
+    ]);
+    if(goalsRes.error)throw goalsRes.error;
+    if(allocRes.error)throw allocRes.error;
+    OPERATIONAL_UNIT_GOALS=goalsRes.data||[];
+    OPERATIONAL_PERSON_GOALS=allocRes.data||[];
+    GOAL_DRAFTS.manager=null;GOAL_DRAFTS.performance=null;
+    renderPersonalGoalProgress();
+    if(currentUser.role==='gerente'){renderManagerGoalDashboard(currentUser,currentMonthKey());if(!$('#managerGoals').classList.contains('hidden'))renderManagerGoals()}
+    if(currentUser.role==='performance'&&performanceMode==='goals')renderPerformanceGoals();
+  }catch(err){console.error('Falha ao carregar metas operacionais:',err)}
+}
+
+function renderPersonalGoalProgress(){
+  const box=$('#personalGoalBox');if(!box||!currentUser||!isOperationalRole(currentUser))return;
+  const month=currentMonthKey(),ctx=myGoalAllocation(month);
+  if(!ctx){box.classList.add('hidden');return}
+  box.classList.remove('hidden');
+  $('#personalGoalMonthLabel').textContent=new Intl.DateTimeFormat('pt-BR',{month:'long',year:'numeric',timeZone:'America/Sao_Paulo'}).format(new Date(`${month}-15T12:00:00-03:00`));
+  const rows=rowsForGoalScope({userId:currentUser.id,month});
+  const cards=GOAL_METRICS.map(m=>goalCardHtml(m,goalStatus(ctx.allocation[m.goalField],goalActual(rows,m.key),month))).join('');
+  $('#personalGoalCards').innerHTML=cards;
+  const stats=GOAL_METRICS.map(m=>goalStatus(ctx.allocation[m.goalField],goalActual(rows,m.key),month));
+  const avg=stats.filter(s=>s.target>0).length?stats.filter(s=>s.target>0).reduce((a,s)=>a+s.pct,0)/stats.filter(s=>s.target>0).length:0;
+  $('#personalGoalOverall').textContent=`Atingimento médio ${format1(avg)}%`;
+}
+
+function renderManagerGoalDashboard(c,month){
+  const box=$('#mgrGoalProgressBox');if(!box||!c)return;
+  const unitId=currentUser?.source==='supabase'?currentUser.unitId:c.unitId;
+  const goal=goalByUnitMonth(unitId,month);
+  $('#mgrGoalProgressMonth').textContent=month;
+  if(!goal){
+    $('#mgrGoalProgressCards').innerHTML='<div class="goal-empty" style="grid-column:1/-1">Nenhuma meta operacional definida para este mês.</div>';
+    $('#mgrGoalProgressStatus').textContent='Meta não definida';return;
+  }
+  const rows=rowsForGoalScope({unitId,month});
+  $('#mgrGoalProgressCards').innerHTML=GOAL_METRICS.map(m=>goalCardHtml(m,goalStatus(goal[m.goalField],goalActual(rows,m.key),month))).join('');
+  $('#mgrGoalProgressStatus').textContent=`${goal.team_size} pessoa(s) na distribuição`;
+}
+
+function activeGoalTeam(unitId){
+  return ORG_PROFILES_DB
+    .filter(p=>p.active&&p.first_access_completed&&p.unit_id===unitId&&['colaborador','gerente'].includes(p.role))
+    .slice().sort((a,b)=>orgDbFullName(a).localeCompare(orgDbFullName(b),'pt-BR'));
+}
+function evenDistribution(total,count){
+  total=Math.max(0,Math.trunc(Number(total)||0));if(!count)return[];
+  const base=Math.floor(total/count),rest=total%count;
+  return Array.from({length:count},(_,i)=>base+(i<rest?1:0));
+}
+function goalDraftFromStored(unitId,month){
+  const goal=goalByUnitMonth(unitId,month);
+  if(goal){
+    const allocations=goalAllocations(goal.id).map(a=>({
+      user_id:a.user_id,
+      name:a.user_name_snapshot||a.username_snapshot||'Usuário',
+      username:a.username_snapshot||'',
+      role:(a.user_id&&ORG_PROFILES_DB.find(p=>p.user_id===a.user_id)?.role)||'snapshot',
+      floor_goal:Number(a.floor_goal||0),online_goal:Number(a.online_goal||0),quotation_goal:Number(a.quotation_goal||0),mode:a.distribution_mode||'auto'
+    }));
+    return {key:`${unitId}|${month}`,unitId,month,floor_goal:Number(goal.floor_goal||0),online_goal:Number(goal.online_goal||0),quotation_goal:Number(goal.quotation_goal||0),allocations,stored:true,goalId:goal.id};
+  }
+  const team=activeGoalTeam(unitId);
+  return {key:`${unitId}|${month}`,unitId,month,floor_goal:0,online_goal:0,quotation_goal:0,allocations:team.map(p=>({user_id:p.user_id,name:orgDbFullName(p),username:p.username||'',role:p.role,floor_goal:0,online_goal:0,quotation_goal:0,mode:'auto'})),stored:false,goalId:null};
+}
+function ensureGoalDraft(scope,unitId,month,force=false){
+  const key=`${unitId}|${month}`;
+  if(force||!GOAL_DRAFTS[scope]||GOAL_DRAFTS[scope].key!==key)GOAL_DRAFTS[scope]=goalDraftFromStored(unitId,month);
+  return GOAL_DRAFTS[scope];
+}
+function redistributeGoalDraft(scope,unitId,month){
+  const d=ensureGoalDraft(scope,unitId,month);
+  const team=activeGoalTeam(unitId);
+  const a=evenDistribution(d.floor_goal,team.length),o=evenDistribution(d.online_goal,team.length),q=evenDistribution(d.quotation_goal,team.length);
+  d.allocations=team.map((p,i)=>({user_id:p.user_id,name:orgDbFullName(p),username:p.username||'',role:p.role,floor_goal:a[i]||0,online_goal:o[i]||0,quotation_goal:q[i]||0,mode:'auto'}));
+  d.stored=false;
+  return d;
+}
+function readGoalTotalsFromInputs(scope,d){
+  const pre=scope==='manager'?'mgr':'pf';
+  d.floor_goal=Math.max(0,Math.trunc(Number($(`#${pre}GoalSalao`).value)||0));
+  d.online_goal=Math.max(0,Math.trunc(Number($(`#${pre}GoalOnline`).value)||0));
+  d.quotation_goal=Math.max(0,Math.trunc(Number($(`#${pre}GoalCotacoes`).value)||0));
+}
+function goalDraftSums(d){return {floor_goal:d.allocations.reduce((s,a)=>s+Number(a.floor_goal||0),0),online_goal:d.allocations.reduce((s,a)=>s+Number(a.online_goal||0),0),quotation_goal:d.allocations.reduce((s,a)=>s+Number(a.quotation_goal||0),0)}}
+function goalDraftValid(d){const s=goalDraftSums(d);return d.allocations.length>0&&s.floor_goal===d.floor_goal&&s.online_goal===d.online_goal&&s.quotation_goal===d.quotation_goal}
+function rolePt(role){return role==='gerente'?'Gerente':role==='colaborador'?'Colaborador':'Histórico'}
+function renderGoalEditor(scope,unitId,month){
+  const pre=scope==='manager'?'mgr':'pf',d=ensureGoalDraft(scope,unitId,month);
+  $(`#${pre}GoalSalao`).value=d.floor_goal;$(`#${pre}GoalOnline`).value=d.online_goal;$(`#${pre}GoalCotacoes`).value=d.quotation_goal;
+  const totalDays=monthDays(month);
+  $(`#${pre}GoalTeamBody`).innerHTML=d.allocations.map((a,i)=>`<tr>
+    <td><b>${escapeAlertHtml(a.name)}</b><div class="muted">${escapeAlertHtml(a.username||'')}</div></td><td>${rolePt(a.role)}</td>
+    <td><input type="number" min="0" step="1" value="${a.floor_goal}" data-goal-scope="${scope}" data-goal-index="${i}" data-goal-field="floor_goal"/></td>
+    <td><input type="number" min="0" step="1" value="${a.online_goal}" data-goal-scope="${scope}" data-goal-index="${i}" data-goal-field="online_goal"/></td>
+    <td><input type="number" min="0" step="1" value="${a.quotation_goal}" data-goal-scope="${scope}" data-goal-index="${i}" data-goal-field="quotation_goal"/></td>
+    <td>${format1((a.floor_goal+a.online_goal+a.quotation_goal)/totalDays)}/dia</td>
+  </tr>`).join('')||'<tr><td colspan="6">Nenhuma pessoa ativa na unidade.</td></tr>';
+  const s=goalDraftSums(d);
+  $(`#${pre}GoalTeamFoot`).innerHTML=`<tr><td colspan="2">Total distribuído</td><td>${formatInt(s.floor_goal)} / ${formatInt(d.floor_goal)}</td><td>${formatInt(s.online_goal)} / ${formatInt(d.online_goal)}</td><td>${formatInt(s.quotation_goal)} / ${formatInt(d.quotation_goal)}</td><td>—</td></tr>`;
+  const check=$(`#${pre}GoalCheck`),valid=goalDraftValid(d);
+  const currentIds=new Set(activeGoalTeam(unitId).map(p=>p.user_id)),draftIds=new Set(d.allocations.map(a=>a.user_id).filter(Boolean));
+  const changed=currentIds.size!==draftIds.size||[...currentIds].some(id=>!draftIds.has(id));
+  const canSave=valid&&!changed;
+  check.className=`goal-check ${canSave?'ok':'error'}`;
+  check.textContent=changed?'A equipe atual mudou. Para salvar uma nova versão da meta, primeiro redistribua para a equipe atual.':valid?'Distribuição fechada: os valores individuais somam exatamente a meta da unidade.':'A distribuição individual precisa somar exatamente os três valores da meta da unidade.';
+  $(`#${pre}GoalSave`).disabled=!canSave;
+  $(`#${pre}GoalTeamNote`).innerHTML=changed?'<b>Equipe atual diferente da distribuição salva.</b> A meta antiga foi preservada. Use “Redistribuir para equipe atual” para criar uma nova distribuição.':'A distribuição considera a equipe registrada para este mês. Mudanças de pessoas não alteram a meta silenciosamente.';
+  $(`#${pre}GoalTeamCount`) && ($(`#${pre}GoalTeamCount`).textContent=`${d.allocations.length} pessoa(s)`);
+
+  const goal=goalByUnitMonth(unitId,month),rows=rowsForGoalScope({unitId,month});
+  $(`#${pre}GoalEditorProgress`).innerHTML=GOAL_METRICS.map(m=>goalCardHtml(m,goalStatus(d[m.goalField],goalActual(rows,m.key),month))).join('');
+}
+function onGoalAllocationInput(e){
+  const el=e.target.closest('[data-goal-scope]');if(!el)return;
+  const scope=el.dataset.goalScope,d=GOAL_DRAFTS[scope];if(!d)return;
+  const a=d.allocations[Number(el.dataset.goalIndex)];if(!a)return;
+  a[el.dataset.goalField]=Math.max(0,Math.trunc(Number(el.value)||0));a.mode='manual';
+  renderGoalEditor(scope,d.unitId,d.month);
+}
+document.addEventListener('change',onGoalAllocationInput);
+
+async function saveGoalDraft(scope){
+  const d=GOAL_DRAFTS[scope];if(!d||!goalDraftValid(d))return;
+  if(currentUser?.source!=='supabase'){alert('O salvamento de metas está disponível no ambiente conectado ao Supabase.');return}
+  const pre=scope==='manager'?'mgr':'pf',btn=$(`#${pre}GoalSave`);btn.disabled=true;btn.textContent='SALVANDO...';
+  try{
+    const {error}=await supabaseClient.rpc('save_operational_unit_goal',{
+      p_unit_id:d.unitId,p_goal_month:goalMonthDate(d.month),p_floor_goal:d.floor_goal,p_online_goal:d.online_goal,p_quotation_goal:d.quotation_goal,
+      p_allocations:d.allocations.map(a=>({user_id:a.user_id,floor_goal:a.floor_goal,online_goal:a.online_goal,quotation_goal:a.quotation_goal,mode:a.mode||'manual'}))
+    });
+    if(error)throw error;
+    await loadOperationalGoalsFromSupabase();
+    alert('Metas operacionais salvas com sucesso.');
+  }catch(err){console.error(err);alert(err.message||'Não foi possível salvar as metas.')}finally{btn.disabled=false;btn.textContent='Salvar metas'}
+}
+
+function renderManagerGoals(){
+  if(currentUser?.role!=='gerente')return;
+  const month=$('#mgrGoalMonth').value||currentMonthKey();if(!$('#mgrGoalMonth').value)$('#mgrGoalMonth').value=month;
+  const unitId=currentUser.unitId;if(!unitId)return;
+  $('#mgrGoalUnitLabel').textContent=`${currentUser.unit} · ${currentUser.company} · definição mensal`;
+  const d=ensureGoalDraft('manager',unitId,month);
+  renderGoalEditor('manager',unitId,month);
+}
+$('#mgrGoalMonth').addEventListener('change',()=>{GOAL_DRAFTS.manager=null;renderManagerGoals()});
+['mgrGoalSalao','mgrGoalOnline','mgrGoalCotacoes'].forEach(id=>$('#'+id).addEventListener('input',()=>{const d=GOAL_DRAFTS.manager;if(!d)return;readGoalTotalsFromInputs('manager',d);renderGoalEditor('manager',d.unitId,d.month)}));
+$('#mgrGoalEqual').addEventListener('click',()=>{const d=GOAL_DRAFTS.manager;if(!d)return;readGoalTotalsFromInputs('manager',d);redistributeGoalDraft('manager',d.unitId,d.month);renderGoalEditor('manager',d.unitId,d.month)});
+$('#mgrGoalCurrentTeam').addEventListener('click',()=>{const d=GOAL_DRAFTS.manager;if(!d)return;readGoalTotalsFromInputs('manager',d);redistributeGoalDraft('manager',d.unitId,d.month);renderGoalEditor('manager',d.unitId,d.month)});
+$('#mgrGoalSave').addEventListener('click',()=>saveGoalDraft('manager'));
+
+function rebuildPerformanceGoalOptions(){
+  if(currentUser?.role!=='performance')return;
+  const companyEl=$('#pfGoalCompany'),unitEl=$('#pfGoalUnit');if(!companyEl||!unitEl)return;
+  const oldC=companyEl.value||'all',oldU=unitEl.value||'all';
+  companyEl.innerHTML='<option value="all">Todas as empresas</option>'+ORG_COMPANIES_DB.filter(c=>c.active!==false).map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  companyEl.value=ORG_COMPANIES_DB.some(c=>c.id===oldC)?oldC:'all';
+  const units=ORG_UNITS_DB.filter(u=>u.active!==false&&(companyEl.value==='all'||u.company_id===companyEl.value));
+  unitEl.innerHTML='<option value="all">Todas as unidades</option>'+units.map(u=>`<option value="${u.id}">${u.name}</option>`).join('');
+  unitEl.value=units.some(u=>u.id===oldU)?oldU:'all';
+  if(!$('#pfGoalMonth').value)$('#pfGoalMonth').value=currentMonthKey();
+}
+function renderPerformanceGoalOverview(){
+  const month=$('#pfGoalMonth').value||currentMonthKey(),company=$('#pfGoalCompany').value,unit=$('#pfGoalUnit').value;
+  const units=ORG_UNITS_DB.filter(u=>(company==='all'||u.company_id===company)&&(unit==='all'||u.id===unit));
+  const rows=units.map(u=>{const g=goalByUnitMonth(u.id,month);if(!g)return {unit:u,goal:null};const rr=rowsForGoalScope({unitId:u.id,month});return {unit:u,goal:g,att:GOAL_METRICS.map(m=>goalStatus(g[m.goalField],goalActual(rr,m.key),month))}});
+  $('#pfGoalOverview').innerHTML=`<div class="goal-overview-row head"><div>Unidade</div><div>Abordagens</div><div>Captações</div><div>Cotações</div><div>Status</div></div>`+rows.map(x=>{
+    if(!x.goal)return `<div class="goal-overview-row"><div><b>${escapeAlertHtml(x.unit.name)}</b></div><div>—</div><div>—</div><div>—</div><div class="muted">Meta não definida</div></div>`;
+    const avg=x.att.filter(s=>s.target>0).length?x.att.filter(s=>s.target>0).reduce((a,s)=>a+s.pct,0)/x.att.filter(s=>s.target>0).length:0;
+    return `<div class="goal-overview-row"><div><b>${escapeAlertHtml(x.unit.name)}</b><div class="muted">${x.goal.team_size} pessoa(s)</div></div><div>${formatInt(x.goal.floor_goal)} · ${format1(x.att[0].pct)}%</div><div>${formatInt(x.goal.online_goal)} · ${format1(x.att[1].pct)}%</div><div>${formatInt(x.goal.quotation_goal)} · ${format1(x.att[2].pct)}%</div><div><b>${format1(avg)}%</b> médio</div></div>`;
+  }).join('');
+}
+function renderPerformanceGoals(){
+  if(currentUser?.role!=='performance')return;
+  rebuildPerformanceGoalOptions();renderPerformanceGoalOverview();
+  const unitId=$('#pfGoalUnit').value,month=$('#pfGoalMonth').value||currentMonthKey(),editor=$('#pfGoalEditor');
+  if(unitId==='all'){editor.classList.add('hidden');GOAL_DRAFTS.performance=null;return}
+  editor.classList.remove('hidden');
+  const unit=ORG_UNITS_DB.find(u=>u.id===unitId);$('#pfGoalUnitName').value=unit?.name||'';$('#pfGoalEditorTitle').textContent=`Meta · ${unit?.name||'Unidade'}`;$('#pfGoalEditorMonthLabel').textContent=month;
+  renderGoalEditor('performance',unitId,month);
+}
+$('#pfGoalCompany').addEventListener('change',()=>{GOAL_DRAFTS.performance=null;rebuildPerformanceGoalOptions();renderPerformanceGoals()});
+$('#pfGoalUnit').addEventListener('change',()=>{GOAL_DRAFTS.performance=null;renderPerformanceGoals()});
+$('#pfGoalMonth').addEventListener('change',()=>{GOAL_DRAFTS.performance=null;renderPerformanceGoals()});
+$('#pfGoalReload').addEventListener('click',()=>loadOperationalGoalsFromSupabase());
+['pfGoalSalao','pfGoalOnline','pfGoalCotacoes'].forEach(id=>$('#'+id).addEventListener('input',()=>{const d=GOAL_DRAFTS.performance;if(!d)return;readGoalTotalsFromInputs('performance',d);renderGoalEditor('performance',d.unitId,d.month)}));
+$('#pfGoalEqual').addEventListener('click',()=>{const d=GOAL_DRAFTS.performance;if(!d)return;readGoalTotalsFromInputs('performance',d);redistributeGoalDraft('performance',d.unitId,d.month);renderGoalEditor('performance',d.unitId,d.month)});
+$('#pfGoalCurrentTeam').addEventListener('click',()=>{const d=GOAL_DRAFTS.performance;if(!d)return;readGoalTotalsFromInputs('performance',d);redistributeGoalDraft('performance',d.unitId,d.month);renderGoalEditor('performance',d.unitId,d.month)});
+$('#pfGoalSave').addEventListener('click',()=>saveGoalDraft('performance'));
+
+
 /* Dashboard Ao Vivo: integração isolada em modules/dashboard-ao-vivo/bridge.js */
 
 function setPerformanceMode(mode){
   performanceMode=mode;
   const users=mode==='users',
         org=mode==='org',
+        goals=mode==='goals',
         dashboard=mode==='dashboard',
         live=mode==='live';
 
   $('#performanceDashboard').classList.toggle('hidden',!dashboard);
+  $('#performanceGoals').classList.toggle('hidden',!goals);
   $('#liveDashboardContainer').classList.toggle('hidden',!live);
   $('#userManagement').classList.toggle('hidden',!users);
   $('#orgManagement').classList.toggle('hidden',!org);
@@ -2848,6 +3237,11 @@ function setPerformanceMode(mode){
     }
     else if(live){
       if(currentUser?.source==='supabase')window.LiveDashboardBridge?.refresh();
+    }
+    else if(goals){
+      rebuildPerformanceGoalOptions();
+      renderPerformanceGoals();
+      if(currentUser?.source==='supabase')loadOperationalGoalsFromSupabase();
     }
     else{
       renderPerformance();

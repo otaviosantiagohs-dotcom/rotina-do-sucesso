@@ -659,6 +659,7 @@ html.theme-anim *{transition:background-color .28s ease,color .28s ease,border-c
             <button class="tab" type="button" data-action="salao">Abordagem</button>
             <button class="tab" type="button" data-action="online">Captação</button>
             <button class="tab" type="button" data-action="cotacoes">Cotações</button>
+            <button class="tab" type="button" data-action="vendas">Vendas</button>
           </div>
         </div>
         <div class="chart-wrap">
@@ -782,6 +783,7 @@ html.theme-anim *{transition:background-color .28s ease,color .28s ease,border-c
             <button class="tab" type="button" data-action="salao">Abord.</button>
             <button class="tab" type="button" data-action="online">Online</button>
             <button class="tab" type="button" data-action="cotacoes">Cotação</button>
+            <button class="tab" type="button" data-action="vendas">Vendas</button>
           </div>
         </div>
         <div class="ov-status" id="ovStatus" role="status" aria-live="polite"><span class="ov-dot"></span><span id="ovText">Monitorando ultrapassagens</span></div>
@@ -815,22 +817,23 @@ html.theme-anim *{transition:background-color .28s ease,color .28s ease,border-c
 
   // Fallback somente para abrir o HTML isolado fora do sistema principal.
   let stores = [
-    {id:'demo1',name:'REC SOS',unitName:'Recife',company:'SOS',capacity:10,dayActiveAgents:9,monthActiveAgents:10,day:{salao:72,online:41,cotacoes:59},month:{salao:824,online:471,cotacoes:672},daily:{}},
-    {id:'demo2',name:'SDU SOS',unitName:'SDU',company:'SOS',capacity:10,dayActiveAgents:8,monthActiveAgents:10,day:{salao:61,online:34,cotacoes:62},month:{salao:705,online:390,cotacoes:712},daily:{}},
-    {id:'demo3',name:'SOS 1',unitName:'SOS 1',company:'SOS',capacity:10,dayActiveAgents:9,monthActiveAgents:10,day:{salao:55,online:48,cotacoes:51},month:{salao:640,online:552,cotacoes:590},daily:{}},
-    {id:'demo4',name:'FOR CONNECT',unitName:'Fortaleza',company:'Connect',capacity:10,dayActiveAgents:8,monthActiveAgents:9,day:{salao:49,online:42,cotacoes:47},month:{salao:570,online:488,cotacoes:545},daily:{}},
-    {id:'demo5',name:'VIX SOS',unitName:'Vitória',company:'SOS',capacity:10,dayActiveAgents:8,monthActiveAgents:9,day:{salao:46,online:37,cotacoes:44},month:{salao:528,online:425,cotacoes:505},daily:{}},
-    {id:'demo6',name:'UNI REC',unitName:'Recife',company:'Universo',capacity:10,dayActiveAgents:8,monthActiveAgents:9,day:{salao:43,online:31,cotacoes:40},month:{salao:494,online:356,cotacoes:460},daily:{}},
-    {id:'demo7',name:'BEL CONNECT',unitName:'Belém',company:'Connect',capacity:10,dayActiveAgents:7,monthActiveAgents:9,day:{salao:39,online:33,cotacoes:36},month:{salao:448,online:379,cotacoes:414},daily:{}},
-    {id:'demo8',name:'SOS THE',unitName:'Teresina',company:'SOS',capacity:10,dayActiveAgents:7,monthActiveAgents:9,day:{salao:37,online:27,cotacoes:32},month:{salao:425,online:310,cotacoes:368},daily:{}},
-    {id:'demo9',name:'AZUL',unitName:'Azul',company:'Azul Viagens',capacity:10,dayActiveAgents:7,monthActiveAgents:8,day:{salao:35,online:25,cotacoes:31},month:{salao:402,online:287,cotacoes:356},daily:{}},
-    {id:'demo10',name:'UNI BEL',unitName:'Belém',company:'Universo',capacity:10,dayActiveAgents:7,monthActiveAgents:8,day:{salao:34,online:20,cotacoes:29},month:{salao:390,online:230,cotacoes:333},daily:{}}
+    {id:'demo1',name:'REC SOS',unitName:'Recife',company:'SOS',capacity:10,dayActiveAgents:9,monthActiveAgents:10,day:{salao:72,online:41,cotacoes:59,vendas:14},month:{salao:824,online:471,cotacoes:672,vendas:151},daily:{}},
+    {id:'demo2',name:'SDU SOS',unitName:'SDU',company:'SOS',capacity:10,dayActiveAgents:8,monthActiveAgents:10,day:{salao:61,online:34,cotacoes:62,vendas:13},month:{salao:705,online:390,cotacoes:712,vendas:142},daily:{}},
+    {id:'demo3',name:'SOS 1',unitName:'SOS 1',company:'SOS',capacity:10,dayActiveAgents:9,monthActiveAgents:10,day:{salao:55,online:48,cotacoes:51,vendas:12},month:{salao:640,online:552,cotacoes:590,vendas:133},daily:{}},
+    {id:'demo4',name:'FOR CONNECT',unitName:'Fortaleza',company:'Connect',capacity:10,dayActiveAgents:8,monthActiveAgents:9,day:{salao:49,online:42,cotacoes:47,vendas:11},month:{salao:570,online:488,cotacoes:545,vendas:124},daily:{}},
+    {id:'demo5',name:'VIX SOS',unitName:'Vitória',company:'SOS',capacity:10,dayActiveAgents:8,monthActiveAgents:9,day:{salao:46,online:37,cotacoes:44,vendas:10},month:{salao:528,online:425,cotacoes:505,vendas:118},daily:{}},
+    {id:'demo6',name:'UNI REC',unitName:'Recife',company:'Universo',capacity:10,dayActiveAgents:8,monthActiveAgents:9,day:{salao:43,online:31,cotacoes:40,vendas:9},month:{salao:494,online:356,cotacoes:460,vendas:106},daily:{}},
+    {id:'demo7',name:'BEL CONNECT',unitName:'Belém',company:'Connect',capacity:10,dayActiveAgents:7,monthActiveAgents:9,day:{salao:39,online:33,cotacoes:36,vendas:9},month:{salao:448,online:379,cotacoes:414,vendas:101},daily:{}},
+    {id:'demo8',name:'SOS THE',unitName:'Teresina',company:'SOS',capacity:10,dayActiveAgents:7,monthActiveAgents:9,day:{salao:37,online:27,cotacoes:32,vendas:8},month:{salao:425,online:310,cotacoes:368,vendas:94},daily:{}},
+    {id:'demo9',name:'AZUL',unitName:'Azul',company:'Azul Viagens',capacity:10,dayActiveAgents:7,monthActiveAgents:8,day:{salao:35,online:25,cotacoes:31,vendas:7},month:{salao:402,online:287,cotacoes:356,vendas:86},daily:{}},
+    {id:'demo10',name:'UNI BEL',unitName:'Belém',company:'Universo',capacity:10,dayActiveAgents:7,monthActiveAgents:8,day:{salao:34,online:20,cotacoes:29,vendas:7},month:{salao:390,online:230,cotacoes:333,vendas:82},daily:{}}
   ];
 
   const demoDaySeries = {
     salao:[34,71,112,158,211,263,316,371,426,478,524],
     online:[19,40,67,96,128,161,195,230,260,290,318],
-    cotacoes:[29,60,94,132,169,208,245,282,329,369,406]
+    cotacoes:[29,60,94,132,169,208,245,282,329,369,406],
+    vendas:[1,2,3,4,6,7,9,10,11,13,14]
   };
 
   
@@ -857,7 +860,7 @@ function formatCurrentDate(){
     return `${weekday.charAt(0).toUpperCase()+weekday.slice(1)} · ${map.day}/${map.month}/${map.year}`;
   }
 
-  function blankMetric(){ return {salao:0,online:0,cotacoes:0}; }
+  function blankMetric(){ return {salao:0,online:0,cotacoes:0,vendas:0}; }
 
   function metricValue(obj,key){
     if(!obj) return 0;
@@ -936,7 +939,7 @@ function formatCurrentDate(){
     $('totalActionsLabel').textContent=period==='day'?'Ações totais hoje':'Ações no mês atual';
     $('activeAgentsLabel').textContent=period==='day'?'Colaboradores ativos hoje':'Colaboradores ativos no mês';
     $('rankingTitle').textContent=period==='day'?'Top 5 lojas do dia':'Top 5 lojas do mês';
-    $('rankingSubtitle').textContent=`${scopeLabel()} · ranking por volume de ações`;
+    $('rankingSubtitle').textContent=`${scopeLabel()} · ${activeAction==='vendas'?'ranking por vendas registradas':'ranking por volume de ações'}`;
     $('actionsTitle').textContent=period==='day'?'Ações do dia':'Ações do mês';
     $('paceTitle').textContent=period==='day'?'Ritmo da operação':'Competição do mês';
     if($('evolutionTitle')) $('evolutionTitle').textContent=period==='day'?'Evolução do dia':'Evolução do mês';
@@ -1161,7 +1164,7 @@ function formatCurrentDate(){
       return `<line class="gridline" x1="${padX}" y1="${y}" x2="${W-padX}" y2="${y}"></line>`;
     }).join('');
 
-    const names={all:'Todas as ações',salao:'Abordagem no salão',online:'Captação online',cotacoes:'Cotações'};
+    const names={all:'Todas as ações',salao:'Abordagem no salão',online:'Captação online',cotacoes:'Cotações',vendas:'Vendas registradas'};
     $('chartLegend').textContent=`${names[activeAction]} · ${scopeLabel()} · ${period==='day'?'Hoje':'Mês atual'}`;
   }
 
@@ -1250,9 +1253,11 @@ function formatCurrentDate(){
       s.day.salao+=Math.floor(Math.random()*3);
       s.day.online+=Math.floor(Math.random()*3);
       s.day.cotacoes+=Math.floor(Math.random()*3);
+      s.day.vendas+=Math.floor(Math.random()*2);
       s.month.salao+=Math.floor(Math.random()*3);
       s.month.online+=Math.floor(Math.random()*3);
       s.month.cotacoes+=Math.floor(Math.random()*3);
+      s.month.vendas+=Math.floor(Math.random()*2);
     });
     refreshView();
     $('lastUpdate').textContent=new Date().toLocaleTimeString('pt-BR',{timeZone:'America/Sao_Paulo'});
@@ -1389,7 +1394,7 @@ function formatCurrentDate(){
 
   /* 5. Ranking: detector de ultrapassagem no módulo selecionado */
   var rk=$('ranking'), panel=rk.closest('.panel'), st=$('ovStatus'), stTxt=$('ovText');
-  var MOD={all:'Geral',salao:'Abordagem no salão',online:'Captação online',cotacoes:'Cotações'};
+  var MOD={all:'Geral',salao:'Abordagem no salão',online:'Captação online',cotacoes:'Cotações',vendas:'Vendas registradas'};
   var HL=9000, prevKey=null, prevList=[], prevTop=new Map(), hl=new Map(), stTimer=null, flashTimer=null;
 
   function activeTab(){var t=document.querySelector('#rankingTabs .tab.active');return t?t.dataset.action:'all'}

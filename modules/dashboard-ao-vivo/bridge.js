@@ -67,7 +67,7 @@
 
     const {data,error}=await supabaseClient
       .from('daily_routines')
-      .select('user_id,unit_id,routine_date,floor_approaches,online_captures,quotations')
+      .select('user_id,unit_id,routine_date,floor_approaches,online_captures,quotations,sales')
       .gte('routine_date',monthStart)
       .lte('routine_date',today)
       .order('routine_date',{ascending:true});
@@ -83,7 +83,7 @@
   async function fetchTodayOnly(today){
     const {data,error}=await supabaseClient
       .from('daily_routines')
-      .select('user_id,unit_id,routine_date,floor_approaches,online_captures,quotations')
+      .select('user_id,unit_id,routine_date,floor_approaches,online_captures,quotations,sales')
       .eq('routine_date',today);
 
     if(error)throw error;
@@ -135,8 +135,8 @@
         capacity:capacityByUnit.get(u.id)||0,
         dayActive:new Set(),
         monthActive:new Set(),
-        day:{salao:0,online:0,cotacoes:0},
-        month:{salao:0,online:0,cotacoes:0},
+        day:{salao:0,online:0,cotacoes:0,vendas:0},
+        month:{salao:0,online:0,cotacoes:0,vendas:0},
         daily:{}
       });
     });
@@ -148,18 +148,21 @@
       const salao=Number(r.floor_approaches||0);
       const online=Number(r.online_captures||0);
       const cotacoes=Number(r.quotations||0);
+      const vendas=Number(r.sales||0);
       const activity=salao+online+cotacoes;
 
       s.month.salao+=salao;
       s.month.online+=online;
       s.month.cotacoes+=cotacoes;
+      s.month.vendas+=vendas;
 
       const dayKey=String(r.routine_date).slice(8,10);
-      if(!s.daily[dayKey])s.daily[dayKey]={salao:0,online:0,cotacoes:0};
+      if(!s.daily[dayKey])s.daily[dayKey]={salao:0,online:0,cotacoes:0,vendas:0};
 
       s.daily[dayKey].salao+=salao;
       s.daily[dayKey].online+=online;
       s.daily[dayKey].cotacoes+=cotacoes;
+      s.daily[dayKey].vendas+=vendas;
 
       if(activity>0)s.monthActive.add(r.user_id);
 
@@ -167,6 +170,7 @@
         s.day.salao+=salao;
         s.day.online+=online;
         s.day.cotacoes+=cotacoes;
+        s.day.vendas+=vendas;
         if(activity>0)s.dayActive.add(r.user_id);
       }
     });
