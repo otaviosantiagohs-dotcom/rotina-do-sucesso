@@ -106,7 +106,7 @@
   .btn.active{border-color:#5a606b;background:#1a1f27}
   .btn:focus-visible{outline:2px solid #fff;outline-offset:2px}
   .status-strip{
-    display:grid;grid-template-columns:1.1fr repeat(4,1fr);gap:10px;min-width:0;
+    display:grid;grid-template-columns:1.1fr repeat(5,1fr);gap:10px;min-width:0;
   }
   .metric{
     min-width:0;border:1px solid var(--border);border-radius:14px;background:linear-gradient(180deg,#12151a,#0f1115);
@@ -186,7 +186,7 @@
   @media (prefers-reduced-motion: reduce){.changed{animation:none}}
   @media (max-width:1050px){
     .app{padding:12px;gap:10px}
-    .status-strip{grid-template-columns:repeat(5,1fr)}
+    .status-strip{grid-template-columns:repeat(3,1fr)}
     .metric{padding:10px}
     .metric .value{font-size:25px}
     .metric.primary .value{font-size:28px}
@@ -351,7 +351,7 @@ h1{font-family:var(--mono);font-size:22px;letter-spacing:-.02em}
 
 /* Entrada orquestrada (uma vez) */
 .metric,.panel{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
-.metric:nth-child(2){animation-delay:.05s}.metric:nth-child(3){animation-delay:.1s}.metric:nth-child(4){animation-delay:.15s}.metric:nth-child(5){animation-delay:.2s}
+.metric:nth-child(2){animation-delay:.05s}.metric:nth-child(3){animation-delay:.1s}.metric:nth-child(4){animation-delay:.15s}.metric:nth-child(5){animation-delay:.2s}.metric:nth-child(6){animation-delay:.25s}
 .p-chart{animation-delay:.2s}.p-rank{animation-delay:.28s}.p-actions{animation-delay:.34s}.p-pace{animation-delay:.4s}
 #boot{position:fixed;inset:0;z-index:60;display:grid;place-items:center;text-align:center;background:var(--bg);pointer-events:none;font-family:var(--mono);animation:bootout 1.7s ease both}
 #boot .b-l{width:0;height:1px;margin:0 auto 16px;background:var(--red);animation:accl .8s ease .15s forwards}
@@ -960,6 +960,23 @@ html.theme-anim *{transition:background-color .28s ease,color .28s ease,border-c
   }
 </style>
 
+
+<style id="rds-live-sales-v9515">
+  .sales-metric{
+    border-color:rgba(233,180,93,.26);
+  }
+  .sales-metric.selected{
+    border-color:rgba(233,180,93,.72);
+    box-shadow:inset 0 0 0 1px rgba(233,180,93,.12);
+  }
+  .sales-metric.selected .value{
+    color:var(--amber);
+  }
+  @media(max-width:820px){
+    .sales-metric{min-width:0}
+  }
+</style>
+
 </head>
 <body>
 <div class="cd-line" aria-hidden="true"><i></i></div>
@@ -1012,32 +1029,38 @@ html.theme-anim *{transition:background-color .28s ease,color .28s ease,border-c
   <section class="status-strip">
     <article class="metric primary">
       <div class="label"><span id="totalActionsLabel">Ações totais hoje</span></div>
-      <div class="value" id="totalActions">1.248</div>
+      <div class="value" id="totalActions">0</div>
       <div class="sub"><span class="up" id="totalDelta">—</span> desde atualização anterior</div>
     </article>
 
     <article class="metric">
       <div class="label">Abordagem no salão</div>
-      <div class="value" id="metricSalao">524</div>
+      <div class="value" id="metricSalao">0</div>
       <div class="sub"><span class="up" id="deltaSalao">▲ 6,9%</span> ritmo do dia</div>
     </article>
 
     <article class="metric">
       <div class="label">Captação online</div>
-      <div class="value" id="metricOnline">318</div>
+      <div class="value" id="metricOnline">0</div>
       <div class="sub"><span class="up" id="deltaOnline">▲ 11,2%</span> ritmo do dia</div>
     </article>
 
     <article class="metric">
       <div class="label">Cotações</div>
-      <div class="value" id="metricCotacoes">406</div>
-      <div class="sub"><span class="up" id="deltaCotacoes">▲ 7,3%</span> ritmo do dia</div>
+      <div class="value" id="metricCotacoes">0</div>
+      <div class="sub"><span class="up" id="deltaCotacoes">—</span> desde atualização anterior</div>
+    </article>
+
+    <article class="metric sales-metric" id="salesMetricCard">
+      <div class="label"><span id="salesMetricLabel">Vendas hoje</span></div>
+      <div class="value" id="metricVendas">0</div>
+      <div class="sub"><span class="up" id="deltaVendas">—</span> desde atualização anterior</div>
     </article>
 
     <article class="metric">
       <div class="label"><span id="activeAgentsLabel">Colaboradores ativos hoje</span></div>
-      <div class="value" id="activeAgents">87</div>
-      <div class="sub"><span id="activeCoverage">87%</span> com lançamento hoje</div>
+      <div class="value" id="activeAgents">0</div>
+      <div class="sub"><span id="activeCoverage">0%</span> com lançamento hoje</div>
     </article>
   </section>
 
@@ -1383,6 +1406,8 @@ function formatCurrentDate(){
 
     $('avgEntityLabel').textContent=userView?'Média por usuário':'Média por loja';
     $('coverageLabel').textContent=userView?'Cobertura de usuários':'Cobertura operacional';
+    $('salesMetricLabel').textContent=period==='day'?'Vendas hoje':'Vendas no mês';
+    $('salesMetricCard').classList.toggle('selected',activeAction==='vendas');
   }
 
   function previousSnapshotStoreDelta(storeId){
@@ -1450,10 +1475,11 @@ function formatCurrentDate(){
     const salao=sumMetric('salao');
     const online=sumMetric('online');
     const cotacoes=sumMetric('cotacoes');
+    const vendas=sumMetric('vendas');
     const total=salao+online+cotacoes;
 
     [
-      ['metricSalao',salao],['metricOnline',online],['metricCotacoes',cotacoes],
+      ['metricSalao',salao],['metricOnline',online],['metricCotacoes',cotacoes],['metricVendas',vendas],
       ['cardSalao',salao],['cardOnline',online],['cardCotacoes',cotacoes],['totalActions',total]
     ].forEach(([id,v])=>{
       const el=$(id);
@@ -1508,6 +1534,7 @@ function formatCurrentDate(){
     $('deltaSalao').textContent=formatDelta(metricDelta('salao'));
     $('deltaOnline').textContent=formatDelta(metricDelta('online'));
     $('deltaCotacoes').textContent=formatDelta(metricDelta('cotacoes'));
+    $('deltaVendas').textContent=formatDelta(metricDelta('vendas'));
 
     updateRecentActivity(scoped);
 
