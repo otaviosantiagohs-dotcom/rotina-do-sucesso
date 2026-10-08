@@ -315,6 +315,204 @@ module.exports = async function handler(req, res) {
     }
 
 
+    // ------------------------------------------------------------
+    // V9.5.19 — PERFORMERS
+    // Performer continua sendo Performance/Admin.
+    // Escritas passam pela API administrativa; não dependem de RPC SQL.
+    // ------------------------------------------------------------
+    if (action === 'setPerformerStatus') {
+      const userId = String(body.userId || '');
+      const active = body.active === true;
+
+      if (!userId) {
+        return json(res, 400, { code: 'MISSING_USER', message: 'Usuário não informado.' });
+      }
+
+      const { data: profile, error: profileError } = await admin
+        .from('profiles')
+        .select('user_id,username,first_name,last_name,role,active')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (profileError) throw profileError;
+      if (!profile) {
+        return json(res, 404, { code: 'USER_NOT_FOUND', message: 'Usuário não encontrado.' });
+      }
+      if (profile.role !== 'performance') {
+        return json(res, 400, {
+          code: 'PERFORMER_REQUIRES_PERFORMANCE',
+          message: 'Somente usuários Performance/Admin podem ser habilitados como Performer.'
+        });
+      }
+      if (active && !profile.active) {
+        return json(res, 400, {
+          code: 'PERFORMER_REQUIRES_ACTIVE_USER',
+          message: 'O usuário precisa estar ativo para ser habilitado como Performer.'
+        });
+      }
+
+      const { data: oldPerformer, error: oldError } = await admin
+        .from('performers')
+        .select('user_id,active,created_by,created_at,updated_at')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (oldError && oldError.code !== 'PGRST116') throw oldError;
+
+      const oldActive = oldPerformer?.active === true;
+      let assignmentsRemoved = 0;
+      const now = new Date().toISOString();
+
+      if (active) {
+        const { error } = await admin
+          .from('performers')
+          .upsert({
+            user_id: userId,
+            active: true,
+            created_by: oldPerformer?.created_by || actor.id,
+            updated_at: now
+          }, { onConflict: 'user_id' });
+
+        if (error) throw error;
+      } else {
+        const { data: removedRows, error: removeError } = await admin
+          .from('performer_units')
+          .delete()
+          .eq('performer_user_id', userId)
+          .select('unit_id');
+
+        if (removeError) throw removeError;
+        assignmentsRemoved = (removedRows || []).length;
+
+        if (oldPerformer) {
+          const { error } = await admin
+            .from('performers')
+            .update({ active: false, updated_at: now })
+            .eq('user_id', userId);
+
+          if (error) throw error;
+        }
+      }
+
+      await audit(
+        active ? 'PERFORMER_HABILITADO' : 'PERFORMER_DESABILITADO',
+        userId,
+        JSON.stringify({
+          active,
+          username: profile.username,
+          assignmentsRemoved
+        }),
+        JSON.stringify({ active: oldActive }),
+        'performer'
+      );
+
+      return json(res, 200, {
+        ok: true,
+        userId,
+        active,
+        assignmentsRemoved
+      });
+    }
+
+    if (action === 'setPerformerUnit') {
+      const unitId = String(body.unitId || '');
+      const performerUserId = body.performerUserId ? String(body.performerUserId) : null;
+
+      if (!unitId) {
+        return json(res, 400, { code: 'MISSING_UNIT', message: 'Unidade não informada.' });
+      }
+
+      const { data: unit, error: unitError } = await admin
+        .from('units')
+        .select('id,name,company_id,active')
+        .eq('id', unitId)
+        .maybeSingle();
+
+      if (unitError) throw unitError;
+      if (!unit) {
+        return json(res, 404, { code: 'UNIT_NOT_FOUND', message: 'Unidade não encontrada.' });
+      }
+
+      const { data: oldAssignment, error: oldError } = await admin
+        .from('performer_units')
+        .select('unit_id,performer_user_id,assigned_by,assigned_at')
+        .eq('unit_id', unitId)
+        .maybeSingle();
+
+      if (oldError && oldError.code !== 'PGRST116') throw oldError;
+
+      if (performerUserId) {
+        const { data: performer, error: performerError } = await admin
+          .from('performers')
+          .select('user_id,active')
+          .eq('user_id', performerUserId)
+          .maybeSingle();
+
+        if (performerError) throw performerError;
+
+        const { data: performerProfile, error: performerProfileError } = await admin
+          .from('profiles')
+          .select('user_id,role,active')
+          .eq('user_id', performerUserId)
+          .maybeSingle();
+
+        if (performerProfileError) throw performerProfileError;
+
+        if (!performer || !performer.active || !performerProfile ||
+            !performerProfile.active || performerProfile.role !== 'performance') {
+          return json(res, 400, {
+            code: 'INVALID_PERFORMER',
+            message: 'O usuário selecionado não é um Performer ativo.'
+          });
+        }
+
+        const { error } = await admin
+          .from('performer_units')
+          .upsert({
+            unit_id: unitId,
+            performer_user_id: performerUserId,
+            assigned_by: actor.id,
+            assigned_at: new Date().toISOString()
+          }, { onConflict: 'unit_id' });
+
+        if (error) throw error;
+      } else {
+        const { error } = await admin
+          .from('performer_units')
+          .delete()
+          .eq('unit_id', unitId);
+
+        if (error) throw error;
+      }
+
+      const oldPerformerUserId = oldAssignment?.performer_user_id || null;
+      const eventType = performerUserId === null
+        ? 'PERFORMER_LOJA_REMOVIDA'
+        : oldPerformerUserId
+          ? (oldPerformerUserId === performerUserId ? 'PERFORMER_LOJA_MANTIDA' : 'PERFORMER_LOJA_TRANSFERIDA')
+          : 'PERFORMER_LOJA_VINCULADA';
+
+      await audit(
+        eventType,
+        unitId,
+        JSON.stringify({
+          performerUserId,
+          unitName: unit.name
+        }),
+        JSON.stringify({
+          performerUserId: oldPerformerUserId
+        }),
+        'unit'
+      );
+
+      return json(res, 200, {
+        ok: true,
+        unitId,
+        performerUserId
+      });
+    }
+
+
     if (action === 'create') {
       const u = body.user || {};
       const username = String(u.username || '').trim().toLowerCase();
@@ -492,6 +690,16 @@ module.exports = async function handler(req, res) {
 
       if (profileError) return json(res, 400, { code: 'PROFILE_UPDATE_FAILED', message: profileError.message });
 
+      if (role !== 'performance' || !active) {
+        try {
+          await admin.from('performer_units').delete().eq('performer_user_id', userId);
+          await admin.from('performers').update({ active: false, updated_at: new Date().toISOString() }).eq('user_id', userId);
+        } catch (performerCleanupError) {
+          // Não interrompe gestão de usuários caso o módulo Performers ainda não tenha sido instalado.
+          console.warn('Performer cleanup skipped:', performerCleanupError?.message || performerCleanupError);
+        }
+      }
+
       await syncManager(userId, role, active, unitId);
       await audit('USUARIO_EDITADO', username, JSON.stringify({ role, careerRank, active, companyId, unitId, firstAccessCompleted: complete, passwordResetRequiresChange: !!u.password }), JSON.stringify({
         role: oldProfile.role, active: oldProfile.active, companyId: oldProfile.company_id, unitId: oldProfile.unit_id
@@ -563,6 +771,15 @@ module.exports = async function handler(req, res) {
 
       const { error } = await admin.from('profiles').update({ active }).eq('user_id', userId);
       if (error) return json(res, 400, { code: 'PROFILE_UPDATE_FAILED', message: error.message });
+
+      if (!active && profile.role === 'performance') {
+        try {
+          await admin.from('performer_units').delete().eq('performer_user_id', userId);
+          await admin.from('performers').update({ active: false, updated_at: new Date().toISOString() }).eq('user_id', userId);
+        } catch (performerCleanupError) {
+          console.warn('Performer cleanup skipped:', performerCleanupError?.message || performerCleanupError);
+        }
+      }
 
       if (!active && profile.role === 'gerente') {
         await admin.from('units').update({ manager_user_id: null }).eq('manager_user_id', userId);

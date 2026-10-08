@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/><meta name="theme-color" content="#050608"/><meta name="color-scheme" content="dark light"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" name="viewport"/>
-<title>Rotina de Sucesso — V9.5.15 Final</title>
+<title>Rotina de Sucesso — V9.5.19 Final</title>
 <script>/* V9 — tema aplicado antes da pintura (evita piscar) */(function(){var t='dark';try{var s=localStorage.getItem('rds-theme');if(s==='light'||s==='dark')t=s}catch(e){}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='light'?'#f2f0ec':'#050608')})();</script>
 <style>
 :root{--bg:#0b0e12;--panel:#12171d;--panel2:#171d24;--line:#27303a;--text:#f5f7fa;--muted:#8d98a5;--red:#e43b32;--green:#61d394;--amber:#e9b45d}
@@ -801,6 +801,49 @@ tbody tr:hover{background:var(--accent-soft)}
     --page-glow:radial-gradient(1100px 520px at 85% -10%,rgba(140,150,161,.06),transparent 60%);
   }
 
+
+  /* V9.5.16 — Paletas 6D: profundidade em camadas, brilho e contraste */
+  html[data-palette="red-6d"]{
+    --red:#ff4a42;--red-dim:#6f1715;--accent:#ff4a42;--accent-2:#b8201d;
+    --accent-ink:#fff;--accent-soft:rgba(255,74,66,.15);--accent-line:rgba(255,74,66,.48);
+    --hero-bg:radial-gradient(circle at 18% 16%,rgba(255,126,118,.18),transparent 25%),radial-gradient(circle at 80% 4%,rgba(255,44,35,.11),transparent 33%),linear-gradient(145deg,#070708,#100706 56%,#050608);
+    --page-glow:radial-gradient(900px 440px at 88% -8%,rgba(255,74,66,.13),transparent 58%);
+  }
+  html[data-palette="light-blue-6d"]{
+    --red:#55b9ff;--red-dim:#16466b;--accent:#55b9ff;--accent-2:#247fc1;
+    --accent-ink:#07121b;--accent-soft:rgba(85,185,255,.15);--accent-line:rgba(85,185,255,.48);
+    --hero-bg:radial-gradient(circle at 18% 16%,rgba(142,214,255,.19),transparent 25%),radial-gradient(circle at 80% 4%,rgba(50,150,226,.11),transparent 33%),linear-gradient(145deg,#05080b,#06111a 56%,#050608);
+    --page-glow:radial-gradient(900px 440px at 88% -8%,rgba(85,185,255,.14),transparent 58%);
+  }
+  html[data-palette="navy-6d"]{
+    --red:#2864d7;--red-dim:#0e285f;--accent:#2864d7;--accent-2:#173d91;
+    --accent-ink:#fff;--accent-soft:rgba(40,100,215,.16);--accent-line:rgba(62,119,235,.48);
+    --hero-bg:radial-gradient(circle at 18% 16%,rgba(76,137,255,.17),transparent 25%),radial-gradient(circle at 82% 3%,rgba(26,65,155,.15),transparent 34%),linear-gradient(145deg,#04060a,#061027 57%,#050608);
+    --page-glow:radial-gradient(900px 440px at 88% -8%,rgba(40,100,215,.14),transparent 58%);
+  }
+  html[data-palette="purple-6d"]{
+    --red:#a453ff;--red-dim:#46206d;--accent:#a453ff;--accent-2:#7131b5;
+    --accent-ink:#fff;--accent-soft:rgba(164,83,255,.16);--accent-line:rgba(164,83,255,.49);
+    --hero-bg:radial-gradient(circle at 18% 16%,rgba(191,130,255,.19),transparent 25%),radial-gradient(circle at 80% 4%,rgba(119,49,190,.14),transparent 34%),linear-gradient(145deg,#08050b,#140823 56%,#050608);
+    --page-glow:radial-gradient(900px 440px at 88% -8%,rgba(164,83,255,.14),transparent 58%);
+  }
+  html[data-palette$="-6d"] .palette-dot{
+    background:linear-gradient(145deg,color-mix(in srgb,var(--accent) 72%,white),var(--accent) 48%,var(--accent-2));
+    box-shadow:inset 0 1px 1px rgba(255,255,255,.35),0 0 0 3px var(--accent-soft),0 8px 18px -8px var(--accent);
+  }
+  html[data-palette$="-6d"] .btn.primary,
+  html[data-palette$="-6d"] .tab.active{
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 10px 24px -18px var(--accent);
+  }
+  .palette-option[data-palette-choice$="-6d"] .palette-preview{
+    background:linear-gradient(145deg,color-mix(in srgb,var(--palette-color) 72%,white),var(--palette-color) 52%,color-mix(in srgb,var(--palette-color) 62%,black));
+    box-shadow:inset 0 1px 1px rgba(255,255,255,.42),inset 0 -10px 20px rgba(0,0,0,.18),0 10px 22px -10px var(--palette-color);
+  }
+  .palette-option[data-palette-choice$="-6d"] b::after{
+    content:"6D";display:inline-block;margin-left:7px;padding:2px 5px;border:1px solid var(--accent-line);border-radius:999px;
+    color:var(--accent);font:800 8px/1 var(--mono);vertical-align:1px;
+  }
+
   .palette-btn{
     flex:0 0 auto;width:38px;height:38px;display:inline-grid;place-items:center;padding:0;
     border:1px solid var(--line2);border-radius:10px;background:var(--panel2);cursor:pointer;
@@ -1436,6 +1479,189 @@ tbody tr:hover{background:var(--accent-soft)}
   }
 </style>
 
+
+<style id="rds-dialog-readability-v9516">
+/* =========================================================
+   V9.5.16 — LEGIBILIDADE DAS CAIXAS DE DIÁLOGO
+   Revisão visual consolidada para produção.
+   ========================================================= */
+
+/* Hierarquia principal */
+.modalbox h2,
+.modalbox h3{
+  line-height:1.18;
+  letter-spacing:-.01em;
+}
+
+.modalbox h2{
+  font-size:22px!important;
+  margin:6px 0 8px!important;
+}
+
+.modalbox h3{
+  font-size:17px!important;
+}
+
+/* Texto que explica para que serve a janela */
+.modalbox > .sub,
+.modalbox .modal-description,
+.modalbox .sub{
+  font-size:13.5px!important;
+  line-height:1.58!important;
+  color:#aeb8c3!important;
+  margin-top:6px!important;
+}
+
+/* Títulos pequenos de contexto: "Primeiro acesso", "Novo cadastro"... */
+.modalbox .kicker,
+.modalbox .eyebrow{
+  font-size:11.5px!important;
+  line-height:1.35!important;
+  letter-spacing:.12em!important;
+  font-weight:800!important;
+}
+
+/* Labels dos campos: precisam dizer claramente o que o campo representa */
+.modalbox .label,
+.modalbox label:not(.checkline label){
+  font-size:12.5px!important;
+  line-height:1.35!important;
+  letter-spacing:.035em!important;
+  color:#c9d0d7!important;
+  font-weight:800!important;
+}
+
+/* Campos */
+.modalbox input,
+.modalbox select,
+.modalbox textarea{
+  font-size:14px!important;
+  line-height:1.35!important;
+}
+
+/* Textos auxiliares abaixo dos campos */
+.modalbox .form-hint,
+.modalbox .filter-note,
+.modalbox .import-help,
+.modalbox .goal-sub,
+.modalbox .goal-note,
+.modalbox .goal-check,
+.modalbox .muted,
+.modalbox small{
+  font-size:12px!important;
+  line-height:1.55!important;
+}
+
+/* Checkbox / confirmações */
+.modalbox .checkline label{
+  font-size:13px!important;
+  line-height:1.5!important;
+}
+
+/* Erros precisam ser legíveis sem ganhar peso excessivo */
+.modalbox .form-error{
+  font-size:12.5px!important;
+  line-height:1.45!important;
+}
+
+/* Botões */
+.modalbox .modal-actions .btn,
+.modalbox > .btn{
+  font-size:13px!important;
+  min-height:44px;
+}
+
+/* Separação visual entre grupos de campos */
+.modalbox .rows,
+.modalbox .user-modal-grid,
+.modalbox .goal-editor-grid{
+  row-gap:15px!important;
+}
+
+/* Históricos e informações complementares */
+.modalbox .alert-history-message{
+  font-size:13.5px!important;
+  line-height:1.6!important;
+}
+
+.modalbox .alert-history-expiry,
+.modalbox .alert-stat,
+.modalbox .alert-viewer-row{
+  font-size:12px!important;
+}
+
+/* Desktop: ganha um pouco mais de respiro */
+@media(min-width:761px){
+  .modalbox{
+    padding:24px!important;
+  }
+}
+
+/* Mobile: mantém compacto, mas sem microtexto */
+@media(max-width:760px){
+  .modalbox,
+  #paletteModal .modalbox{
+    padding:
+      18px
+      max(15px,env(safe-area-inset-right))
+      calc(20px + env(safe-area-inset-bottom))
+      max(15px,env(safe-area-inset-left))!important;
+  }
+
+  .modalbox h2{
+    font-size:21px!important;
+  }
+
+  .modalbox > .sub,
+  .modalbox .sub{
+    font-size:13px!important;
+  }
+
+  .modalbox .label,
+  .modalbox label:not(.checkline label){
+    font-size:12.5px!important;
+  }
+
+  .modalbox input,
+  .modalbox select,
+  .modalbox textarea{
+    min-height:44px;
+    font-size:16px!important; /* evita zoom automático no iPhone */
+  }
+
+  .modalbox textarea{
+    min-height:110px;
+  }
+}
+</style>
+
+
+<style id="rds-performers-v9517">
+.performer-head{gap:14px;align-items:flex-start}
+.performer-rule-note{border:1px solid color-mix(in srgb,var(--accent) 28%,var(--line));background:color-mix(in srgb,var(--accent) 6%,var(--panel));border-radius:12px;padding:11px 13px;color:var(--muted);font-size:12px;line-height:1.5;margin-bottom:12px}
+.performer-rule-note b{color:var(--text)}
+.performer-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.performer-summary .card{padding:13px 14px}.performer-summary .t{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}.performer-summary .n{font:800 25px/1.1 var(--mono);margin-top:4px}
+.performer-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:4px;border:1px solid var(--line);background:var(--panel2);border-radius:12px;margin-bottom:12px}
+.performer-tabs::-webkit-scrollbar{display:none}.performer-tabs button{flex:0 0 auto;min-height:38px;border:0;border-radius:8px;background:transparent;color:var(--muted);font-weight:800;padding:7px 12px;cursor:pointer}.performer-tabs button.active{background:var(--accent);color:var(--accent-ink);box-shadow:0 8px 20px -13px var(--accent)}
+.performer-selected{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:12px}.performer-selected h3{margin:3px 0 3px;font-size:17px}.performer-selected .sub{font-size:12px}
+.performer-toolbar{display:grid;grid-template-columns:minmax(230px,1fr) minmax(180px,.35fr) auto;gap:8px;margin-bottom:8px}.performer-toolbar input,.performer-toolbar select{width:100%}
+.performer-management-hint{font-size:11px;color:var(--muted);margin:0 2px 9px;line-height:1.45}
+.performer-unit-list{display:grid;gap:7px}.performer-unit-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(190px,260px);gap:12px;align-items:center;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+.performer-unit-main{min-width:0}.performer-unit-code{font-size:13px;font-weight:900;letter-spacing:.01em}.performer-unit-meta{font-size:10px;color:var(--muted);margin-top:3px;display:flex;gap:7px;flex-wrap:wrap}.performer-unit-meta span{white-space:nowrap}.performer-unit-assignment{display:grid;gap:4px}.performer-unit-assignment label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:800}.performer-unit-assignment select{width:100%;min-height:38px;font-size:12px}
+.performer-assigned-chip{display:inline-flex;align-items:center;max-width:100%;border:1px solid color-mix(in srgb,var(--accent) 26%,var(--line));background:color-mix(in srgb,var(--accent) 6%,var(--panel2));border-radius:999px;padding:5px 8px;font-size:10px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.performer-empty{padding:22px 14px;text-align:center;border:1px dashed var(--line);border-radius:12px;color:var(--muted);font-size:12px;background:var(--panel)}
+.performer-modal-box{max-width:520px}
+@media(max-width:760px){
+  .performer-head{display:grid!important;grid-template-columns:1fr}.performer-head .btn{width:100%}
+  .performer-summary{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.performer-summary .card{padding:10px 8px}.performer-summary .t{font-size:8px}.performer-summary .n{font-size:20px}
+  .performer-selected{align-items:flex-start;flex-direction:column}.performer-selected .btn{width:100%}
+  .performer-toolbar{grid-template-columns:1fr}.performer-unit-row{grid-template-columns:1fr;gap:9px;padding:10px}.performer-unit-assignment select{min-height:44px;font-size:16px}
+  .performer-tabs{margin-left:-2px;margin-right:-2px}.performer-tabs button{min-height:42px;font-size:12px}
+}
+@media(max-width:390px){.performer-summary{grid-template-columns:1fr 1fr}.performer-summary .card:last-child{grid-column:1/-1}}
+</style>
+
 </head>
 <body>
 <section class="login" id="login">
@@ -1678,6 +1904,7 @@ tbody tr:hover{background:var(--accent-soft)}
 <button class="active" data-performance-mode="dashboard">Super Dashboard</button>
 <button data-performance-mode="goals">Metas operacionais</button>
 <button data-performance-mode="live">Dashboard Ao Vivo</button>
+<button data-performance-mode="performers">Performers</button>
 <button data-performance-mode="users">Gestão de Usuários</button>
 <button data-performance-mode="org">Empresas e Unidades</button>
 </div>
@@ -1759,7 +1986,52 @@ tbody tr:hover{background:var(--accent-soft)}
 </div>
 
 <div class="hidden" id="liveDashboardContainer">
-  <iframe id="liveDashboardFrame" data-src="modules/dashboard-ao-vivo/index.html?v=9.5.15" title="Dashboard Ao Vivo — Rotina de Sucesso"></iframe>
+  <iframe id="liveDashboardFrame" data-src="modules/dashboard-ao-vivo/index.html?v=9.5.19" title="Dashboard Ao Vivo — Rotina de Sucesso"></iframe>
+</div>
+
+
+<div class="hidden" id="performerManagement">
+  <div class="section performer-head" style="margin-top:0">
+    <div>
+      <h2>Performers</h2>
+      <div class="sub">Carteiras de acompanhamento comercial. Performer é uma função adicional de usuários Performance/Admin e não limita o acesso global.</div>
+    </div>
+    <button class="btn red" id="enablePerformerBtn" type="button">+ Habilitar Performer</button>
+  </div>
+
+  <div class="performer-rule-note">
+    <b>Regra:</b> somente usuários com perfil Performance/Admin podem ser habilitados como Performer. Cada loja pode ficar vinculada a um único Performer por vez.
+  </div>
+
+  <div class="performer-summary">
+    <div class="card"><div class="t">Performers ativos</div><div class="n" id="performerActiveCount">0</div></div>
+    <div class="card"><div class="t">Lojas vinculadas</div><div class="n" id="performerAssignedCount">0</div></div>
+    <div class="card"><div class="t">Lojas sem Performer</div><div class="n" id="performerUnassignedCount">0</div></div>
+  </div>
+
+  <div class="performer-tabs" id="performerTabs"></div>
+
+  <div class="performer-selected card pad" id="performerSelectedCard">
+    <div>
+      <div class="kicker">CARTEIRA SELECIONADA</div>
+      <h3 id="performerSelectedName">Todos os Performers</h3>
+      <div class="sub" id="performerSelectedMeta">Visão consolidada das lojas acompanhadas.</div>
+    </div>
+    <button class="btn hidden" id="disablePerformerBtn" type="button">Desabilitar Performer</button>
+  </div>
+
+  <div class="performer-toolbar">
+    <input id="performerSearch" placeholder="Buscar loja, código ou empresa..."/>
+    <select id="performerCompanyFilter"><option value="all">Todas as empresas</option></select>
+    <button class="btn" id="performerClearFilters" type="button">Limpar filtros</button>
+  </div>
+
+  <div class="performer-management-hint" id="performerManagementHint">
+    Em <b>Todos</b>, use o seletor de cada loja para vincular, transferir ou deixar sem Performer.
+  </div>
+
+  <div class="performer-unit-list" id="performerUnitList"></div>
+  <div class="form-error" id="performerStatus"></div>
 </div>
 
 <div class="hidden" id="userManagement">
@@ -1854,6 +2126,25 @@ tbody tr:hover{background:var(--accent-soft)}
 <div class="foot">Rotina de Sucesso · Grupo SOS · Esta mensagem não se autodestruirá</div>
 </div>
 </section>
+
+<div class="modal hidden" id="performerModal">
+  <div class="modalbox performer-modal-box">
+    <div class="kicker">FUNÇÃO ADICIONAL</div>
+    <h2>Habilitar Performer</h2>
+    <p class="sub">Selecione um usuário Performance/Admin. Ele continuará com acesso administrativo global e passará a ter uma carteira de lojas para acompanhamento.</p>
+    <div style="margin-top:16px">
+      <label class="label" for="performerUserSelect">Performance/Admin</label>
+      <select id="performerUserSelect"></select>
+      <div class="form-hint">Somente usuários ativos com perfil Performance aparecem aqui.</div>
+    </div>
+    <div class="form-error" id="performerModalStatus"></div>
+    <div class="modal-actions">
+      <button class="btn" id="closePerformerModal" type="button">Cancelar</button>
+      <button class="btn red" id="savePerformerBtn" type="button">Habilitar</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal hidden" id="first"><div class="modalbox"><div class="kicker">Primeiro acesso</div><h2>Complete seu perfil</h2><p class="sub">Ao confirmar, você será vinculado automaticamente à unidade selecionada. Depois disso, Empresa e Unidade só poderão ser alteradas pelo Performance.</p><form id="firstForm"><div class="rows"><div><label class="label">Nome</label><input id="fn"/></div><div><label class="label">Sobrenome</label><input id="ln"/></div></div><div class="rows" style="margin-top:10px"><div><label class="label">Empresa</label><select id="company"><option value="SOS">SOS</option><option value="Universo">Universo</option><option value="Connect">Connect</option><option value="Azul Viagens">Azul Viagens</option></select></div><div><label class="label">Unidade</label><select id="unit"></select></div></div><div style="margin-top:10px"><label class="label">Capitão vinculado automaticamente</label><input disabled id="captain"/></div><div class="form-error" id="firstAccessError"></div><div class="modal-actions"><button class="btn red" type="submit">CONFIRMAR PERFIL</button></div></form></div></div>
 <div class="modal hidden" id="hist"><div class="modalbox"><div class="kicker">Histórico</div><h2>Últimos registros</h2><p class="sub">Dados anteriores ficam bloqueados para edição pelo usuário.</p><div class="table"><table><thead><tr><th>Data</th><th>Salão</th><th>Online</th><th>Cotações</th><th>Vendas</th></tr></thead><tbody id="historyBody"><tr><td>02/10/2026</td><td>12</td><td>7</td><td>9</td><td>3</td></tr><tr><td>01/10/2026</td><td>9</td><td>11</td><td>8</td><td>2</td></tr><tr><td>30/09/2026</td><td>14</td><td>6</td><td>10</td><td>4</td></tr></tbody></table></div><div class="modal-actions"><button class="btn" id="closeHist">Fechar</button></div></div></div>
 <div class="modal hidden" id="userModal"><div class="modalbox user-editor"><div class="kicker" id="userModalKicker">Novo cadastro</div><h2 id="userModalTitle">Cadastrar usuário</h2><p class="sub">As alterações entram em vigor imediatamente nesta sessão do protótipo.</p><form id="userForm">
@@ -2126,6 +2417,18 @@ tbody tr:hover{background:var(--accent-soft)}
     <p class="sub">Escolha a identidade visual que combina mais com você. Sua escolha não altera a experiência de ninguém.</p>
 
     <div class="palette-grid" id="paletteGrid">
+      <button class="palette-option" type="button" data-palette-choice="red-6d" style="--palette-color:#ff4a42">
+        <span class="palette-preview"></span><span><b>Vermelho</b><small>Profundidade 6D · forte, tático e intenso</small></span><span class="palette-check">✓</span>
+      </button>
+      <button class="palette-option" type="button" data-palette-choice="light-blue-6d" style="--palette-color:#55b9ff">
+        <span class="palette-preview"></span><span><b>Azul Claro</b><small>Profundidade 6D · leve, tecnológico e luminoso</small></span><span class="palette-check">✓</span>
+      </button>
+      <button class="palette-option" type="button" data-palette-choice="navy-6d" style="--palette-color:#2864d7">
+        <span class="palette-preview"></span><span><b>Azul Marinho</b><small>Profundidade 6D · azul escuro, sóbrio e profundo</small></span><span class="palette-check">✓</span>
+      </button>
+      <button class="palette-option" type="button" data-palette-choice="purple-6d" style="--palette-color:#a453ff">
+        <span class="palette-preview"></span><span><b>Roxo</b><small>Profundidade 6D · sofisticado, digital e marcante</small></span><span class="palette-check">✓</span>
+      </button>
       <button class="palette-option" type="button" data-palette-choice="mission" style="--palette-color:#e43b32">
         <span class="palette-preview"></span><span><b>Missão</b><small>Vermelho clássico · padrão original</small></span><span class="palette-check">✓</span>
       </button>
@@ -2260,6 +2563,10 @@ let idCounter=100, orgCounter=100;
 let ORG_COMPANIES_DB=[];
 let ORG_UNITS_DB=[];
 let ORG_PROFILES_DB=[];
+let PERFORMERS_DB=[];
+let PERFORMER_UNITS_DB=[];
+let performerSelected='all';
+let performerDataReady=false;
 let OPERATIONAL_UNIT_GOALS=[];
 let OPERATIONAL_PERSON_GOALS=[];
 const GOAL_DRAFTS={manager:null,performance:null};
@@ -2581,7 +2888,7 @@ function setMetaForUser(u){
   else {const mgr=managerFor(u.company,u.unit);$('#meta').innerHTML=`<span class="chip">${careerRankLabel(u)}</span><span class="chip">${u.company||'Não definido'}</span><span class="chip">${u.unit||'Não definido'}</span><span class="chip">Capitão: ${mgr?fullName(mgr):'Não definido'}</span>`}
 }
 function renderEntry(){if(!currentUser||!isOperationalRole(currentUser))return;['salao','online','cotacoes','vendas'].forEach(k=>{const el=$('#c-'+k);if(el)el.textContent=state[k]});$('#total').textContent=state.salao+state.online+state.cotacoes;$('#obs').value=state.obs||''}
-function render(){renderEntry();if(isOperationalRole(currentUser)){renderPersonalDashboard();renderPersonalGoalProgress()}if(!$('#manager').classList.contains('hidden'))renderManager();if(!$('#managerGoals').classList.contains('hidden'))renderManagerGoals();if(!$('#performance').classList.contains('hidden')){renderPerformance();renderUserManagement();renderOrgManagement();if(performanceMode==='goals')renderPerformanceGoals()}}
+function render(){renderEntry();if(isOperationalRole(currentUser)){renderPersonalDashboard();renderPersonalGoalProgress()}if(!$('#manager').classList.contains('hidden'))renderManager();if(!$('#managerGoals').classList.contains('hidden'))renderManagerGoals();if(!$('#performance').classList.contains('hidden')){renderPerformance();renderUserManagement();renderOrgManagement();if(performanceMode==='goals')renderPerformanceGoals();if(performanceMode==='performers')renderPerformerManagement()}}
 
 function setTopForView(v){
   if(v==='collab'){
@@ -2600,10 +2907,10 @@ function setTopForView(v){
   else if(v==='managerGoals'){const c=managerContext();$('#kick').textContent='Planejamento operacional';$('#title').textContent='Metas da Unidade';$('#subtitle').textContent=c?`${c.unit} · ${c.company} · metas mensais e ritmo diário`:'Metas da unidade';$('#mode').textContent='metas operacionais';$('#history').classList.add('hidden');$('#clearDay').classList.add('hidden');$('#collabModeNav').classList.add('hidden')}
   else{
     $('#kick').textContent='Central de comando';
-    const org=performanceMode==='org',users=performanceMode==='users',goals=performanceMode==='goals';
-    $('#title').textContent=org?'Empresas e Unidades':users?'Gestão de Usuários':goals?'Metas Operacionais':'Performance';
-    $('#subtitle').textContent=org?'Estrutura de empresas, lojas, unidades e responsáveis.':users?'Cadastros, acessos e vínculos por unidade.':goals?'Metas mensais, distribuição por pessoa e ritmo de execução.':'Todas as lojas, agentes e períodos em uma única visão.';
-    $('#mode').textContent=goals?'gestão de metas':'central de comando';$('#history').classList.add('hidden');$('#clearDay').classList.add('hidden');$('#collabModeNav').classList.add('hidden')
+    const org=performanceMode==='org',users=performanceMode==='users',goals=performanceMode==='goals',performers=performanceMode==='performers';
+    $('#title').textContent=org?'Empresas e Unidades':users?'Gestão de Usuários':goals?'Metas Operacionais':performers?'Performers':'Performance';
+    $('#subtitle').textContent=org?'Estrutura de empresas, lojas, unidades e responsáveis.':users?'Cadastros, acessos e vínculos por unidade.':goals?'Metas mensais, distribuição por pessoa e ritmo de execução.':performers?'Carteiras de acompanhamento comercial por Performer.':'Todas as lojas, agentes e períodos em uma única visão.';
+    $('#mode').textContent=goals?'gestão de metas':performers?'carteiras performers':'central de comando';$('#history').classList.add('hidden');$('#clearDay').classList.add('hidden');$('#collabModeNav').classList.add('hidden')
   }
 }
 function view(v){
@@ -2631,6 +2938,7 @@ function view(v){
     renderPerformance();
     renderUserManagement();
     renderOrgManagement();
+    if(performanceMode==='performers')renderPerformerManagement();
   }
   if(v==='collab'&&isOperationalRole(currentUser)){
     renderPersonalDashboard();
@@ -2674,7 +2982,7 @@ function showLogin(){
   $('#user').value='';
   $('#pass').value='';
   $('#msg').textContent='';
-  ['first','hist','userModal','importUsersModal','importUnitsModal','companyModal','unitModal','broadcastAlertModal','alertViewsModal','adminAlertPopup','deleteConfirmModal','mandatoryPasswordModal','paletteModal'].forEach(id=>$('#'+id)?.classList.add('hidden'));
+  ['first','hist','userModal','importUsersModal','importUnitsModal','companyModal','unitModal','broadcastAlertModal','alertViewsModal','adminAlertPopup','deleteConfirmModal','mandatoryPasswordModal','paletteModal','performerModal'].forEach(id=>$('#'+id)?.classList.add('hidden'));
 }
 function technicalEmailForUsername(username){
   const login=username.trim().toLowerCase();
@@ -2794,11 +3102,26 @@ async function loadRoleData(u){
   }
 }
 
+function isLiveDashboardKeepingSessionActive(){
+  if(SESSION_IS_MOBILE||!currentUser)return false;
+  const container=document.getElementById('liveDashboardContainer');
+  return currentUser.role==='performance' && performanceMode==='live' && container && !container.classList.contains('hidden');
+}
+
 function resetDesktopIdleTimer(){
   if(SESSION_IS_MOBILE||!currentUser)return;
-  if(desktopIdleTimer)clearTimeout(desktopIdleTimer);
+  if(desktopIdleTimer){clearTimeout(desktopIdleTimer);desktopIdleTimer=null}
+
+  // Dashboard Ao Vivo funciona como painel de acompanhamento contínuo.
+  // Enquanto estiver aberta, não há encerramento por inatividade.
+  if(isLiveDashboardKeepingSessionActive())return;
+
   desktopIdleTimer=setTimeout(async()=>{
     if(!currentUser)return;
+    if(isLiveDashboardKeepingSessionActive()){
+      if(desktopIdleTimer){clearTimeout(desktopIdleTimer);desktopIdleTimer=null}
+      return;
+    }
     try{await supabaseClient.auth.signOut()}catch(_){}
     showLogin();
     alert('Sessão encerrada após 30 minutos de inatividade neste computador.');
@@ -3932,12 +4255,184 @@ $('#pfGoalCurrentTeam').addEventListener('click',()=>{const d=GOAL_DRAFTS.perfor
 $('#pfGoalSave').addEventListener('click',()=>saveGoalDraft('performance'));
 
 
+
+/* ============================================================
+   V9.5.19 — PERFORMERS / CARTEIRAS + ANIMAÇÃO DE ULTRAPASSAGEM
+   Performer é função adicional de Performance/Admin.
+   ============================================================ */
+function performerProfile(userId){return ORG_PROFILES_DB.find(p=>p.user_id===userId)||null}
+function performerRecord(userId){return PERFORMERS_DB.find(p=>p.user_id===userId)||null}
+function performerAssignment(unitId){return PERFORMER_UNITS_DB.find(x=>x.unit_id===unitId)||null}
+function activePerformerRecords(){
+  return PERFORMERS_DB.filter(p=>p.active!==false).filter(p=>{
+    const profile=performerProfile(p.user_id);
+    return profile&&profile.active!==false&&profile.role==='performance';
+  }).sort((a,b)=>orgDbFullName(performerProfile(a.user_id)).localeCompare(orgDbFullName(performerProfile(b.user_id)),'pt-BR'));
+}
+function performerUnitCode(unit){
+  if(typeof liveDashboardUnitCode==='function')return liveDashboardUnitCode(unit);
+  return unit?.name||unit?.short_code||'Unidade';
+}
+function performerCompanyName(unit){return orgDbCompanyById(unit?.company_id)?.name||'Empresa não definida'}
+function performerManagerName(unit){const p=orgDbManagerFor(unit);return p?orgDbFullName(p):'Capitão não definido'}
+
+async function loadPerformerDataFromSupabase(){
+  if(!currentUser||currentUser.role!=='performance'||currentUser.source!=='supabase')return;
+  const status=$('#performerStatus');if(status)status.textContent='';
+  try{
+    const [performersRes,assignmentsRes]=await Promise.all([
+      supabaseClient.from('performers').select('user_id,active,created_by,created_at,updated_at').order('created_at'),
+      supabaseClient.from('performer_units').select('unit_id,performer_user_id,assigned_by,assigned_at').order('assigned_at')
+    ]);
+    if(performersRes.error)throw performersRes.error;
+    if(assignmentsRes.error)throw assignmentsRes.error;
+    PERFORMERS_DB=performersRes.data||[];
+    PERFORMER_UNITS_DB=assignmentsRes.data||[];
+    performerDataReady=true;
+    if(performerSelected!=='all'&&!activePerformerRecords().some(p=>p.user_id===performerSelected))performerSelected='all';
+    renderPerformerManagement();
+  }catch(err){
+    console.error('Erro ao carregar Performers:',err);
+    performerDataReady=false;
+    PERFORMERS_DB=[];PERFORMER_UNITS_DB=[];
+    if(status)status.textContent='Módulo Performers indisponível. Execute a Migração 12.4 no Supabase antes de usar esta área.';
+    renderPerformerManagement();
+  }
+}
+
+function rebuildPerformerCompanyFilter(){
+  const el=$('#performerCompanyFilter');if(!el)return;
+  const current=el.value||'all';
+  const companies=ORG_COMPANIES_DB.filter(c=>c.active!==false).sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
+  el.innerHTML='<option value="all">Todas as empresas</option>'+companies.map(c=>`<option value="${c.id}">${importEsc(c.name)}</option>`).join('');
+  el.value=companies.some(c=>c.id===current)?current:'all';
+}
+
+function renderPerformerTabs(){
+  const el=$('#performerTabs');if(!el)return;
+  const rows=activePerformerRecords();
+  el.innerHTML=`<button type="button" data-performer-tab="all" class="${performerSelected==='all'?'active':''}">Todos</button>`+
+    rows.map(p=>{const profile=performerProfile(p.user_id);const count=PERFORMER_UNITS_DB.filter(x=>x.performer_user_id===p.user_id&&ORG_UNITS_DB.some(u=>u.id===x.unit_id&&u.active!==false)).length;return `<button type="button" data-performer-tab="${p.user_id}" class="${performerSelected===p.user_id?'active':''}">${importEsc(orgDbFullName(profile))} · ${count}</button>`}).join('');
+  el.querySelectorAll('[data-performer-tab]').forEach(btn=>btn.addEventListener('click',()=>{performerSelected=btn.dataset.performerTab;renderPerformerManagement()}));
+}
+
+function renderPerformerManagement(){
+  const root=$('#performerManagement');if(!root)return;
+  rebuildPerformerCompanyFilter();
+  renderPerformerTabs();
+  const performers=activePerformerRecords();
+  const activeUnits=ORG_UNITS_DB.filter(u=>u.active!==false&&orgDbCompanyById(u.company_id)?.active!==false);
+  const assignedActive=activeUnits.filter(u=>{
+    const a=performerAssignment(u.id);return a&&performers.some(p=>p.user_id===a.performer_user_id);
+  });
+  $('#performerActiveCount').textContent=performers.length;
+  $('#performerAssignedCount').textContent=assignedActive.length;
+  $('#performerUnassignedCount').textContent=Math.max(0,activeUnits.length-assignedActive.length);
+
+  const selected=performerSelected==='all'?null:performers.find(p=>p.user_id===performerSelected)||null;
+  const profile=selected?performerProfile(selected.user_id):null;
+  $('#performerSelectedName').textContent=selected?orgDbFullName(profile):'Todos os Performers';
+  const selectedCount=selected?PERFORMER_UNITS_DB.filter(x=>x.performer_user_id===selected.user_id&&activeUnits.some(u=>u.id===x.unit_id)).length:assignedActive.length;
+  $('#performerSelectedMeta').textContent=selected?`${selectedCount} ${selectedCount===1?'loja vinculada':'lojas vinculadas'} · continua com acesso Performance/Admin global.`:`${performers.length} performers ativos · ${assignedActive.length} lojas vinculadas.`;
+  $('#disablePerformerBtn').classList.toggle('hidden',!selected);
+  $('#performerManagementHint').innerHTML=selected?`Exibindo somente a carteira de <b>${importEsc(orgDbFullName(profile))}</b>. Para transferir ou adicionar lojas, volte para <b>Todos</b>.`:'Em <b>Todos</b>, use o seletor de cada loja para vincular, transferir ou deixar sem Performer.';
+
+  const search=($('#performerSearch')?.value||'').trim().toLowerCase();
+  const company=$('#performerCompanyFilter')?.value||'all';
+  let units=activeUnits.filter(u=>company==='all'||u.company_id===company);
+  if(selected)units=units.filter(u=>performerAssignment(u.id)?.performer_user_id===selected.user_id);
+  if(search)units=units.filter(u=>{
+    const txt=[performerUnitCode(u),u.name,u.short_code,performerCompanyName(u),performerManagerName(u)].join(' ').toLowerCase();
+    return txt.includes(search);
+  });
+  units.sort((a,b)=>performerUnitCode(a).localeCompare(performerUnitCode(b),'pt-BR'));
+
+  const list=$('#performerUnitList');
+  if(!units.length){
+    list.innerHTML=`<div class="performer-empty">${selected?'Nenhuma loja desta carteira corresponde aos filtros atuais.':'Nenhuma loja encontrada.'}</div>`;
+    return;
+  }
+  list.innerHTML=units.map(u=>{
+    const a=performerAssignment(u.id);
+    const currentPerf=a?performers.find(p=>p.user_id===a.performer_user_id):null;
+    const currentName=currentPerf?orgDbFullName(performerProfile(currentPerf.user_id)):'Sem Performer';
+    const options='<option value="">Sem Performer</option>'+performers.map(p=>`<option value="${p.user_id}" ${a?.performer_user_id===p.user_id?'selected':''}>${importEsc(orgDbFullName(performerProfile(p.user_id)))}</option>`).join('');
+    return `<article class="performer-unit-row">
+      <div class="performer-unit-main">
+        <div class="performer-unit-code">${importEsc(performerUnitCode(u))}</div>
+        <div class="performer-unit-meta"><span>${importEsc(performerCompanyName(u))}</span><span>•</span><span>${importEsc(performerManagerName(u))}</span></div>
+      </div>
+      <div class="performer-unit-assignment">
+        ${selected?`<label>Performer responsável</label><div class="performer-assigned-chip">${importEsc(currentName)}</div>`:`<label>Performer responsável</label><select data-performer-unit="${u.id}" aria-label="Performer responsável por ${importEsc(performerUnitCode(u))}">${options}</select>`}
+      </div>
+    </article>`;
+  }).join('');
+  if(!selected){
+    list.querySelectorAll('[data-performer-unit]').forEach(sel=>sel.addEventListener('change',()=>assignUnitToPerformer(sel.dataset.performerUnit,sel.value||null,sel)));
+  }
+}
+
+async function assignUnitToPerformer(unitId,performerUserId,selectEl){
+  if(!performerDataReady)return;
+  const old=performerAssignment(unitId)?.performer_user_id||'';
+  if(selectEl)selectEl.disabled=true;
+  const status=$('#performerStatus');if(status)status.textContent='Salvando vínculo...';
+  try{
+    await adminApi('setPerformerUnit',{unitId,performerUserId:performerUserId||null});
+    await loadPerformerDataFromSupabase();
+    if(status)status.textContent='Vínculo atualizado.';
+  }catch(err){
+    console.error('Erro ao vincular Performer:',err);
+    if(selectEl){selectEl.value=old;selectEl.disabled=false}
+    if(status)status.textContent=err?.message||'Não foi possível atualizar o vínculo.';
+  }
+}
+
+function openPerformerModal(){
+  const modal=$('#performerModal'),select=$('#performerUserSelect'),status=$('#performerModalStatus');
+  if(status)status.textContent='';
+  const activeIds=new Set(activePerformerRecords().map(p=>p.user_id));
+  const candidates=ORG_PROFILES_DB.filter(p=>p.active!==false&&p.role==='performance'&&!activeIds.has(p.user_id)).sort((a,b)=>orgDbFullName(a).localeCompare(orgDbFullName(b),'pt-BR'));
+  select.innerHTML=candidates.length?candidates.map(p=>`<option value="${p.user_id}">${importEsc(orgDbFullName(p))} · ${importEsc(p.username||'')}</option>`).join(''):'<option value="">Nenhum Performance disponível</option>';
+  $('#savePerformerBtn').disabled=!candidates.length;
+  modal.classList.remove('hidden');
+}
+async function savePerformer(){
+  const userId=$('#performerUserSelect').value;if(!userId)return;
+  const status=$('#performerModalStatus');status.textContent='Habilitando...';$('#savePerformerBtn').disabled=true;
+  try{
+    await adminApi('setPerformerStatus',{userId,active:true});
+    $('#performerModal').classList.add('hidden');performerSelected=userId;await loadPerformerDataFromSupabase();
+  }catch(err){console.error(err);status.textContent=err?.message||'Não foi possível habilitar o Performer.';$('#savePerformerBtn').disabled=false}
+}
+async function disableSelectedPerformer(){
+  const p=activePerformerRecords().find(x=>x.user_id===performerSelected);if(!p)return;
+  const name=orgDbFullName(performerProfile(p.user_id));
+  const count=PERFORMER_UNITS_DB.filter(x=>x.performer_user_id===p.user_id).length;
+  if(!confirm(`Desabilitar ${name} como Performer?\n\n${count} ${count===1?'loja ficará':'lojas ficarão'} sem Performer. O usuário continuará Performance/Admin com acesso total.`))return;
+  const status=$('#performerStatus');if(status)status.textContent='Desabilitando Performer...';
+  try{
+    await adminApi('setPerformerStatus',{userId:p.user_id,active:false});
+    performerSelected='all';await loadPerformerDataFromSupabase();
+  }catch(err){console.error(err);if(status)status.textContent=err?.message||'Não foi possível desabilitar o Performer.'}
+}
+
+$('#enablePerformerBtn')?.addEventListener('click',openPerformerModal);
+$('#closePerformerModal')?.addEventListener('click',()=>$('#performerModal').classList.add('hidden'));
+$('#savePerformerBtn')?.addEventListener('click',savePerformer);
+$('#disablePerformerBtn')?.addEventListener('click',disableSelectedPerformer);
+$('#performerSearch')?.addEventListener('input',renderPerformerManagement);
+$('#performerCompanyFilter')?.addEventListener('change',renderPerformerManagement);
+$('#performerClearFilters')?.addEventListener('click',()=>{$('#performerSearch').value='';$('#performerCompanyFilter').value='all';renderPerformerManagement()});
+
+
 /* Dashboard Ao Vivo: integração isolada em modules/dashboard-ao-vivo/bridge.js */
 
 function setPerformanceMode(mode){
   performanceMode=mode;
   const users=mode==='users',
         org=mode==='org',
+        performers=mode==='performers',
         goals=mode==='goals',
         dashboard=mode==='dashboard',
         live=mode==='live';
@@ -3945,6 +4440,7 @@ function setPerformanceMode(mode){
   $('#performanceDashboard').classList.toggle('hidden',!dashboard);
   $('#performanceGoals').classList.toggle('hidden',!goals);
   $('#liveDashboardContainer').classList.toggle('hidden',!live);
+  $('#performerManagement').classList.toggle('hidden',!performers);
   $('#userManagement').classList.toggle('hidden',!users);
   $('#orgManagement').classList.toggle('hidden',!org);
   $('#app').classList.toggle('live-performance-mode',live);
@@ -3953,6 +4449,14 @@ function setPerformanceMode(mode){
 
   if(window.LiveDashboardBridge){
     window.LiveDashboardBridge.setActive(live);
+  }
+
+  // Live aberto = sessão de painel contínuo. Ao sair dele, a regra normal
+  // de inatividade do desktop volta a valer imediatamente.
+  if(live){
+    if(desktopIdleTimer){clearTimeout(desktopIdleTimer);desktopIdleTimer=null}
+  }else if(currentUser){
+    resetDesktopIdleTimer();
   }
 
   if(currentUser?.role==='performance'){
@@ -3968,6 +4472,10 @@ function setPerformanceMode(mode){
     else if(org){
       renderOrgManagement();
       if(currentUser?.source==='supabase')loadOrganizationFromSupabase();
+    }
+    else if(performers){
+      renderPerformerManagement();
+      if(currentUser?.source==='supabase')loadOrganizationFromSupabase().then(()=>loadPerformerDataFromSupabase());
     }
     else if(live){
       if(currentUser?.source==='supabase')window.LiveDashboardBridge?.refresh('manual');
@@ -5693,6 +6201,18 @@ syncCompanySelects();fillSelectUnits($('#company'),$('#unit'),false);updateFirst
 
 
 /* ============================================================
+   V9.5.16 — CÓDIGO COMPLETO DAS LOJAS NA DASHBOARD AO VIVO
+   ============================================================ */
+function liveDashboardUnitCode(unit){
+  if(!unit)return 'Unidade';
+  const company=ORG_COMPANIES_DB.find(c=>c.id===unit.company_id)||null;
+  const raw=unit.short_code||unit.name||'';
+  const formatted=standardizeUnitForCompany(company,raw);
+  if(formatted?.ok)return formatted.name;
+  return unit.name||unit.short_code||'Unidade';
+}
+
+/* ============================================================
    V9.5.12 — PROVIDER OFICIAL DA DASHBOARD AO VIVO
    ============================================================ */
 window.RDSLiveDataProvider={
@@ -5772,7 +6292,7 @@ window.RDSLiveDataProvider={
       const company=companyById.get(u.company_id);
       storeMap.set(u.id,{
         id:u.id,
-        name:u.short_code||u.name,
+        name:liveDashboardUnitCode(u),
         unitName:u.name,
         company:company?.name||'',
         capacity:capacityByUnit.get(u.id)||0,
@@ -5805,7 +6325,7 @@ window.RDSLiveDataProvider={
         active:p.active!==false,
         unitId:p.unit_id,
         unitName:unit?.name||'',
-        unitShort:unit?.short_code||unit?.name||'',
+        unitShort:unit?liveDashboardUnitCode(unit):'',
         company:company?.name||'',
         day:{salao:0,online:0,cotacoes:0,vendas:0},
         month:{salao:0,online:0,cotacoes:0,vendas:0},
@@ -5832,7 +6352,7 @@ window.RDSLiveDataProvider={
           active:profile?.active!==false,
           unitId:r.unit_id,
           unitName:unit?.name||'',
-          unitShort:unit?.short_code||unit?.name||'',
+          unitShort:unit?liveDashboardUnitCode(unit):'',
           company:company?.name||'',
           day:{salao:0,online:0,cotacoes:0,vendas:0},
           month:{salao:0,online:0,cotacoes:0,vendas:0},
@@ -5996,7 +6516,7 @@ restoreSessionAfterRefresh();
 <script id="rds-user-palette">
 (function(){
   var root=document.documentElement;
-  var VALID=['mission','blue','green','amber','pink-premium','pink-neon','violet','purple-electric','graphite','mono'];
+  var VALID=['mission','blue','green','amber','pink-premium','pink-neon','violet','purple-electric','graphite','mono','red-6d','light-blue-6d','navy-6d','purple-6d'];
   var current='mission';
 
   function userNow(){
@@ -6138,7 +6658,7 @@ document.addEventListener('click',function(e){
 },true);
 </script>
 
-<script src="modules/dashboard-ao-vivo/bridge.js?v=9.5.15"></script>
+<script src="modules/dashboard-ao-vivo/bridge.js?v=9.5.19"></script>
 <script id="rds-pwa-install">
 (()=>{
   let deferredInstallPrompt=null;
