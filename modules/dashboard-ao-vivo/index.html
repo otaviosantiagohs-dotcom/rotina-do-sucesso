@@ -1042,85 +1042,23 @@ html.theme-anim *{transition:background-color .28s ease,color .28s ease,border-c
 </style>
 
 
-<style id="rds-live-v961-layout">
-/* V9.6.1 — filtros expandidos, Competition e modo TV 16:9 */
-.filters{
-  grid-template-columns:auto minmax(145px,180px) minmax(155px,200px) minmax(145px,190px) minmax(150px,200px) minmax(150px,210px) auto auto!important;
-}
-.display-switch{display:flex;gap:5px}
-.view-switch{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));min-width:260px}
-.competition-btn.active{border-color:var(--red)!important;color:#fff!important}
-input.select[type="date"]{color-scheme:dark}
-html[data-theme="light"] input.select[type="date"]{color-scheme:light}
 
-body.tv-mode{overflow:hidden}
-body.tv-mode .app{
-  height:100dvh;min-height:0;padding:10px 14px;gap:8px;
-  grid-template-rows:auto auto auto minmax(0,1fr)
-}
-body.tv-mode .topbar{gap:8px}
-body.tv-mode .mark{width:36px;height:36px;border-radius:7px}
-body.tv-mode h1{font-size:19px}
-body.tv-mode .eyebrow{font-size:9px}
-body.tv-mode .live-pill,
-body.tv-mode .meta-pill{height:30px;padding:0 8px;font-size:10px}
-body.tv-mode .filters{gap:6px}
-body.tv-mode .select{height:32px;font-size:10px}
-body.tv-mode .btn{height:32px;font-size:10px;padding:0 9px}
-body.tv-mode .period-btn{height:26px;font-size:10px}
-body.tv-mode .view-btn{min-height:28px!important;font-size:10px!important;padding:5px 7px!important}
-body.tv-mode .status-strip{gap:7px}
-body.tv-mode .metric{padding:8px 10px}
-body.tv-mode .metric .label{font-size:9px}
-body.tv-mode .metric .value{font-size:24px;margin-top:5px}
-body.tv-mode .metric.primary .value{font-size:28px}
-body.tv-mode .metric .sub{display:none}
-body.tv-mode .main-grid{gap:8px;grid-template-columns:minmax(0,1.45fr) minmax(330px,.85fr)}
-body.tv-mode .left-col{gap:8px;grid-template-rows:minmax(0,1fr) auto}
-body.tv-mode .panel{padding:9px}
-body.tv-mode .panel-head{margin-bottom:6px}
-body.tv-mode .panel-title{font-size:10px}
-body.tv-mode .panel-sub{font-size:9px}
-body.tv-mode .tab{min-height:26px;padding:4px 7px;font-size:9px}
-body.tv-mode .pulse-grid{grid-template-columns:repeat(4,1fr)!important;gap:6px}
-body.tv-mode .pulse-card{padding:7px 8px}
-body.tv-mode .pulse-card .big{font-size:20px}
-body.tv-mode .pulse-card .small{font-size:8px;margin-top:2px}
-body.tv-mode .spark{display:none}
-body.tv-mode .ov-status{min-height:23px;font-size:9px;margin-bottom:2px}
-body.tv-mode .rank-row{padding:5px 6px 6px}
-body.tv-mode .rank-name{font-size:12px}
-body.tv-mode .rank-value{font-size:18px}
-body.tv-mode .rank-company{font-size:9px}
-body.tv-mode .p-rank .ranking{grid-auto-rows:minmax(38px,1fr)}
-
-@media(max-width:1500px) and (min-width:821px){
-  .filters{
-    grid-template-columns:repeat(4,minmax(0,1fr))!important;
-  }
-  .view-switch{min-width:0}
-  .controls,.display-switch{justify-self:stretch}
-  .controls .btn,.display-switch .btn{flex:1}
-}
-@media(max-width:820px){
-  .filters{grid-template-columns:1fr 1fr!important}
-  .view-switch{grid-column:1/-1;min-width:0}
-  .period-switch{grid-column:1/-1}
-  .display-switch{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr}
-  .controls{grid-column:1/-1}
-  #performerFilter{grid-column:1/-1}
-  body.tv-mode .app{height:auto;min-height:100vh;padding:calc(14px + env(safe-area-inset-top)) max(12px,env(safe-area-inset-left)) calc(20px + env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-right))}
-  body.tv-mode{overflow:auto}
-}
-</style>
-
-
-<style id="rds-live-v964-visual">
+<style id="rds-live-v969-stable">
 /* =========================================================
-   V9.6.4 — Dashboard Ao Vivo
-   Mais visual, menos microtexto e sem rolagem interna no PC.
+   V9.6.9 — Dashboard Ao Vivo
+   Uma única camada final para Desktop / TV / Mobile.
    ========================================================= */
 
+/* Rótulo vertical das lojas no SVG, sem exagerar a área do gráfico. */
+.store-axis-label{
+  font-size:9.5px!important;
+  font-family:var(--mono)!important;
+  font-weight:800!important;
+  letter-spacing:.02em;
+  fill:var(--muted)!important;
+}
+
+/* ---------------- DESKTOP PADRÃO ---------------- */
 @media(min-width:821px){
   html,body{
     width:100%;
@@ -1133,689 +1071,202 @@ body.tv-mode .p-rank .ranking{grid-auto-rows:minmax(38px,1fr)}
     height:100dvh!important;
     min-height:0!important;
     overflow:hidden!important;
-    padding:12px 16px!important;
-    gap:10px!important;
-    grid-template-rows:auto auto auto minmax(0,1fr)!important;
-  }
-
-  /* Cabeçalho: somente informação operacional útil. */
-  .topbar{
-    min-height:48px;
-    align-items:center!important;
-    gap:12px!important;
-  }
-  .mark{
-    width:44px!important;
-    height:44px!important;
-  }
-  .eyebrow{
-    font-size:10px!important;
-    letter-spacing:.14em!important;
-  }
-  h1{
-    font-size:25px!important;
-    line-height:1.05!important;
-    margin-top:4px!important;
-  }
-  .live-meta{
-    gap:7px!important;
-    flex-wrap:nowrap!important;
-  }
-  .meta-zone,
-  .meta-next{
-    display:none!important;
-  }
-  .live-pill,
-  .meta-pill{
-    height:38px!important;
-    padding:0 11px!important;
-    font-size:12px!important;
-  }
-
-  /* Filtros: duas linhas organizadas em vez de oito controles espremidos. */
-  .filters{
-    width:100%;
-    min-width:0;
-    grid-template-columns:1.35fr .78fr 1fr 1.15fr!important;
-    gap:8px!important;
-    align-items:stretch!important;
-  }
-  .filters > *{
-    min-width:0;
-    min-height:42px;
-  }
-  .view-switch{
-    min-width:0!important;
-  }
-  .view-btn{
-    min-height:42px!important;
-    padding:7px 10px!important;
-    font-size:12.5px!important;
-    font-weight:800!important;
-  }
-  .period-switch{
-    min-height:42px;
-    align-items:center;
-  }
-  .period-btn{
-    height:34px!important;
-    font-size:12.5px!important;
-  }
-  .select,
-  .btn{
-    height:42px!important;
-    font-size:12.5px!important;
-  }
-  .display-switch,
-  .controls{
-    min-height:42px;
-  }
-  .display-switch .btn,
-  .controls .btn{
-    flex:1;
-  }
-
-  /* KPIs: números grandes e textos que realmente ajudam. */
-  .status-strip{
-    grid-template-columns:1.12fr repeat(5,1fr)!important;
-    gap:8px!important;
-  }
-  .metric{
-    min-height:88px!important;
-    padding:11px 13px!important;
-  }
-  .metric .label{
-    font-size:11.5px!important;
-    letter-spacing:.09em!important;
-    line-height:1.25!important;
-  }
-  .metric .value{
-    font-size:33px!important;
-    margin-top:7px!important;
-  }
-  .metric.primary .value{
-    font-size:38px!important;
-  }
-  .metric-context{
-    display:none!important;
-  }
-  .metric:last-child .sub{
-    font-size:11.5px!important;
-    margin-top:5px!important;
-  }
-
-  /* Área principal: ocupa o resto da tela e NÃO cria scroll interno. */
-  .main-grid{
-    min-height:0!important;
-    height:100%!important;
-    grid-template-columns:minmax(0,1.38fr) minmax(350px,.92fr)!important;
-    gap:10px!important;
-  }
-  .left-col{
-    min-height:0!important;
-    gap:10px!important;
-    grid-template-rows:minmax(0,1fr) auto!important;
-  }
-  .right-col{
-    min-height:0!important;
-  }
-  .panel{
-    min-height:0!important;
-    padding:13px 14px!important;
-  }
-  .panel-head{
-    margin-bottom:8px!important;
-  }
-  .panel-title{
-    font-size:14px!important;
-    letter-spacing:.08em!important;
-  }
-  .panel-sub{
-    font-size:12px!important;
-    line-height:1.35!important;
-  }
-  .tab{
-    min-height:34px!important;
-    padding:6px 9px!important;
-    font-size:11.5px!important;
-  }
-  .axis-label{
-    font-size:11.5px!important;
-  }
-
-  /* Ranking: leitura imediata. */
-  .p-rank .ranking{
-    grid-auto-rows:minmax(48px,1fr)!important;
-  }
-  .rank-row{
-    padding:7px 8px!important;
-    grid-template-columns:34px minmax(0,1fr) auto!important;
-  }
-  .rank-pos{
-    font-size:13px!important;
-  }
-  .rank-name{
-    font-size:15px!important;
-  }
-  .rank-company{
-    font-size:11px!important;
-    margin-top:3px!important;
-  }
-  .rank-value{
-    font-size:23px!important;
-  }
-  .ov-status{
-    min-height:28px!important;
-    font-size:11.5px!important;
-  }
-
-  /* Ritmo: visual, sem depender de microtexto. */
-  .p-pace .pulse-grid{
-    grid-template-columns:repeat(4,minmax(0,1fr))!important;
-    gap:8px!important;
-  }
-  .pulse-card{
-    padding:10px 11px!important;
-  }
-  .pulse-card .panel-sub{
-    font-size:10.5px!important;
-  }
-  .pulse-card .big{
-    font-size:24px!important;
-  }
-  .pulse-card .small{
-    font-size:10.5px!important;
-    line-height:1.3!important;
-  }
-  .spark{
-    height:34px!important;
-  }
-}
-
-/* Em notebook baixo, compacta estrutura — nunca reduz para microtexto. */
-@media(min-width:821px) and (max-height:720px){
-  body{
-    overflow:hidden!important;
-  }
-  .app{
-    height:100dvh!important;
-    min-height:0!important;
-    padding:8px 12px!important;
-    gap:7px!important;
-  }
-  .topbar{
-    min-height:42px!important;
-  }
-  .mark{
-    width:38px!important;
-    height:38px!important;
-  }
-  h1{
-    font-size:22px!important;
-  }
-  .eyebrow{
-    display:none!important;
-  }
-  .live-pill,
-  .meta-pill{
-    height:34px!important;
-  }
-  .filters{
-    gap:6px!important;
-  }
-  .filters > *,
-  .select,
-  .btn,
-  .view-btn{
-    min-height:38px!important;
-    height:38px!important;
-  }
-  .status-strip{
-    gap:6px!important;
-  }
-  .metric{
-    min-height:72px!important;
-    padding:8px 11px!important;
-  }
-  .metric .label{
-    font-size:10.5px!important;
-  }
-  .metric .value{
-    font-size:29px!important;
-    margin-top:5px!important;
-  }
-  .metric.primary .value{
-    font-size:33px!important;
-  }
-  .metric:last-child .sub{
-    display:none!important;
-  }
-  .panel{
-    padding:10px 11px!important;
-  }
-  .panel-title{
-    font-size:13px!important;
-  }
-  .panel-sub{
-    font-size:11px!important;
-  }
-  .tab{
-    min-height:31px!important;
-    font-size:11px!important;
-  }
-  .p-pace .spark{
-    display:none!important;
-  }
-  .pulse-card{
-    padding:8px 9px!important;
-  }
-  .pulse-card .big{
-    font-size:22px!important;
-  }
-  .pulse-card .small{
-    display:none!important;
-  }
-  .rank-row{
-    padding:5px 7px!important;
-  }
-  .rank-name{
-    font-size:14px!important;
-  }
-  .rank-value{
-    font-size:20px!important;
-  }
-}
-
-/* TV 16:9: menos controles, dados maiores. */
-@media(min-width:821px){
-  body.tv-mode .app{
-    height:100dvh!important;
-    min-height:0!important;
-    padding:12px 16px!important;
-    gap:10px!important;
-    grid-template-rows:auto auto minmax(0,1fr)!important;
-  }
-
-  body.tv-mode .filters{
-    position:fixed!important;
-    z-index:80;
-    top:10px;
-    right:12px;
-    width:auto!important;
-    display:block!important;
-    min-height:0!important;
-  }
-  body.tv-mode .filters > *:not(.display-switch){
-    display:none!important;
-  }
-  body.tv-mode .display-switch{
-    display:flex!important;
-    min-height:40px!important;
-    padding:3px;
-    border:1px solid var(--border);
-    background:var(--panel);
-    border-radius:9px;
-  }
-  body.tv-mode .display-switch .btn{
-    min-width:90px;
-    height:34px!important;
-    font-size:12px!important;
-  }
-
-  body.tv-mode .live-meta .meta-pill{
-    display:none!important;
-  }
-  body.tv-mode .topbar{
-    padding-right:210px;
-  }
-  body.tv-mode .status-strip{
-    gap:9px!important;
-  }
-  body.tv-mode .metric{
-    min-height:94px!important;
-    padding:12px 14px!important;
-  }
-  body.tv-mode .metric .label{
-    font-size:12px!important;
-  }
-  body.tv-mode .metric .value{
-    font-size:38px!important;
-  }
-  body.tv-mode .metric.primary .value{
-    font-size:44px!important;
-  }
-
-  body.tv-mode .main-grid{
-    grid-template-columns:minmax(0,1.4fr) minmax(390px,.9fr)!important;
-    gap:12px!important;
-  }
-  body.tv-mode .left-col{
-    display:block!important;
-    min-height:0!important;
-  }
-  body.tv-mode .p-chart{
-    height:100%!important;
-  }
-  body.tv-mode .p-pace{
-    display:none!important;
-  }
-  body.tv-mode .panel{
-    padding:15px 16px!important;
-  }
-  body.tv-mode .panel-title{
-    font-size:16px!important;
-  }
-  body.tv-mode .panel-sub{
-    font-size:13px!important;
-  }
-  body.tv-mode .tab{
-    min-height:36px!important;
-    font-size:12.5px!important;
-  }
-  body.tv-mode .rank-name{
-    font-size:18px!important;
-  }
-  body.tv-mode .rank-company{
-    font-size:12px!important;
-  }
-  body.tv-mode .rank-value{
-    font-size:28px!important;
-  }
-  body.tv-mode .rank-pos{
-    font-size:15px!important;
-  }
-  body.tv-mode .p-rank .ranking{
-    grid-auto-rows:minmax(56px,1fr)!important;
-  }
-}
-
-/* Mobile: preserva navegação vertical e aumenta legibilidade, sem forçar 16:9. */
-@media(max-width:820px){
-  .meta-zone,
-  .meta-next{
-    display:none!important;
-  }
-  .metric-context{
-    display:none!important;
-  }
-  .panel-title{
-    font-size:13px!important;
-  }
-  .panel-sub{
-    font-size:11.5px!important;
-  }
-  .rank-name{
-    font-size:15px!important;
-  }
-  .rank-company{
-    font-size:11px!important;
-  }
-}
-</style>
-
-
-<style id="rds-live-v966-vertical-store-labels">
-.store-axis-label{
-  font-size:10.5px!important;
-  font-family:var(--mono)!important;
-  font-weight:800!important;
-  letter-spacing:.025em;
-  fill:var(--muted)!important;
-}
-@media(min-width:1400px){
-  .store-axis-label{font-size:11.5px!important}
-}
-@media(max-width:820px){
-  .store-axis-label{font-size:10px!important}
-}
-</style>
-
-
-<style id="rds-live-v968-tv-stable">
-/* =========================================================
-   V9.6.8 — TV 16:9 estável
-   Não usa position:fixed, não some com o Ritmo e não altera fullscreen.
-   ========================================================= */
-
-@media(min-width:821px){
-  body.tv-mode{
-    overflow:hidden!important;
-  }
-
-  body.tv-mode .app{
-    width:100%!important;
-    height:100dvh!important;
-    min-height:0!important;
-    max-height:100dvh!important;
-    overflow:hidden!important;
     padding:10px 14px!important;
     gap:8px!important;
     grid-template-rows:auto auto auto minmax(0,1fr)!important;
   }
 
-  /* Cabeçalho */
-  body.tv-mode .topbar{
-    min-height:42px!important;
-    padding:0!important;
-    padding-right:0!important;
+  .topbar{
+    min-height:44px!important;
     gap:10px!important;
   }
-  body.tv-mode .mark{
-    width:38px!important;
-    height:38px!important;
+  .mark{
+    width:40px!important;
+    height:40px!important;
   }
-  body.tv-mode h1{
+  h1{
     font-size:22px!important;
+    line-height:1.05!important;
   }
-  body.tv-mode .eyebrow{
+  .eyebrow{
     font-size:9px!important;
   }
-  body.tv-mode .live-meta{
-    display:flex!important;
+
+  .live-meta{
     gap:6px!important;
+    flex-wrap:nowrap!important;
   }
-  body.tv-mode .live-meta .live-pill,
-  body.tv-mode .live-meta .meta-pill{
-    display:flex!important;
+  .live-pill,
+  .meta-pill{
     height:34px!important;
     padding:0 9px!important;
     font-size:10.5px!important;
   }
-  body.tv-mode .live-meta .meta-zone,
-  body.tv-mode .live-meta .meta-next{
+  .meta-zone,
+  .meta-next{
     display:none!important;
   }
 
-  /* Filtros permanecem no fluxo normal */
-  body.tv-mode .filters{
+  /* 8 controles em duas linhas, sem espremê-los. */
+  .filters{
     position:static!important;
-    inset:auto!important;
-    z-index:auto!important;
     width:100%!important;
-    min-height:0!important;
     display:grid!important;
-    grid-template-columns:1.2fr .72fr 1fr 1fr!important;
+    grid-template-columns:1.25fr .72fr 1fr 1fr!important;
     gap:6px!important;
+    align-items:stretch!important;
   }
-  body.tv-mode .filters > *{
-    display:flex!important;
+  .filters > *{
     min-width:0!important;
     min-height:36px!important;
   }
-  body.tv-mode .filters > select,
-  body.tv-mode .filters > input{
-    display:block!important;
-  }
-  body.tv-mode .view-switch{
+  .view-switch{
     display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    min-width:0!important;
   }
-  body.tv-mode .period-switch{
+  .display-switch,
+  .controls{
     display:flex!important;
+    gap:5px!important;
   }
-  body.tv-mode .display-switch,
-  body.tv-mode .controls{
-    display:flex!important;
-    position:static!important;
-    min-height:36px!important;
-    padding:0!important;
-    border:0!important;
-    background:transparent!important;
+  .display-switch .btn,
+  .controls .btn{
+    flex:1!important;
   }
-  body.tv-mode .select,
-  body.tv-mode .btn,
-  body.tv-mode .view-btn{
+  .select,
+  .btn,
+  .view-btn{
     height:36px!important;
     min-height:36px!important;
     font-size:10.5px!important;
   }
-  body.tv-mode .period-btn{
+  .period-btn{
     height:30px!important;
     min-height:30px!important;
     font-size:10.5px!important;
   }
-  body.tv-mode .display-switch .btn{
-    min-width:0!important;
-    flex:1!important;
-  }
 
-  /* KPIs */
-  body.tv-mode .status-strip{
+  .status-strip{
     grid-template-columns:1.12fr repeat(5,1fr)!important;
-    gap:7px!important;
+    gap:6px!important;
   }
-  body.tv-mode .metric{
-    min-height:76px!important;
+  .metric{
+    min-height:72px!important;
     padding:8px 10px!important;
   }
-  body.tv-mode .metric .label{
-    font-size:10px!important;
+  .metric .label{
+    font-size:9.5px!important;
     line-height:1.2!important;
   }
-  body.tv-mode .metric .value{
-    font-size:29px!important;
-    margin-top:5px!important;
+  .metric .value{
+    font-size:28px!important;
+    margin-top:4px!important;
   }
-  body.tv-mode .metric.primary .value{
-    font-size:33px!important;
+  .metric.primary .value{
+    font-size:31px!important;
   }
-  body.tv-mode .metric .sub{
+  .metric-context{
     display:none!important;
   }
+  .metric .sub{
+    font-size:9px!important;
+    margin-top:3px!important;
+  }
 
-  /* Área principal */
-  body.tv-mode .main-grid{
+  .main-grid{
     min-height:0!important;
     height:100%!important;
-    display:grid!important;
     grid-template-columns:minmax(0,1.42fr) minmax(330px,.88fr)!important;
     gap:8px!important;
   }
-  body.tv-mode .left-col{
+  .left-col{
     min-height:0!important;
     display:grid!important;
     grid-template-rows:minmax(0,1fr) auto!important;
     gap:8px!important;
   }
-  body.tv-mode .right-col{
+  .right-col{
     min-height:0!important;
   }
 
-  body.tv-mode .panel{
+  .panel{
     min-height:0!important;
     padding:9px 10px!important;
   }
-  body.tv-mode .p-chart{
-    height:auto!important;
-    min-height:0!important;
-  }
-  body.tv-mode .p-pace{
-    display:block!important;
-    height:auto!important;
-  }
-
-  body.tv-mode .panel-head{
+  .panel-head{
     margin-bottom:6px!important;
   }
-  body.tv-mode .panel-title{
+  .panel-title{
     font-size:12px!important;
   }
-  body.tv-mode .panel-sub{
+  .panel-sub{
     font-size:10px!important;
+    line-height:1.3!important;
   }
-  body.tv-mode .tab{
+  .tab{
     min-height:29px!important;
     padding:4px 7px!important;
     font-size:10px!important;
   }
 
-  /* Ritmo operacional continua visível, inclusive quantidade de lojas */
-  body.tv-mode .p-pace .pulse-grid{
-    display:grid!important;
+  .p-pace .pulse-grid{
     grid-template-columns:repeat(4,minmax(0,1fr))!important;
     gap:6px!important;
   }
-  body.tv-mode .pulse-card{
-    min-height:68px!important;
+  .pulse-card{
+    min-height:64px!important;
     padding:7px 8px!important;
   }
-  body.tv-mode .pulse-card .panel-sub{
-    display:block!important;
-    font-size:9px!important;
-  }
-  body.tv-mode .pulse-card .big{
+  .pulse-card .big{
     font-size:20px!important;
-    line-height:1.05!important;
   }
-  body.tv-mode .pulse-card .small{
-    display:block!important;
+  .pulse-card .small{
     font-size:8.5px!important;
     line-height:1.2!important;
     margin-top:3px!important;
   }
-  body.tv-mode .pulse-card .spark{
+  .spark{
     display:none!important;
   }
 
-  /* Ranking */
-  body.tv-mode .p-rank .ranking{
-    grid-auto-rows:minmax(42px,1fr)!important;
+  .p-rank .ranking{
+    grid-auto-rows:minmax(43px,1fr)!important;
   }
-  body.tv-mode .rank-row{
+  .rank-row{
     padding:5px 6px!important;
   }
-  body.tv-mode .rank-name{
-    font-size:13px!important;
-  }
-  body.tv-mode .rank-company{
-    font-size:9px!important;
-  }
-  body.tv-mode .rank-value{
-    font-size:19px!important;
-  }
-  body.tv-mode .rank-pos{
+  .rank-pos{
     font-size:11px!important;
   }
-  body.tv-mode .ov-status{
+  .rank-name{
+    font-size:13px!important;
+  }
+  .rank-company{
+    font-size:9px!important;
+  }
+  .rank-value{
+    font-size:19px!important;
+  }
+  .ov-status{
     min-height:24px!important;
     font-size:9.5px!important;
   }
 }
 
-/* 1366x768 e similares */
-@media(min-width:821px) and (max-height:800px){
+/* ---------------- TV 16:9 ----------------
+   Mesma estrutura, porém dados mais fortes.
+   Sem position:fixed e sem fullscreen automático. */
+@media(min-width:821px){
   body.tv-mode .app{
-    padding:7px 10px!important;
-    gap:6px!important;
+    padding:8px 12px!important;
+    gap:7px!important;
   }
   body.tv-mode .topbar{
-    min-height:36px!important;
-  }
-  body.tv-mode .mark{
-    width:34px!important;
-    height:34px!important;
+    min-height:40px!important;
   }
   body.tv-mode h1{
-    font-size:19px!important;
+    font-size:24px!important;
   }
   body.tv-mode .eyebrow{
     display:none!important;
@@ -1823,66 +1274,173 @@ body.tv-mode .p-rank .ranking{grid-auto-rows:minmax(38px,1fr)}
   body.tv-mode .live-meta .meta-pill{
     display:none!important;
   }
+
   body.tv-mode .filters{
-    gap:5px!important;
+    position:static!important;
+    inset:auto!important;
+    width:100%!important;
+    display:grid!important;
   }
-  body.tv-mode .select,
-  body.tv-mode .btn,
-  body.tv-mode .view-btn{
-    height:33px!important;
-    min-height:33px!important;
-    font-size:9.5px!important;
+  body.tv-mode .filters > *{
+    display:flex!important;
   }
-  body.tv-mode .status-strip{
-    gap:5px!important;
+  body.tv-mode .filters > select,
+  body.tv-mode .filters > input{
+    display:block!important;
   }
+
   body.tv-mode .metric{
-    min-height:64px!important;
-    padding:6px 8px!important;
+    min-height:76px!important;
   }
   body.tv-mode .metric .label{
-    font-size:9px!important;
+    font-size:10px!important;
   }
   body.tv-mode .metric .value{
-    font-size:25px!important;
+    font-size:32px!important;
   }
   body.tv-mode .metric.primary .value{
-    font-size:28px!important;
+    font-size:35px!important;
   }
-  body.tv-mode .panel{
-    padding:7px 8px!important;
+
+  body.tv-mode .main-grid{
+    grid-template-columns:minmax(0,1.5fr) minmax(350px,.85fr)!important;
+  }
+  body.tv-mode .p-pace{
+    display:block!important;
   }
   body.tv-mode .panel-title{
-    font-size:11px!important;
+    font-size:13px!important;
   }
-  body.tv-mode .panel-sub{
-    font-size:9px!important;
+  body.tv-mode .rank-name{
+    font-size:14px!important;
   }
-  body.tv-mode .tab{
-    min-height:27px!important;
-    font-size:9px!important;
-  }
-  body.tv-mode .pulse-card{
-    min-height:58px!important;
-    padding:5px 7px!important;
-  }
-  body.tv-mode .pulse-card .big{
-    font-size:18px!important;
-  }
-  body.tv-mode .pulse-card .small{
-    font-size:8px!important;
+  body.tv-mode .rank-value{
+    font-size:21px!important;
   }
 }
 
-/* Mobile continua usando o layout mobile normal. */
+/* Em 1920px+, filtros cabem em uma única linha sem ficar pequenos. */
+@media(min-width:1600px){
+  .filters,
+  body.tv-mode .filters{
+    grid-template-columns:1.35fr .7fr 1fr 1.05fr 1fr 1fr .9fr .9fr!important;
+  }
+  .store-axis-label{
+    font-size:10.5px!important;
+  }
+}
+
+/* Notebook baixo: reduz espaço, não a legibilidade. */
+@media(min-width:821px) and (max-height:720px){
+  .app,
+  body.tv-mode .app{
+    padding:6px 9px!important;
+    gap:5px!important;
+  }
+  .topbar,
+  body.tv-mode .topbar{
+    min-height:34px!important;
+  }
+  .mark,
+  body.tv-mode .mark{
+    width:32px!important;
+    height:32px!important;
+  }
+  h1,
+  body.tv-mode h1{
+    font-size:18px!important;
+  }
+  .eyebrow{
+    display:none!important;
+  }
+  .live-pill,
+  .meta-pill{
+    height:30px!important;
+  }
+  .select,
+  .btn,
+  .view-btn{
+    height:32px!important;
+    min-height:32px!important;
+    font-size:9.5px!important;
+  }
+  .metric{
+    min-height:60px!important;
+    padding:6px 8px!important;
+  }
+  .metric .value{
+    font-size:24px!important;
+  }
+  .metric.primary .value{
+    font-size:27px!important;
+  }
+  .panel{
+    padding:6px 8px!important;
+  }
+  .pulse-card{
+    min-height:54px!important;
+  }
+  .pulse-card .small{
+    display:none!important;
+  }
+}
+
+/* ---------------- MOBILE ---------------- */
 @media(max-width:820px){
+  html,body{
+    overflow:auto!important;
+  }
   body.tv-mode{
     overflow:auto!important;
   }
+  .app,
   body.tv-mode .app{
     height:auto!important;
     min-height:100vh!important;
     max-height:none!important;
+    overflow:visible!important;
+  }
+  .filters,
+  body.tv-mode .filters{
+    position:static!important;
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:7px!important;
+  }
+  .view-switch,
+  .period-switch,
+  #performerFilter,
+  .display-switch,
+  .controls{
+    grid-column:1/-1;
+  }
+  .view-switch{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  }
+  .display-switch{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+  }
+  .meta-zone,
+  .meta-next,
+  .metric-context{
+    display:none!important;
+  }
+  .panel-title{
+    font-size:13px!important;
+  }
+  .panel-sub{
+    font-size:11px!important;
+  }
+  .rank-name{
+    font-size:15px!important;
+  }
+  .rank-company{
+    font-size:11px!important;
+  }
+  .store-axis-label{
+    font-size:9px!important;
   }
 }
 </style>
@@ -2342,9 +1900,14 @@ function formatCurrentDate(){
 
   function populateUnits(preserve=true){
     const company=$('companyFilter').value;
+    const performer=viewMode==='competition'?'all':$('performerFilter').value;
     const current=preserve?$('unitFilter').value:'all';
+
     const units=stores
-      .filter(s=>company==='all'||s.company===company)
+      .filter(s=>
+        (company==='all'||s.company===company) &&
+        (performer==='all'||s.performerUserId===performer)
+      )
       .slice()
       .sort((a,b)=>(a.name||a.unitName).localeCompare((b.name||b.unitName),'pt-BR'));
 
@@ -2777,7 +2340,7 @@ function formatCurrentDate(){
     }
 
     $('chartGrid').innerHTML=[0.2,0.4,0.6,0.8].map(f=>{
-      const y=H-padY-(H-padY*2)*f;
+      const y=H-padBottom-(H-padTop-padBottom)*f;
       return `<line class="gridline" x1="${padX}" y1="${y}" x2="${W-padX}" y2="${y}"></line>`;
     }).join('');
 
@@ -2817,18 +2380,34 @@ function formatCurrentDate(){
     });
   }
 
+  function refreshView(){
+    const renderSteps=[
+      ['labels',updateLabels],
+      ['summary',updateSummary],
+      ['ranking',renderRanking],
+      ['chart',renderChart]
+    ];
+    let ok=true;
+    renderSteps.forEach(([name,fn])=>{
+      try{fn()}
+      catch(err){
+        ok=false;
+        console.error(`Dashboard Ao Vivo · erro em ${name}:`,err);
+      }
+    });
+    return ok;
+  }
+
+  function refreshAfterFilter({rebuildUnits=false}={}){
+    window.__rdsSuppressNextRankingMotion=true;
+    if(rebuildUnits)populateUnits(false);
+    refreshView();
+  }
+
   function setAction(action){
     activeAction=action;
     syncActionTabs();
-    renderChart();
-    renderRanking();
-  }
-
-  function refreshView(){
-    updateLabels();
-    updateSummary();
-    renderRanking();
-    renderChart();
+    refreshAfterFilter();
   }
 
   function cloneEntitiesForSnapshot(source){
@@ -2908,8 +2487,8 @@ function formatCurrentDate(){
     if(liveSnapshots.length>121)liveSnapshots=liveSnapshots.slice(-121);
 
     populateCompanies(true);
-    populateUnits(true);
     populatePerformers(true);
+    populateUnits(true);
     refreshView();
     $('lastUpdate').textContent=new Date(ts).toLocaleTimeString('pt-BR',{timeZone:'America/Sao_Paulo'});
     console.info('Dashboard Ao Vivo payload:',{
@@ -2939,8 +2518,8 @@ function formatCurrentDate(){
     performers=[];
     liveSnapshots=[];
     populateCompanies(false);
-    populateUnits(false);
     populatePerformers(false);
+    populateUnits(false);
     refreshView();
     $('lastUpdate').textContent='aguardando dados reais';
     $('last30Text').textContent='nenhum dado recebido do banco';
@@ -2969,19 +2548,21 @@ function formatCurrentDate(){
         $('performerFilter').value=performerBeforeCompetition;
       }
     }
+
     $('viewStores').classList.toggle('active',viewMode==='stores');
     $('viewUsers').classList.toggle('active',viewMode==='users');
     $('viewCompetition').classList.toggle('active',viewMode==='competition');
-    window.__rdsSuppressNextRankingMotion=true;
-    refreshView();
+    document.body.dataset.viewMode=viewMode;
+
+    populateUnits(false);
+    refreshAfterFilter();
   }
 
   function setPeriod(next){
     period=next;
     $('periodDay').classList.toggle('active',period==='day');
     $('periodMonth').classList.toggle('active',period==='month');
-    window.__rdsSuppressNextRankingMotion=true;
-    refreshView();
+    refreshAfterFilter();
   }
 
 
@@ -2991,7 +2572,7 @@ function formatCurrentDate(){
     $('standardViewBtn').classList.toggle('active',displayMode==='standard');
     $('tvViewBtn').classList.toggle('active',displayMode==='tv');
     window.__rdsSuppressNextRankingMotion=true;
-    requestAnimationFrame(()=>renderMainChart());
+    requestAnimationFrame(()=>renderChart());
   }
 
   function startTimer(){
@@ -3029,8 +2610,10 @@ function formatCurrentDate(){
       if(!realMode){
         stores=[];
         users=[];
+        performers=[];
         liveSnapshots=[];
         populateCompanies(false);
+        populatePerformers(false);
         populateUnits(false);
         refreshView();
       }
@@ -3053,18 +2636,19 @@ function formatCurrentDate(){
   $('periodMonth').addEventListener('click',()=>setPeriod('month'));
   $('dateFilter').addEventListener('change',()=>{
     selectedDate=$('dateFilter').value||selectedDate;
-    window.__rdsSuppressNextRankingMotion=true;
-    refreshView();
+    refreshAfterFilter();
   });
 
   $('companyFilter').addEventListener('change',()=>{
-    populateUnits(false);
-    refreshView();
+    refreshAfterFilter({rebuildUnits:true});
   });
-  $('unitFilter').addEventListener('change',refreshView);
+
+  $('unitFilter').addEventListener('change',()=>{
+    refreshAfterFilter();
+  });
+
   $('performerFilter').addEventListener('change',()=>{
-    window.__rdsSuppressNextRankingMotion=true;
-    refreshView();
+    refreshAfterFilter({rebuildUnits:true});
   });
 
   // UMA ÚNICA SELEÇÃO LÓGICA: os dois blocos respondem juntos.
@@ -3091,7 +2675,9 @@ function formatCurrentDate(){
 
   $('refreshBtn').addEventListener('click',()=>refreshData('manual'));
 
+  document.body.dataset.viewMode=viewMode;
   populateCompanies(false);
+  populatePerformers(false);
   populateUnits(false);
   syncActionTabs();
   $('currentDateLive').textContent=formatCurrentDate();
@@ -3356,7 +2942,7 @@ function formatCurrentDate(){
     wrap.addEventListener('scroll',function(){stick=wrap.scrollLeft+wrap.clientWidth>=wrap.scrollWidth-8},{passive:true});
     var lp=$('linePath'); if(lp) new MutationObserver(toEnd).observe(lp,{attributes:true,attributeFilter:['d']});
     ['chartTabs','periodDay','periodMonth'].forEach(function(id){$(id).addEventListener('click',function(){stick=true;wipe();setTimeout(toEnd,0)})});
-    ['companyFilter','unitFilter'].forEach(function(id){$(id).addEventListener('change',function(){stick=true;wipe();setTimeout(toEnd,0)})});
+    ['companyFilter','unitFilter','performerFilter','dateFilter'].forEach(function(id){$(id).addEventListener('change',function(){stick=true;wipe();setTimeout(toEnd,0)})});
     wipe();setTimeout(toEnd,0);
   }
 
@@ -3366,7 +2952,10 @@ function formatCurrentDate(){
   var HL=9000, prevKey=null, prevList=[], prevTop=new Map(), hl=new Map(), stTimer=null, flashTimer=null;
 
   function activeTab(){var t=document.querySelector('#rankingTabs .tab.active');return t?t.dataset.action:'all'}
-  function keyNow(){return [viewMode,activeTab(),$('periodMonth').classList.contains('active')?'m':'d',$('dateFilter').value,$('performerFilter').value,$('companyFilter').value,$('unitFilter').value].join('|')}
+  function keyNow(){
+    var vm=document.body.dataset.viewMode||'stores';
+    return [vm,activeTab(),$('periodMonth').classList.contains('active')?'m':'d',$('dateFilter').value,$('performerFilter').value,$('companyFilter').value,$('unitFilter').value].join('|')
+  }
   function clearRows(){hl.clear();Array.prototype.forEach.call(rk.querySelectorAll('.rank-row'),function(r){r.classList.remove('ov-up','ov-down','ov-hit');var t=r.querySelector('.ov-tag');if(t)t.remove()})}
   function idle(){st.classList.remove('alert');stTxt.textContent='Monitorando ultrapassagens · '+(MOD[activeTab()]||'')}
   function read(){

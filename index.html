@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/><meta name="theme-color" content="#050608"/><meta name="color-scheme" content="dark light"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" name="viewport"/>
-<title>Rotina de Sucesso — V9.6.8 Final</title>
+<title>Rotina de Sucesso — V9.6.9 Final</title>
 <script>/* V9 — tema aplicado antes da pintura (evita piscar) */(function(){var t='dark';try{var s=localStorage.getItem('rds-theme');if(s==='light'||s==='dark')t=s}catch(e){}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='light'?'#f2f0ec':'#050608')})();</script>
 <style>
 :root{--bg:#0b0e12;--panel:#12171d;--panel2:#171d24;--line:#27303a;--text:#f5f7fa;--muted:#8d98a5;--red:#e43b32;--green:#61d394;--amber:#e9b45d}
@@ -1865,46 +1865,72 @@ tbody tr:hover{background:var(--accent-soft)}
 </style>
 
 
-<style id="rds-v967-daily-evolution">
+
+<style id="rds-v969-dashboard-layout">
+/* =========================================================
+   V9.6.9 — Super Dashboard e Capitão
+   Cards com altura natural; gráficos proporcionais.
+   ========================================================= */
+
+/* Evita que o card do gráfico seja esticado pela coluna do ranking. */
+#performanceDashboard .grid.g2,
+#manager .grid.g2{
+  align-items:start;
+}
+#performanceDashboard .grid.g2 > .card,
+#manager .grid.g2 > .card{
+  height:auto;
+  min-height:0;
+}
+
 .pf-visual-stack{
-  display:flex;
-  flex-direction:column;
+  display:block;
 }
 .pf-daily-divider{
   height:1px;
   background:var(--line);
-  margin:18px 0 14px;
+  margin:16px 0 13px;
 }
 .pf-daily-head{
   margin-bottom:2px!important;
 }
 
-/* Comparação entre unidades: SIGLA LOJA - AEROPORTO na vertical. */
+/* Comparação entre unidades: compacta e proporcional. */
 #pfchart.unit-comparison-chart{
-  height:300px;
-  padding-bottom:92px;
+  box-sizing:border-box;
+  height:275px;
+  padding:18px 6px 72px;
   overflow-x:auto;
   overflow-y:hidden;
+  align-items:flex-end;
 }
 #pfchart.unit-comparison-chart .bar{
   min-width:18px;
+  max-width:42px;
 }
 #pfchart.unit-comparison-chart .bar span{
-  bottom:-76px;
+  bottom:-65px;
   left:50%;
-  width:max-content;
+  width:auto;
+  height:58px;
   max-width:none;
+  overflow:visible;
   white-space:nowrap;
-  font-size:10.5px;
+  font-size:10px;
+  line-height:1;
   font-weight:800;
   font-family:var(--mono);
-  transform:translateX(-50%) rotate(-90deg);
+  writing-mode:vertical-rl;
+  text-orientation:mixed;
+  transform:translateX(-50%) rotate(180deg);
   transform-origin:center center;
 }
 
-/* Evolução diária: todos os dias continuam visíveis. */
+/* Evolução diária — altura independente e sem esticar o card. */
 .daily-evolution-chart{
-  height:250px;
+  box-sizing:border-box;
+  height:225px;
+  padding:18px 6px 28px;
   overflow-x:auto;
   overflow-y:hidden;
   scrollbar-width:thin;
@@ -1913,40 +1939,45 @@ tbody tr:hover{background:var(--accent-soft)}
   min-width:16px;
 }
 .daily-evolution-chart .bar span{
-  font-size:10.5px;
+  font-size:10px;
   font-weight:700;
 }
 .daily-evolution-chart .bar em{
   font-size:10px;
 }
 
+/* Melhor uso da largura no desktop. */
 @media(min-width:1200px){
-  #pfchart.unit-comparison-chart .bar span{
-    font-size:11px;
+  #performanceDashboard .grid.g2{
+    grid-template-columns:minmax(0,1.18fr) minmax(360px,.82fr);
   }
-  .daily-evolution-chart .bar{
-    min-width:18px;
+  #manager .grid.g2{
+    grid-template-columns:minmax(0,1.15fr) minmax(360px,.85fr);
+  }
+  #pfchart.unit-comparison-chart .bar span{
+    font-size:10.5px;
   }
 }
 
 @media(max-width:760px){
+  #performanceDashboard .grid.g2,
+  #manager .grid.g2{
+    grid-template-columns:1fr!important;
+  }
   #pfchart.unit-comparison-chart{
-    height:285px;
-    padding-bottom:88px;
+    height:265px;
+    padding-bottom:70px;
   }
   #pfchart.unit-comparison-chart .bar{
-    min-width:18px;
     flex:0 0 18px;
+    min-width:18px;
   }
   .daily-evolution-chart{
-    height:235px;
+    height:220px;
   }
   .daily-evolution-chart .bar{
-    min-width:17px;
     flex:0 0 17px;
-  }
-  .pf-daily-divider{
-    margin:15px 0 12px;
+    min-width:17px;
   }
 }
 </style>
@@ -2311,7 +2342,7 @@ tbody tr:hover{background:var(--accent-soft)}
 </div>
 
 <div class="hidden" id="liveDashboardContainer">
-  <iframe id="liveDashboardFrame" data-src="modules/dashboard-ao-vivo/index.html?v=9.6.8" title="Dashboard Ao Vivo — Rotina de Sucesso" allow="fullscreen" allowfullscreen></iframe>
+  <iframe id="liveDashboardFrame" data-src="modules/dashboard-ao-vivo/index.html?v=9.6.9" title="Dashboard Ao Vivo — Rotina de Sucesso" allow="fullscreen" allowfullscreen></iframe>
 </div>
 
 
@@ -4856,7 +4887,7 @@ $('#pfGoalSave').addEventListener('click',()=>saveGoalDraft('performance'));
 
 
 /* ============================================================
-   V9.6.8 — COBERTURA COM QUANTIDADE / TV 16:9 ESTÁVEL
+   V9.6.9 — REVISÃO GERAL / FILTROS AO VIVO / LAYOUT ESTÁVEL
    Performer é função adicional de Performance/Admin.
    ============================================================ */
 function performerProfile(userId){return ORG_PROFILES_DB.find(p=>p.user_id===userId)||null}
@@ -7577,7 +7608,7 @@ document.addEventListener('click',function(e){
 },true);
 </script>
 
-<script src="modules/dashboard-ao-vivo/bridge.js?v=9.6.8"></script>
+<script src="modules/dashboard-ao-vivo/bridge.js?v=9.6.9"></script>
 <script id="rds-pwa-install">
 (()=>{
   let deferredInstallPrompt=null;
