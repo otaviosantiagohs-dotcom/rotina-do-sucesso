@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/><meta name="theme-color" content="#050608"/><meta name="color-scheme" content="dark light"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" name="viewport"/>
-<title>Rotina de Sucesso — V9.5.19 Final</title>
+<title>Rotina de Sucesso — V9.6.3 Final</title>
 <script>/* V9 — tema aplicado antes da pintura (evita piscar) */(function(){var t='dark';try{var s=localStorage.getItem('rds-theme');if(s==='light'||s==='dark')t=s}catch(e){}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='light'?'#f2f0ec':'#050608')})();</script>
 <style>
 :root{--bg:#0b0e12;--panel:#12171d;--panel2:#171d24;--line:#27303a;--text:#f5f7fa;--muted:#8d98a5;--red:#e43b32;--green:#61d394;--amber:#e9b45d}
@@ -1662,6 +1662,79 @@ tbody tr:hover{background:var(--accent-soft)}
 @media(max-width:390px){.performer-summary{grid-template-columns:1fr 1fr}.performer-summary .card:last-child{grid-column:1/-1}}
 </style>
 
+
+<style id="rds-v961-desktop-daily">
+/* V9.6.1 — Desktop mais amplo + filtros diários */
+@media(min-width:961px){
+  .wrap{max-width:1600px;width:min(100%,1600px);padding:14px 20px}
+  .top{padding:9px 0 13px}
+  .head{margin:15px 0}
+  .section{margin:17px 0 9px}
+  .dashboard-filter-bar,
+  #performanceDashboard>.filters,
+  #manager>.filters{
+    grid-template-columns:repeat(auto-fit,minmax(145px,1fr))!important;
+    gap:8px
+  }
+  .stats{gap:10px}
+  .stat{padding:14px}
+  .chart{height:220px;padding-top:14px}
+  .pad{padding:15px}
+  .admin-nav{margin-bottom:12px}
+  #performanceDashboard .g2,
+  #manager .g2{gap:10px}
+}
+@media(min-width:1280px){
+  .wrap{max-width:1720px}
+}
+.rank-sort-switch{
+  display:flex;gap:5px;padding:4px;border:1px solid var(--line);
+  background:var(--field);border-radius:9px
+}
+.rank-sort-switch button{
+  min-height:32px;border:0;border-radius:6px;padding:0 10px;background:transparent;
+  color:var(--muted);font:800 10px var(--mono);cursor:pointer
+}
+.rank-sort-switch button.active{background:var(--accent);color:var(--accent-ink)}
+.manager-rank-head>div:first-child{min-width:0}
+@media(max-width:760px){
+  .dashboard-filter-bar{grid-template-columns:1fr!important}
+  .manager-rank-head{align-items:stretch!important;flex-direction:column}
+  .rank-sort-switch{display:grid;grid-template-columns:1fr 1fr;width:100%}
+  .rank-sort-switch button{min-height:40px;font-size:11px}
+}
+</style>
+
+
+<style id="rds-v961-live-container">
+@media(min-width:761px){
+  #app.live-performance-mode .wrap{max-width:none;width:100%;padding-left:14px;padding-right:14px}
+  #app.live-performance-mode #liveDashboardContainer{
+    height:calc(100dvh - 142px);
+    min-height:0;
+    max-height:none;
+  }
+}
+</style>
+
+
+<style id="rds-v962-dedup">
+/* V9.6.2 — telas sem informação repetida */
+#manager .grid.g2{align-items:stretch}
+#manager .grid.g2 > .card{height:100%}
+.sales-visibility-control.hidden{display:none!important}
+</style>
+
+
+<style id="rds-v963-restricted-base">
+#access .acc-t{font-weight:900}
+#access .acc-s{font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--text)}
+@media(max-width:760px){
+  #access .acc-t{font-size:13px;letter-spacing:.20em}
+  #access .acc-s{font-size:12px;letter-spacing:.12em}
+}
+</style>
+
 </head>
 <body>
 <section class="login" id="login">
@@ -1690,7 +1763,7 @@ tbody tr:hover{background:var(--accent-soft)}
 </form>
 </div>
 </section>
-<div id="access" aria-hidden="true"><div><div class="acc-l"></div><div class="acc-t">ACESSO AUTORIZADO</div><div class="acc-s" id="accSub"></div></div></div>
+<div id="access" aria-hidden="true"><div><div class="acc-l"></div><div class="acc-t">ACESSANDO SISTEMA RESTRITO</div><div class="acc-s" id="accSub"></div></div></div>
 <section class="hidden" id="app">
 <div class="wrap">
 <header class="top">
@@ -1742,18 +1815,21 @@ tbody tr:hover{background:var(--accent-soft)}
 </div>
 </div>
 <div class="hidden" id="collabDashboard">
-<div class="personal-filter">
+<div class="personal-filter dashboard-filter-bar">
 <select id="personalIndicator">
 <option value="all">Todas as ações</option>
 <option value="salao">Abordagem no Salão</option>
 <option value="online">Captação Online</option>
 <option value="cotacoes">Cotações</option>
+<option value="vendas">Vendas</option>
 </select>
 <select id="personalPeriod">
-<option value="7">Últimos 7 dias</option>
-<option value="15">Últimos 15 dias</option>
-<option value="month">Mês atual</option>
+<option value="day">Dia selecionado</option>
+<option value="month">Mês da data</option>
+<option value="7">Últimos 7 dias até a data</option>
+<option value="15">Últimos 15 dias até a data</option>
 </select>
+<input id="personalDate" type="date" aria-label="Data da minha dashboard"/>
 </div>
 <section class="card pad hidden" id="personalGoalBox" style="margin-bottom:14px">
   <div class="section" style="margin:0">
@@ -1824,11 +1900,12 @@ tbody tr:hover{background:var(--accent-soft)}
 </div>
 </main>
 <main class="hidden" id="manager">
-<div class="filters">
-<select id="mgrMonth"><option value="2026-10">Outubro/2026</option><option value="2026-09">Setembro/2026</option></select>
-<select id="mgrAgent"><option value="all">Todos os agentes</option><option value="u8">Dayana Souza</option><option value="u9">Renata Costa</option><option value="u10">Bruno Silva</option></select>
+<div class="filters dashboard-filter-bar">
+<select id="mgrMonth" class="hidden" aria-hidden="true" tabindex="-1"><option value="2026-10">Outubro/2026</option><option value="2026-09">Setembro/2026</option></select>
+<input id="mgrDate" type="date" aria-label="Data da dashboard da unidade"/>
+<select id="mgrPeriod"><option value="day">Dia selecionado</option><option value="month">Mês selecionado</option><option value="7">Últimos 7 dias até a data</option><option value="15">Últimos 15 dias até a data</option></select>
+<select id="mgrAgent"><option value="all">Todos os agentes</option></select>
 <select id="mgrIndicator"><option value="all">Todos os indicadores</option><option value="salao">Abordagem no Salão</option><option value="online">Captação Online</option><option value="cotacoes">Cotações</option><option value="vendas">Vendas</option></select>
-<select id="mgrPeriod"><option value="month">Período atual</option><option value="7">Últimos 7 dias</option><option value="15">Últimos 15 dias</option></select>
 <button class="btn" id="mgrApply">Aplicar filtros</button>
 </div>
 <div class="sales-toggle-row sales-visibility-control">
@@ -1847,12 +1924,12 @@ tbody tr:hover{background:var(--accent-soft)}
   <div class="summary" id="mgrSalesTotal">0</div>
   <div class="sub">Resumo adicional de vendas para o filtro atual. Ao selecionar “Vendas” no indicador, evolução, ranking e detalhamento passam a usar vendas.</div>
 </section>
-<div class="section"><h2>Visão da unidade</h2><span id="mgrUnitLabel">RECIFE · SOS</span></div>
+<div class="section"><h2>Visão da unidade</h2><span id="mgrUnitLabel">—</span></div>
 <div class="stats">
-<div class="card stat"><div class="l">Abordagens</div><div class="v" id="mgrStatSalao">286</div><div class="d" id="mgrStatSalaoDelta">+12% vs período anterior</div></div>
-<div class="card stat"><div class="l">Captação online</div><div class="v" id="mgrStatOnline">198</div><div class="d" id="mgrStatOnlineDelta">+8%</div></div>
-<div class="card stat"><div class="l">Cotações</div><div class="v" id="mgrStatCotacoes">174</div><div class="d" id="mgrStatCotacoesDelta">+4%</div></div>
-<div class="card stat"><div class="l">Ações totais</div><div class="v" id="mgrStatTotal">658</div><div class="d" id="mgrStatTotalDelta">atividade consolidada</div></div>
+<div class="card stat"><div class="l">Abordagens</div><div class="v" id="mgrStatSalao">0</div><div class="d" id="mgrStatSalaoDelta">—</div></div>
+<div class="card stat"><div class="l">Captação online</div><div class="v" id="mgrStatOnline">0</div><div class="d" id="mgrStatOnlineDelta">—</div></div>
+<div class="card stat"><div class="l">Cotações</div><div class="v" id="mgrStatCotacoes">0</div><div class="d" id="mgrStatCotacoesDelta">—</div></div>
+<div class="card stat"><div class="l">Ações totais</div><div class="v" id="mgrStatTotal">0</div><div class="d" id="mgrStatTotalDelta">—</div></div>
 </div>
 <section class="card pad" id="mgrGoalProgressBox" style="margin-top:14px">
   <div class="section" style="margin:0"><div><h2>Ritmo das metas operacionais</h2><div class="sub" id="mgrGoalProgressMonth">Mês selecionado</div></div><span id="mgrGoalProgressStatus">Meta da unidade</span></div>
@@ -1860,9 +1937,18 @@ tbody tr:hover{background:var(--accent-soft)}
 </section>
 <div class="grid g2" style="margin-top:14px">
 <section class="card pad"><div class="section" style="margin:0"><h2>Evolução por dia</h2><span id="mgrChartLabel">Todas as ações</span></div><div class="chart" id="mgrchart"></div></section>
-<section class="card pad"><div class="section" style="margin:0"><h2>Ranking da equipe</h2><span id="mgrRankLabel">Todas as ações</span></div><div id="mgrrank"></div></section>
+<section class="card pad">
+<div class="section manager-rank-head" style="margin:0">
+  <div><h2>Ranking da equipe</h2><span id="mgrRankLabel">Organizado por ações</span></div>
+  <div class="rank-sort-switch" aria-label="Ordenação do ranking">
+    <button class="active" id="mgrSortActions" type="button">Organizar por ações</button>
+    <button id="mgrSortSales" type="button">Organizar por vendas</button>
+  </div>
 </div>
-<section class="card pad" style="margin-top:14px"><div class="section" style="margin:0"><h2>Ranking de ações</h2><span>Quem executa cada atividade</span></div><div class="table"><table><thead id="mgrActionHead"><tr><th>Agente</th><th>Salão</th><th>Online</th><th>Cotações</th><th>Total</th></tr></thead><tbody id="mgrActionBody"><tr><td><b>Dayana Souza</b></td><td>68</td><td>54</td><td>42</td><td><b>164</b></td></tr><tr><td><b>Marina Alves</b></td><td>61</td><td>49</td><td>46</td><td><b>156</b></td></tr><tr><td><b>João Lima</b></td><td>58</td><td>44</td><td>43</td><td><b>145</b></td></tr><tr><td><b>Renata Costa</b></td><td>52</td><td>39</td><td>43</td><td><b>134</b></td></tr></tbody></table></div></section>
+<div id="mgrrank"></div>
+</section>
+</div>
+
 </main>
 <main class="hidden" id="managerGoals">
   <section class="card pad">
@@ -1909,11 +1995,14 @@ tbody tr:hover{background:var(--accent-soft)}
 <button data-performance-mode="org">Empresas e Unidades</button>
 </div>
 <div id="performanceDashboard">
-<div class="filters">
+<div class="filters dashboard-filter-bar">
+<select id="pfPerformer"><option value="all">Todos os Performers</option></select>
 <select id="pfCompany"><option value="all">Todas as empresas</option><option value="SOS">SOS</option><option value="Universo">Universo</option><option value="Connect">Connect</option><option value="Azul Viagens">Azul Viagens</option></select>
 <select id="pfUnit"><option value="all">Todas as unidades</option></select>
 <select id="pfAgent"><option value="all">Todos os agentes</option></select>
-<select id="pfMonth"><option value="2026-10">Outubro/2026</option><option value="2026-09">Setembro/2026</option><option value="2026-08">Agosto/2026</option></select>
+<select id="pfMonth" class="hidden" aria-hidden="true" tabindex="-1"><option value="2026-10">Outubro/2026</option><option value="2026-09">Setembro/2026</option><option value="2026-08">Agosto/2026</option></select>
+<input id="pfDate" type="date" aria-label="Data da Super Dashboard"/>
+<select id="pfPeriod"><option value="day">Dia selecionado</option><option value="month">Mês selecionado</option><option value="7">Últimos 7 dias até a data</option><option value="15">Últimos 15 dias até a data</option></select>
 <select id="pfIndicator"><option value="all">Todos os indicadores</option><option value="salao">Abordagem no Salão</option><option value="online">Captação Online</option><option value="cotacoes">Cotações</option><option value="vendas">Vendas</option></select>
 <button class="btn" id="pfApply">Aplicar filtros</button></div>
 <div class="sales-toggle-row sales-visibility-control">
@@ -1986,7 +2075,7 @@ tbody tr:hover{background:var(--accent-soft)}
 </div>
 
 <div class="hidden" id="liveDashboardContainer">
-  <iframe id="liveDashboardFrame" data-src="modules/dashboard-ao-vivo/index.html?v=9.5.19" title="Dashboard Ao Vivo — Rotina de Sucesso"></iframe>
+  <iframe id="liveDashboardFrame" data-src="modules/dashboard-ao-vivo/index.html?v=9.6.3" title="Dashboard Ao Vivo — Rotina de Sucesso" allow="fullscreen" allowfullscreen></iframe>
 </div>
 
 
@@ -2146,7 +2235,7 @@ tbody tr:hover{background:var(--accent-soft)}
 </div>
 
 <div class="modal hidden" id="first"><div class="modalbox"><div class="kicker">Primeiro acesso</div><h2>Complete seu perfil</h2><p class="sub">Ao confirmar, você será vinculado automaticamente à unidade selecionada. Depois disso, Empresa e Unidade só poderão ser alteradas pelo Performance.</p><form id="firstForm"><div class="rows"><div><label class="label">Nome</label><input id="fn"/></div><div><label class="label">Sobrenome</label><input id="ln"/></div></div><div class="rows" style="margin-top:10px"><div><label class="label">Empresa</label><select id="company"><option value="SOS">SOS</option><option value="Universo">Universo</option><option value="Connect">Connect</option><option value="Azul Viagens">Azul Viagens</option></select></div><div><label class="label">Unidade</label><select id="unit"></select></div></div><div style="margin-top:10px"><label class="label">Capitão vinculado automaticamente</label><input disabled id="captain"/></div><div class="form-error" id="firstAccessError"></div><div class="modal-actions"><button class="btn red" type="submit">CONFIRMAR PERFIL</button></div></form></div></div>
-<div class="modal hidden" id="hist"><div class="modalbox"><div class="kicker">Histórico</div><h2>Últimos registros</h2><p class="sub">Dados anteriores ficam bloqueados para edição pelo usuário.</p><div class="table"><table><thead><tr><th>Data</th><th>Salão</th><th>Online</th><th>Cotações</th><th>Vendas</th></tr></thead><tbody id="historyBody"><tr><td>02/10/2026</td><td>12</td><td>7</td><td>9</td><td>3</td></tr><tr><td>01/10/2026</td><td>9</td><td>11</td><td>8</td><td>2</td></tr><tr><td>30/09/2026</td><td>14</td><td>6</td><td>10</td><td>4</td></tr></tbody></table></div><div class="modal-actions"><button class="btn" id="closeHist">Fechar</button></div></div></div>
+<div class="modal hidden" id="hist"><div class="modalbox"><div class="kicker">Histórico</div><h2>Últimos registros</h2><p class="sub">Dados anteriores ficam bloqueados para edição pelo usuário.</p><div class="table"><table><thead><tr><th>Data</th><th>Salão</th><th>Online</th><th>Cotações</th><th>Vendas</th></tr></thead><tbody id="historyBody"></tbody></table></div><div class="modal-actions"><button class="btn" id="closeHist">Fechar</button></div></div></div>
 <div class="modal hidden" id="userModal"><div class="modalbox user-editor"><div class="kicker" id="userModalKicker">Novo cadastro</div><h2 id="userModalTitle">Cadastrar usuário</h2><p class="sub">As alterações entram em vigor imediatamente nesta sessão do protótipo.</p><form id="userForm">
 <input type="hidden" id="editUserId"/>
 <div class="user-modal-grid">
@@ -2546,7 +2635,7 @@ const UNIT_CATALOG=[
 const indicatorNames={all:'Todas as ações',salao:'Abordagem no Salão',online:'Captação Online',cotacoes:'Cotações',vendas:'Vendas'};
 const indicatorShort={all:'Ações',salao:'Salão',online:'Online',cotacoes:'Cotações',vendas:'Vendas'};
 
-let currentUser=null, role=null, state={salao:0,online:0,cotacoes:0,vendas:0,obs:''}, editingUserId=null, performanceMode='dashboard';
+let currentUser=null, role=null, state={salao:0,online:0,cotacoes:0,vendas:0,obs:''}, editingUserId=null, performanceMode='dashboard', managerRankMode='actions';
 const DESKTOP_IDLE_MS=30*60*1000;
 let desktopIdleTimer=null;
 let accessCheckBusy=false;
@@ -2615,7 +2704,10 @@ function managerFor(company,unit){
   return userStore.find(u=>u.role==='gerente'&&u.active&&u.profileComplete&&u.company===company&&u.unit===unit)||null
 }
 function collaboratorsFor(company,unit,{activeOnly=true}={}){return userStore.filter(u=>u.role==='colaborador'&&u.profileComplete&&u.company===company&&u.unit===unit&&(!activeOnly||u.active))}
-function unitShort(company,unit){return unitRecord(company,unit)?.short||`${unit||'—'} ${company||''}`.trim()}
+function unitShort(company,unit){
+  const record=unitRecord(company,unit);
+  return canonicalUnitDisplayCode(company,record?.short,record?.unit,unit);
+}
 function getUser(id){return userStore.find(u=>u.id===id)}
 function getRuntimeUser(id){
   if(currentUser?.id===id)return currentUser;
@@ -2656,13 +2748,57 @@ function renderAudit(){
 function unique(a){return [...new Set(a)]}
 function formatInt(n){return Number(n||0).toLocaleString('pt-BR')}
 function format1(n){return Number(n||0).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})}
-function pctDelta(curr,prev){if(prev===0)return curr>0?'+100%':'0%';const p=((curr-prev)/prev)*100;return `${p>=0?'+':''}${p.toLocaleString('pt-BR',{maximumFractionDigits:1})}%`}
-function addDays(dateStr,delta){const d=new Date(dateStr+'T12:00:00');d.setDate(d.getDate()+delta);return d.toISOString().slice(0,10)}
+function pctDelta(curr,prev){
+  if(prev===0)return curr>0?'Sem base anterior':'0%';
+  const p=((curr-prev)/prev)*100;
+  return `${p>=0?'+':''}${p.toLocaleString('pt-BR',{maximumFractionDigits:1})}%`;
+}
+function addDays(dateStr,delta){
+  const [y,m,d]=String(dateStr).split('-').map(Number);
+  const x=new Date(Date.UTC(y,m-1,d,12,0,0));
+  x.setUTCDate(x.getUTCDate()+Number(delta||0));
+  return `${x.getUTCFullYear()}-${String(x.getUTCMonth()+1).padStart(2,'0')}-${String(x.getUTCDate()).padStart(2,'0')}`;
+}
 function monthLabel(m){
-  const [y,mo]=m.split('-').map(Number);
-  return new Intl.DateTimeFormat('pt-BR',{month:'long',year:'numeric',timeZone:'America/Sao_Paulo'})
-    .format(new Date(Date.UTC(y,mo-1,1)))
-    .replace(/^./,c=>c.toUpperCase());
+  const [y,mo]=String(m).split('-').map(Number);
+  const names=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  return `${names[Math.max(0,Math.min(11,mo-1))]} de ${y}`;
+}
+function dateLabel(dateStr){
+  if(!dateStr)return '—';
+  const [y,m,d]=String(dateStr).split('-');
+  return `${d}/${m}/${y}`;
+}
+function selectedWindow(rows,{period='month',month=DEMO_TODAY.slice(0,7),date=DEMO_TODAY}={}){
+  if(period==='day')return rows.filter(r=>r.date===date);
+  if(period==='month')return rows.filter(r=>r.date.startsWith(month));
+  const n=Math.max(1,Number(period)||7);
+  const end=date||DEMO_TODAY;
+  const start=addDays(end,-(n-1));
+  return rows.filter(r=>r.date>=start&&r.date<=end);
+}
+function previousWindow(rows,{period='month',month=DEMO_TODAY.slice(0,7),date=DEMO_TODAY}={}){
+  if(period==='day'){
+    const prev=addDays(date,-1);
+    return {rows:rows.filter(r=>r.date===prev),label:dateLabel(prev)};
+  }
+  if(period==='month'){
+    const prev=previousMonth(month);
+    return {rows:rows.filter(r=>r.date.startsWith(prev)),label:monthLabel(prev)};
+  }
+  const n=Math.max(1,Number(period)||7);
+  const prevEnd=addDays(date,-n);
+  const prevStart=addDays(prevEnd,-(n-1));
+  return {
+    rows:rows.filter(r=>r.date>=prevStart&&r.date<=prevEnd),
+    label:`${dateLabel(prevStart)} a ${dateLabel(prevEnd)}`
+  };
+}
+function currentWindowLabel({period='month',month=DEMO_TODAY.slice(0,7),date=DEMO_TODAY}={}){
+  if(period==='day')return dateLabel(date);
+  if(period==='month')return monthLabel(month);
+  const n=Math.max(1,Number(period)||7);
+  return `${dateLabel(addDays(date,-(n-1)))} a ${dateLabel(date)}`;
 }
 function demoMonthDays(month){
   const [y,m]=month.split('-').map(Number);
@@ -2727,7 +2863,7 @@ function mapDbRoutineRow(r){
     date:r.routine_date,
     company:company?.name||(currentUser?.id===r.user_id?currentUser.company:''),
     unit:unit?.name||(currentUser?.id===r.user_id?currentUser.unit:''),
-    short:unit?.short_code||'',
+    short:unit?liveDashboardUnitCode(unit):'',
     agent,
     salao:Number(r.floor_approaches||0),
     online:Number(r.online_captures||0),
@@ -2877,15 +3013,22 @@ function rowsWithLive(){
   }
   return rows;
 }
-function rowsForWindow(rows,month,period){if(period==='month')return rows.filter(r=>r.date.startsWith(month));const n=Number(period)||7,start=addDays(DEMO_TODAY,-(n-1));return rows.filter(r=>r.date>=start&&r.date<=DEMO_TODAY)}
+function rowsForWindow(rows,month,period,date=DEMO_TODAY){
+  return selectedWindow(rows,{period,month,date});
+}
 function userRows(user){return rowsWithLive().filter(r=>r.userId===user.id)}
 
 function pulse(){const el=$('#savestatus');if(!el)return;el.textContent='● salvando...';el.style.color='var(--amber)';clearTimeout(pulse.t);pulse.t=setTimeout(()=>{if(!routineSyncErrors){el.textContent='● salvo automaticamente';el.style.color='var(--green)'}},420)}
 function setMetaForUser(u){
   $('#uname').textContent=fullName(u);$('#avatar').textContent=initials(fullName(u));
-  if(u.role==='performance')$('#meta').innerHTML='<span class="chip">Administrador</span><span class="chip">Todas as empresas</span><span class="chip">Todas as unidades</span>';
-  else if(u.role==='gerente')$('#meta').innerHTML=`<span class="chip">Capitão</span><span class="chip">${u.company||'—'}</span><span class="chip">${u.unit||'—'}</span>`;
-  else {const mgr=managerFor(u.company,u.unit);$('#meta').innerHTML=`<span class="chip">${careerRankLabel(u)}</span><span class="chip">${u.company||'Não definido'}</span><span class="chip">${u.unit||'Não definido'}</span><span class="chip">Capitão: ${mgr?fullName(mgr):'Não definido'}</span>`}
+  if(u.role==='performance'){
+    $('#meta').innerHTML='<span class="chip">Administrador</span><span class="chip">Todas as empresas</span><span class="chip">Todas as unidades</span>';
+  }else if(u.role==='gerente'){
+    $('#meta').innerHTML=`<span class="chip">Capitão</span><span class="chip">${userDisplayUnitCode(u)}</span>`;
+  }else{
+    const mgr=managerFor(u.company,u.unit);
+    $('#meta').innerHTML=`<span class="chip">${careerRankLabel(u)}</span><span class="chip">${userDisplayUnitCode(u)}</span><span class="chip">Capitão: ${mgr?fullName(mgr):'Não definido'}</span>`;
+  }
 }
 function renderEntry(){if(!currentUser||!isOperationalRole(currentUser))return;['salao','online','cotacoes','vendas'].forEach(k=>{const el=$('#c-'+k);if(el)el.textContent=state[k]});$('#total').textContent=state.salao+state.online+state.cotacoes;$('#obs').value=state.obs||''}
 function render(){renderEntry();if(isOperationalRole(currentUser)){renderPersonalDashboard();renderPersonalGoalProgress()}if(!$('#manager').classList.contains('hidden'))renderManager();if(!$('#managerGoals').classList.contains('hidden'))renderManagerGoals();if(!$('#performance').classList.contains('hidden')){renderPerformance();renderUserManagement();renderOrgManagement();if(performanceMode==='goals')renderPerformanceGoals();if(performanceMode==='performers')renderPerformerManagement()}}
@@ -2903,8 +3046,8 @@ function setTopForView(v){
     $('#clearDay').classList.toggle('hidden',!operational);
     $('#collabModeNav').classList.toggle('hidden',!isCollaborator);
   }
-  else if(v==='manager'){const c=managerContext();$('#kick').textContent='Comando da unidade';$('#title').textContent='Dashboard do Capitão';$('#subtitle').textContent=c?`${c.unit} · ${c.company} · acompanhamento da equipe`:'Selecione uma unidade';$('#mode').textContent='comando da unidade';$('#history').classList.add('hidden');$('#clearDay').classList.add('hidden');$('#collabModeNav').classList.add('hidden')}
-  else if(v==='managerGoals'){const c=managerContext();$('#kick').textContent='Planejamento operacional';$('#title').textContent='Metas da Unidade';$('#subtitle').textContent=c?`${c.unit} · ${c.company} · metas mensais e ritmo diário`:'Metas da unidade';$('#mode').textContent='metas operacionais';$('#history').classList.add('hidden');$('#clearDay').classList.add('hidden');$('#collabModeNav').classList.add('hidden')}
+  else if(v==='manager'){const c=managerContext();$('#kick').textContent='Comando da unidade';$('#title').textContent='Dashboard do Capitão';$('#subtitle').textContent=c?`${userDisplayUnitCode(c)} · acompanhamento da equipe`:'Selecione uma unidade';$('#mode').textContent='comando da unidade';$('#history').classList.add('hidden');$('#clearDay').classList.add('hidden');$('#collabModeNav').classList.add('hidden')}
+  else if(v==='managerGoals'){const c=managerContext();$('#kick').textContent='Planejamento operacional';$('#title').textContent='Metas da Unidade';$('#subtitle').textContent=c?`${userDisplayUnitCode(c)} · metas mensais e ritmo diário`:'Metas da unidade';$('#mode').textContent='metas operacionais';$('#history').classList.add('hidden');$('#clearDay').classList.add('hidden');$('#collabModeNav').classList.add('hidden')}
   else{
     $('#kick').textContent='Central de comando';
     const org=performanceMode==='org',users=performanceMode==='users',goals=performanceMode==='goals',performers=performanceMode==='performers';
@@ -3547,18 +3690,23 @@ $('#clearDay').addEventListener('click',async()=>{
   }
 });
 
-function personalRows(period){if(!currentUser)return[];return rowsForWindow(userRows(currentUser),$('#personalPeriod').value==='month'?DEMO_TODAY.slice(0,7):DEMO_TODAY.slice(0,7),period)}
+function personalRows(period){
+  if(!currentUser)return[];
+  const date=$('#personalDate')?.value||DEMO_TODAY;
+  return selectedWindow(userRows(currentUser),{period,month:date.slice(0,7),date});
+}
 function renderPersonalDashboard(){
   if(!currentUser||!isOperationalRole(currentUser)||!currentUser.profileComplete)return;
 
   const key=$('#personalIndicator').value,
         period=$('#personalPeriod').value,
-        rows=rowsForWindow(userRows(currentUser),DEMO_TODAY.slice(0,7),period),
+        date=$('#personalDate')?.value||DEMO_TODAY,
+        rows=selectedWindow(userRows(currentUser),{period,month:date.slice(0,7),date}),
         label=indicatorNames[key];
 
   const total=sum(rows,key),
         byDate=aggregateByDate(rows,key).sort((a,b)=>a.n.localeCompare(b.n)),
-        todayRow=rows.find(r=>r.date===DEMO_TODAY),
+        todayRow=userRows(currentUser).find(r=>r.date===date),
         today=todayRow?metricValue(todayRow,key):0,
         best=byDate.length?Math.max(...byDate.map(x=>x.v)):0,
         bestRow=byDate.find(x=>x.v===best);
@@ -3567,6 +3715,8 @@ function renderPersonalDashboard(){
   $('#personalChartLabel').textContent=label;
   $('#personalTotal').textContent=formatInt(total);
   $('#personalToday').textContent=formatInt(today);
+  $('#personalToday').parentElement.querySelector('.pl').textContent=date===DEMO_TODAY?'Hoje':'Dia selecionado';
+  $('#personalToday').parentElement.querySelector('.pd').textContent=dateLabel(date);
   $('#personalAverage').textContent=format1(byDate.length?total/byDate.length:0);
   $('#personalBest').textContent=formatInt(best);
   $('#personalBestDate').textContent=bestRow?(bestRow.n===DEMO_TODAY?'Hoje':bestRow.n.slice(8,10)+'/'+bestRow.n.slice(5,7)):'—';
@@ -3594,12 +3744,14 @@ function renderPersonalDashboard(){
     .sort((a,b)=>a.n.localeCompare(b.n));
 
   const salesTotal=salesSeries.reduce((acc,x)=>acc+x.v,0);
-  const salesToday=salesByDate.get(DEMO_TODAY)||0;
+  const salesToday=(userRows(currentUser).find(r=>r.date===date)?.vendas)||0;
   const salesBest=salesSeries.length?Math.max(...salesSeries.map(x=>x.v)):0;
   const salesBestRow=salesSeries.find(x=>x.v===salesBest);
 
   $('#personalSalesTotal').textContent=formatInt(salesTotal);
   $('#personalSalesToday').textContent=formatInt(salesToday);
+  $('#personalSalesToday').parentElement.querySelector('.pl').textContent=date===DEMO_TODAY?'Hoje':'Dia selecionado';
+  $('#personalSalesToday').parentElement.querySelector('.pd').textContent=dateLabel(date);
   $('#personalSalesAverage').textContent=format1(salesSeries.length?salesTotal/salesSeries.length:0);
   $('#personalSalesBest').textContent=formatInt(salesBest);
   $('#personalSalesBestDate').textContent=salesBestRow
@@ -3611,7 +3763,10 @@ function renderPersonalDashboard(){
     v:x.v
   })));
 
-  $('#personalSalesBox').classList.toggle('hidden',!$('#showPersonalSales').checked);
+  const personalSalesIsPrimary=$('#personalIndicator').value==='vendas';
+  const personalSalesControl=$('#showPersonalSales').closest('.sales-visibility-control');
+  if(personalSalesControl)personalSalesControl.classList.toggle('hidden',personalSalesIsPrimary);
+  $('#personalSalesBox').classList.toggle('hidden',personalSalesIsPrimary||!$('#showPersonalSales').checked);
 }
 function setCollabMode(mode){
   const dash=mode==='dashboard';
@@ -3632,7 +3787,11 @@ function setCollabMode(mode){
     renderPersonalDashboard();
   }else setTopForView('collab');
 }
-$$('.modebtn').forEach(b=>b.addEventListener('click',()=>setCollabMode(b.dataset.collabMode)));$('#personalIndicator').addEventListener('change',renderPersonalDashboard);$('#personalPeriod').addEventListener('change',renderPersonalDashboard);$('#showPersonalSales').addEventListener('change',renderPersonalDashboard);
+$$('.modebtn').forEach(b=>b.addEventListener('click',()=>setCollabMode(b.dataset.collabMode)));
+$('#personalIndicator').addEventListener('change',renderPersonalDashboard);
+$('#personalPeriod').addEventListener('change',renderPersonalDashboard);
+$('#personalDate').addEventListener('change',renderPersonalDashboard);
+$('#showPersonalSales').addEventListener('change',renderPersonalDashboard);
 function renderHistory(){if(!currentUser)return;const rows=userRows(currentUser).filter(r=>r.date<=DEMO_TODAY).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);$('#historyBody').innerHTML=rows.map(r=>`<tr><td>${r.date.split('-').reverse().join('/')}</td><td>${r.salao}</td><td>${r.online}</td><td>${r.cotacoes}</td><td>${r.vendas}</td></tr>`).join('')||'<tr><td colspan="5">Sem registros.</td></tr>'}
 $('#history').addEventListener('click',()=>{renderHistory();$('#hist').classList.remove('hidden')});$('#closeHist').addEventListener('click',()=>$('#hist').classList.add('hidden'));$$('.tab').forEach(t=>t.addEventListener('click',()=>view(t.dataset.view)));
 
@@ -3641,21 +3800,27 @@ async function loadDashboardReferenceData(){
   if(!currentUser || currentUser.source!=='supabase' || !['gerente','performance'].includes(currentUser.role))return;
 
   if(currentUser.role==='performance'){
-    const [companiesRes,unitsRes,profilesRes]=await Promise.all([
+    const [companiesRes,unitsRes,profilesRes,performersRes,assignmentsRes]=await Promise.all([
       supabaseClient.from('companies').select('id,name,active').order('name'),
       supabaseClient.from('units').select('id,company_id,name,short_code,manager_user_id,active').order('name'),
       supabaseClient.from('profiles')
         .select('user_id,username,first_name,last_name,role,career_rank,aspirant_started_at,promoted_to_tenente_at,company_id,unit_id,active,first_access_completed,must_change_password,last_access_at')
-        .order('username')
+        .order('username'),
+      supabaseClient.from('performers').select('user_id,active,created_by,created_at,updated_at').order('created_at'),
+      supabaseClient.from('performer_units').select('unit_id,performer_user_id,assigned_by,assigned_at').order('assigned_at')
     ]);
 
     if(companiesRes.error)throw companiesRes.error;
     if(unitsRes.error)throw unitsRes.error;
     if(profilesRes.error)throw profilesRes.error;
+    if(performersRes.error)throw performersRes.error;
+    if(assignmentsRes.error)throw assignmentsRes.error;
 
     ORG_COMPANIES_DB=companiesRes.data||[];
     ORG_UNITS_DB=unitsRes.data||[];
     ORG_PROFILES_DB=profilesRes.data||[];
+    PERFORMERS_DB=performersRes.data||[];
+    PERFORMER_UNITS_DB=assignmentsRes.data||[];
     return;
   }
 
@@ -3715,18 +3880,10 @@ function managerPreviousRows(){
   const c=managerContext();if(!c)return[];
   const period=$('#mgrPeriod').value;
   const agent=$('#mgrAgent').value;
-  let rows=rowsWithLive().filter(r=>r.company===c.company&&r.unit===c.unit);
-
-  if(period==='month'){
-    rows=rows.filter(r=>r.date.startsWith(previousMonth($('#mgrMonth').value)));
-  }else{
-    const n=Number(period)||7;
-    const currentStart=addDays(DEMO_TODAY,-(n-1));
-    const prevEnd=addDays(currentStart,-1);
-    const prevStart=addDays(prevEnd,-(n-1));
-    rows=rows.filter(r=>r.date>=prevStart&&r.date<=prevEnd);
-  }
-
+  const date=$('#mgrDate').value||DEMO_TODAY;
+  const month=$('#mgrMonth').value||date.slice(0,7);
+  let base=rowsWithLive().filter(r=>r.company===c.company&&r.unit===c.unit);
+  let rows=previousWindow(base,{period,month,date}).rows;
   if(agent!=='all')rows=rows.filter(r=>r.userId===agent);
   return rows;
 }
@@ -3763,8 +3920,16 @@ function rebuildManagerAgentOptions(){
   $('#mgrAgent').value=eligible.some(u=>u.id===current)?current:'all';
   setTopForView('manager');
 }
-function managerFilteredRows(){const c=managerContext();if(!c)return[];let rows=rowsWithLive().filter(r=>r.company===c.company&&r.unit===c.unit);rows=rowsForWindow(rows,$('#mgrMonth').value,$('#mgrPeriod').value);const agent=$('#mgrAgent').value;if(agent!=='all')rows=rows.filter(r=>r.userId===agent);return rows}
-function renderManagerActionTable(rows,key){const ids=unique(rows.map(r=>r.userId));if(key==='all'){$('#mgrActionHead').innerHTML='<tr><th>Agente</th><th>Salão</th><th>Online</th><th>Cotações</th><th>Total</th></tr>';$('#mgrActionBody').innerHTML=ids.map(id=>{const ar=rows.filter(r=>r.userId===id),u=getRuntimeUser(id);return `<tr><td><b>${u?fullName(u):ar[0]?.agent||'—'}</b></td><td>${formatInt(sum(ar,'salao'))}</td><td>${formatInt(sum(ar,'online'))}</td><td>${formatInt(sum(ar,'cotacoes'))}</td><td><b>${formatInt(sum(ar,'all'))}</b></td></tr>`}).join('')}else{$('#mgrActionHead').innerHTML=`<tr><th>Agente</th><th>${indicatorShort[key]}</th><th>Participação</th></tr>`;const total=sum(rows,key)||1;$('#mgrActionBody').innerHTML=ids.map(id=>{const ar=rows.filter(r=>r.userId===id),u=getRuntimeUser(id),v=sum(ar,key);return `<tr><td><b>${u?fullName(u):ar[0]?.agent||'—'}</b></td><td><b>${formatInt(v)}</b></td><td>${format1(v/total*100)}%</td></tr>`}).join('')}}
+function managerFilteredRows(){
+  const c=managerContext();if(!c)return[];
+  const date=$('#mgrDate').value||DEMO_TODAY;
+  const month=$('#mgrMonth').value||date.slice(0,7);
+  let rows=rowsWithLive().filter(r=>r.company===c.company&&r.unit===c.unit);
+  rows=selectedWindow(rows,{period:$('#mgrPeriod').value,month,date});
+  const agent=$('#mgrAgent').value;
+  if(agent!=='all')rows=rows.filter(r=>r.userId===agent);
+  return rows;
+}
 function renderManager(){
   if(!$('#mgrMonth'))return;
   const c=managerContext();if(!c)return;
@@ -3774,7 +3939,7 @@ function renderManager(){
         prevRows=managerPreviousRows(),
         label=indicatorNames[key];
 
-  $('#mgrUnitLabel').textContent=`${c.unit.toUpperCase()} · ${c.company} · ${getDateRangeLabel(rows)}`;
+  $('#mgrUnitLabel').textContent=`${userDisplayUnitCode(c)} · ${getDateRangeLabel(rows)}`;
 
   const vals={
     salao:sum(rows,'salao'),
@@ -3812,19 +3977,21 @@ function renderManager(){
   const byDate=aggregateByDate(rows,key).sort((a,b)=>a.n.localeCompare(b.n));
   bars($('#mgrchart'),byDate.map(x=>({l:x.n.slice(8,10),v:x.v})));
 
+  const rankKey=managerRankMode==='sales'?'vendas':'all';
   const byAgent=unique(rows.map(r=>r.userId)).map(id=>{
     const ar=rows.filter(r=>r.userId===id),u=getRuntimeUser(id);
     return {
       n:u?fullName(u):ar[0]?.agent||'—',
-      s:label,
-      v:sum(ar,key)
+      s:managerRankMode==='sales'?'Vendas':'Ações',
+      v:sum(ar,rankKey)
     };
   });
   rank($('#mgrrank'),byAgent);
 
   $('#mgrChartLabel').textContent=label;
-  $('#mgrRankLabel').textContent=label;
-  renderManagerActionTable(rows,key);
+  $('#mgrRankLabel').textContent=managerRankMode==='sales'?'Organizado por vendas':'Organizado por ações';
+  $('#mgrSortActions').classList.toggle('active',managerRankMode==='actions');
+  $('#mgrSortSales').classList.toggle('active',managerRankMode==='sales');
 
   const managerSales=rows.reduce((acc,r)=>acc+(Number(r.vendas)||0),0);
   $('#mgrSalesTotal').textContent=formatInt(managerSales);
@@ -3839,10 +4006,27 @@ function renderManager(){
     $('#mgrSalesContext').textContent=selectedUser?fullName(selectedUser):'Usuário selecionado';
   }
 
-  $('#mgrSalesBox').classList.toggle('hidden',!$('#showManagerSales').checked);
+  const managerSalesIsPrimary=$('#mgrIndicator').value==='vendas';
+  const managerSalesControl=$('#showManagerSales').closest('.sales-visibility-control');
+  if(managerSalesControl)managerSalesControl.classList.toggle('hidden',managerSalesIsPrimary);
+  $('#mgrSalesBox').classList.toggle('hidden',managerSalesIsPrimary||!$('#showManagerSales').checked);
   renderManagerGoalDashboard(c,$('#mgrMonth').value);
 }
-['mgrMonth','mgrAgent','mgrIndicator','mgrPeriod'].forEach(id=>$('#'+id).addEventListener('change',renderManager));
+['mgrMonth','mgrAgent','mgrIndicator','mgrPeriod','mgrDate'].forEach(id=>$('#'+id).addEventListener('change',()=>{
+  if(id==='mgrMonth' && $('#mgrPeriod').value==='month'){
+    const month=$('#mgrMonth').value;
+    const current=$('#mgrDate').value||DEMO_TODAY;
+    $('#mgrDate').value=month===DEMO_TODAY.slice(0,7)?DEMO_TODAY:`${month}-01`;
+  }
+  if(id==='mgrDate'){
+    const d=$('#mgrDate').value||DEMO_TODAY;
+    const month=d.slice(0,7);
+    if([...$('#mgrMonth').options].some(o=>o.value===month))$('#mgrMonth').value=month;
+  }
+  renderManager();
+}));
+$('#mgrSortActions').addEventListener('click',()=>{managerRankMode='actions';renderManager()});
+$('#mgrSortSales').addEventListener('click',()=>{managerRankMode='sales';renderManager()});
 $('#showManagerSales').addEventListener('change',renderManager);
 $('#mgrApply').addEventListener('click',()=>currentUser?.source==='supabase'?loadDashboardRoutinesFromSupabase():renderManager());
 
@@ -3855,35 +4039,57 @@ function eligiblePerformanceUsers({activeOnly=true}={}){
   }
   return userStore.filter(u=>['colaborador','gerente'].includes(u.role)&&u.profileComplete&&u.company&&u.unit&&(!activeOnly||u.active));
 }
+function activeDashboardPerformers(){
+  return PERFORMERS_DB
+    .filter(p=>p.active!==false)
+    .map(p=>({record:p,profile:ORG_PROFILES_DB.find(x=>x.user_id===p.user_id)}))
+    .filter(x=>x.profile)
+    .sort((a,b)=>orgDbFullName(a.profile).localeCompare(orgDbFullName(b.profile),'pt-BR'));
+}
+function performerUnitIds(userId){
+  return new Set(PERFORMER_UNITS_DB.filter(x=>x.performer_user_id===userId).map(x=>x.unit_id));
+}
+function populatePerformancePerformerFilter(){
+  const el=$('#pfPerformer');if(!el)return;
+  const current=el.value||'all';
+  const rows=activeDashboardPerformers();
+  el.innerHTML='<option value="all">Todos os Performers</option>'+
+    rows.map(x=>`<option value="${x.record.user_id}">${importEsc(orgDbFullName(x.profile))}</option>`).join('');
+  el.value=rows.some(x=>x.record.user_id===current)?current:'all';
+}
+
 function rebuildPerformanceOptions(){
-  const previousCompany=$('#pfCompany').value,
-        previousUnit=$('#pfUnit').value,
-        previousAgent=$('#pfAgent').value;
+  populatePerformancePerformerFilter();
+  const previousUnit=$('#pfUnit').value;
+  const previousAgent=$('#pfAgent').value;
+  const company=$('#pfCompany').value;
+  const performerId=$('#pfPerformer')?.value||'all';
+  const allowedIds=performerId==='all'?null:performerUnitIds(performerId);
 
-  if(currentUser?.source==='supabase'){
-    $('#pfCompany').innerHTML='<option value="all">Todas as empresas</option>'+
-      ORG_COMPANIES_DB.map(c=>`<option value="${c.name}">${c.name}${c.active===false?' (Inativa)':''}</option>`).join('');
-
-    $('#pfCompany').value=
-      previousCompany==='all'||ORG_COMPANIES_DB.some(c=>c.name===previousCompany)
-      ? previousCompany : 'all';
-
-    const company=$('#pfCompany').value;
-    const units=ORG_UNITS_DB.filter(u=>{
-      const c=orgDbCompanyById(u.company_id);
-      return company==='all'||c?.name===company;
-    });
+  if(currentUser?.source==='supabase'&&ORG_UNITS_DB.length){
+    const companyRecord=ORG_COMPANIES_DB.find(c=>c.name===company);
+    const units=ORG_UNITS_DB
+      .filter(u=>(company==='all'||u.company_id===companyRecord?.id)&&(!allowedIds||allowedIds.has(u.id)))
+      .map(u=>({
+        id:u.id,
+        name:u.name,
+        display:liveDashboardUnitCode(u),
+        companyId:u.company_id,
+        active:u.active!==false
+      }))
+      .sort((a,b)=>a.display.localeCompare(b.display,'pt-BR'));
 
     $('#pfUnit').innerHTML='<option value="all">Todas as unidades</option>'+
-      units.map(u=>`<option value="${u.name}">${u.name}${u.active===false?' (Inativa)':''}</option>`).join('');
+      units.map(u=>`<option value="${u.name}">${u.display}${u.active?'':' (Inativa)'}</option>`).join('');
 
     $('#pfUnit').value=
       previousUnit==='all'||units.some(u=>u.name===previousUnit)
       ? previousUnit : 'all';
 
     const unit=$('#pfUnit').value;
+    const allowedUnitNames=new Set(units.map(u=>u.name));
     const agents=eligiblePerformanceUsers({activeOnly:false})
-      .filter(u=>(company==='all'||u.company===company)&&(unit==='all'||u.unit===unit))
+      .filter(u=>(company==='all'||u.company===company)&&(unit==='all'||u.unit===unit)&&allowedUnitNames.has(u.unit))
       .sort((a,b)=>fullName(a).localeCompare(fullName(b),'pt-BR'));
 
     $('#pfAgent').innerHTML='<option value="all">Todos os agentes</option>'+
@@ -3893,7 +4099,6 @@ function rebuildPerformanceOptions(){
     return;
   }
 
-  const company=$('#pfCompany').value;
   const units=UNIT_CATALOG.filter(u=>company==='all'||u.company===company);
 
   $('#pfUnit').innerHTML='<option value="all">Todas as unidades</option>'+
@@ -3911,19 +4116,53 @@ function rebuildPerformanceOptions(){
 
   $('#pfAgent').value=agents.some(u=>u.id===previousAgent)?previousAgent:'all';
 }
-function performanceFilteredRows(monthOverride=null){const month=monthOverride||$('#pfMonth').value,company=$('#pfCompany').value,unit=$('#pfUnit').value,agent=$('#pfAgent').value;return rowsWithLive().filter(r=>r.date.startsWith(month)&&(company==='all'||r.company===company)&&(unit==='all'||r.unit===unit)&&(agent==='all'||r.userId===agent))}
-function expectedRowsForFilter(month){const company=$('#pfCompany').value,unit=$('#pfUnit').value,agent=$('#pfAgent').value;const agents=eligiblePerformanceUsers().filter(u=>(company==='all'||u.company===company)&&(unit==='all'||u.unit===unit)&&(agent==='all'||u.id===agent));return agents.length*demoMonthDays(month)}
+function performanceFilterContext(overrides={}){
+  const date=overrides.date||$('#pfDate')?.value||DEMO_TODAY;
+  return {
+    period:overrides.period||$('#pfPeriod')?.value||'month',
+    month:overrides.month||$('#pfMonth')?.value||date.slice(0,7),
+    date,
+    company:$('#pfCompany').value,
+    unit:$('#pfUnit').value,
+    agent:$('#pfAgent').value,
+    performer:$('#pfPerformer')?.value||'all'
+  };
+}
+function performanceFilteredRows(contextOverride=null){
+  const ctx=contextOverride||performanceFilterContext();
+  const allowed=ctx.performer==='all'?null:performerUnitIds(ctx.performer);
+  return selectedWindow(rowsWithLive(),ctx).filter(r=>
+    (ctx.company==='all'||r.company===ctx.company)&&
+    (ctx.unit==='all'||r.unit===ctx.unit)&&
+    (ctx.agent==='all'||r.userId===ctx.agent)&&
+    (!allowed||allowed.has(r.unitId))
+  );
+}
+function expectedRowsForFilter(ctx){
+  const allowed=ctx.performer==='all'?null:performerUnitIds(ctx.performer);
+  const agents=eligiblePerformanceUsers().filter(u=>
+    (ctx.company==='all'||u.company===ctx.company)&&
+    (ctx.unit==='all'||u.unit===ctx.unit)&&
+    (ctx.agent==='all'||u.id===ctx.agent)&&
+    (!allowed||allowed.has(u.unitId))
+  );
+  let days=1;
+  if(ctx.period==='month')days=demoMonthDays(ctx.month);
+  else if(ctx.period!=='day')days=Math.max(1,Number(ctx.period)||7);
+  return agents.length*days;
+}
 
 function renderPerformance(){
   if(!$('#pfCompany'))return;
   const key=$('#pfIndicator').value,
-        month=$('#pfMonth').value,
-        rows=performanceFilteredRows(),
+        ctx=performanceFilterContext(),
+        month=ctx.month,
+        rows=performanceFilteredRows(ctx),
         label=indicatorNames[key],
         uniqueUnits=unique(rows.map(r=>r.short)),
         uniqueAgents=unique(rows.map(r=>r.userId)),
         actions=sum(rows,key),
-        expected=expectedRowsForFilter(month),
+        expected=expectedRowsForFilter(ctx),
         fill=expected?Math.round(rows.length/expected*100):0;
 
   $('#pfStatUnits').textContent=formatInt(uniqueUnits.length);
@@ -3963,10 +4202,18 @@ function renderPerformance(){
   $('#pfUnitRankLabel').textContent=label;
   $('#pfAgentRankLabel').textContent=label;
 
-  const prevMonth=previousMonth(month),prev=sum(performanceFilteredRows(prevMonth),key);
-  $('#pfPrevLabel').textContent=monthLabel(prevMonth);
+  const baseFiltered=rowsWithLive().filter(r=>{
+    const allowed=ctx.performer==='all'?null:performerUnitIds(ctx.performer);
+    return (ctx.company==='all'||r.company===ctx.company)&&
+      (ctx.unit==='all'||r.unit===ctx.unit)&&
+      (ctx.agent==='all'||r.userId===ctx.agent)&&
+      (!allowed||allowed.has(r.unitId));
+  });
+  const previous=previousWindow(baseFiltered,ctx);
+  const prev=sum(previous.rows,key);
+  $('#pfPrevLabel').textContent=previous.label;
   $('#pfPrevValue').textContent=formatInt(prev);
-  $('#pfCurrLabel').textContent=monthLabel(month);
+  $('#pfCurrLabel').textContent=currentWindowLabel(ctx);
   $('#pfCurrValue').textContent=formatInt(actions);
   $('#pfPeriodDelta').textContent=pctDelta(actions,prev);
 
@@ -3987,11 +4234,26 @@ function renderPerformance(){
     $('#pfSalesContext').textContent='Filtro atual';
   }
 
-  $('#pfSalesBox').classList.toggle('hidden',!$('#showPerformanceSales').checked);
+  const performanceSalesIsPrimary=$('#pfIndicator').value==='vendas';
+  const performanceSalesControl=$('#showPerformanceSales').closest('.sales-visibility-control');
+  if(performanceSalesControl)performanceSalesControl.classList.toggle('hidden',performanceSalesIsPrimary);
+  $('#pfSalesBox').classList.toggle('hidden',performanceSalesIsPrimary||!$('#showPerformanceSales').checked);
 }
+$('#pfPerformer').addEventListener('change',()=>{rebuildPerformanceOptions();renderPerformance()});
 $('#pfCompany').addEventListener('change',()=>{rebuildPerformanceOptions();renderPerformance()});
 $('#pfUnit').addEventListener('change',()=>{rebuildPerformanceOptions();renderPerformance()});
-['pfAgent','pfMonth','pfIndicator'].forEach(id=>$('#'+id).addEventListener('change',renderPerformance));
+['pfAgent','pfIndicator','pfPeriod'].forEach(id=>$('#'+id).addEventListener('change',renderPerformance));
+$('#pfMonth').addEventListener('change',()=>{
+  const month=$('#pfMonth').value;
+  $('#pfDate').value=month===DEMO_TODAY.slice(0,7)?DEMO_TODAY:`${month}-01`;
+  renderPerformance();
+});
+$('#pfDate').addEventListener('change',()=>{
+  const d=$('#pfDate').value||DEMO_TODAY;
+  const month=d.slice(0,7);
+  if([...$('#pfMonth').options].some(o=>o.value===month))$('#pfMonth').value=month;
+  renderPerformance();
+});
 $('#showPerformanceSales').addEventListener('change',renderPerformance);
 $('#pfApply').addEventListener('click',()=>currentUser?.source==='supabase'?loadDashboardRoutinesFromSupabase():renderPerformance());
 
@@ -4242,7 +4504,7 @@ function renderPerformanceGoals(){
   const unitId=$('#pfGoalUnit').value,month=$('#pfGoalMonth').value||currentMonthKey(),editor=$('#pfGoalEditor');
   if(unitId==='all'){editor.classList.add('hidden');GOAL_DRAFTS.performance=null;return}
   editor.classList.remove('hidden');
-  const unit=ORG_UNITS_DB.find(u=>u.id===unitId);$('#pfGoalUnitName').value=unit?.name||'';$('#pfGoalEditorTitle').textContent=`Meta · ${unit?.name||'Unidade'}`;$('#pfGoalEditorMonthLabel').textContent=month;
+  const unit=ORG_UNITS_DB.find(u=>u.id===unitId);const unitCode=unit?liveDashboardUnitCode(unit):'Unidade';$('#pfGoalUnitName').value=unitCode;$('#pfGoalEditorTitle').textContent=`Meta · ${unitCode}`;$('#pfGoalEditorMonthLabel').textContent=month;
   renderGoalEditor('performance',unitId,month);
 }
 $('#pfGoalCompany').addEventListener('change',()=>{GOAL_DRAFTS.performance=null;rebuildPerformanceGoalOptions();renderPerformanceGoals()});
@@ -4257,7 +4519,7 @@ $('#pfGoalSave').addEventListener('click',()=>saveGoalDraft('performance'));
 
 
 /* ============================================================
-   V9.5.19 — PERFORMERS / CARTEIRAS + ANIMAÇÃO DE ULTRAPASSAGEM
+   V9.6.3 — BASE RESTRITA / CÓDIGO COMPLETO DAS LOJAS
    Performer é função adicional de Performance/Admin.
    ============================================================ */
 function performerProfile(userId){return ORG_PROFILES_DB.find(p=>p.user_id===userId)||null}
@@ -4557,6 +4819,97 @@ function unitCompanyRule(company){
   if(n==='COMERCIAL'||n.startsWith('COMERCIAL '))return {type:'exception',fixed:'COMERCIAL',example:'COMERCIAL'};
   return null;
 }
+
+function canonicalUnitDisplayCode(company,...rawCandidates){
+  const rule=unitCompanyRule(company);
+  const candidates=rawCandidates
+    .flat()
+    .map(normalizeUnitText)
+    .filter(Boolean);
+
+  if(!rule){
+    return candidates[0]||'Unidade';
+  }
+
+  if(rule.type==='exception'){
+    return rule.fixed;
+  }
+
+  const companyAliases=rule.prefix==='SOS'
+    ? ['SOS']
+    : rule.prefix==='UNI'
+      ? ['UNI','UNIVERSO']
+      : rule.prefix==='CON'
+        ? ['CON','CONNECT']
+        : [rule.prefix];
+
+  const aliasPattern=companyAliases
+    .map(x=>x.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'))
+    .join('|');
+
+  function build(code,number=''){
+    code=normalizeUnitText(code)
+      .replace(/^[-\s]+|[-\s]+$/g,'')
+      .trim();
+
+    if(!code)return '';
+
+    // Aeroportos/unidades são códigos curtos; evita transformar nome longo
+    // em código visual indevido quando já existe short_code melhor.
+    if(!/^[A-Z0-9][A-Z0-9 ]{0,14}$/.test(code))return '';
+
+    const n=number?String(Number(number)):'';
+    return `${rule.prefix}${n?' '+n:''} - ${code}`;
+  }
+
+  for(const raw of candidates){
+    // Formato já canônico: SOS - FOR / SOS 2 - BEL
+    let m=raw.match(new RegExp(`^(?:${aliasPattern})(?:\\s+(\\d{1,3}))?\\s*-\\s*([A-Z0-9][A-Z0-9 ]{0,14})$`));
+    if(m)return build(m[2],m[1]||'');
+
+    // Legado invertido: FOR - SOS / BEL - SOS 2
+    m=raw.match(new RegExp(`^([A-Z0-9][A-Z0-9 ]{0,14})\\s*-\\s*(?:${aliasPattern})(?:\\s+(\\d{1,3}))?$`));
+    if(m)return build(m[1],m[2]||'');
+
+    // Legado sem hífen: FOR SOS / BEL SOS 2
+    m=raw.match(new RegExp(`^([A-Z0-9][A-Z0-9 ]{0,14})\\s+(?:${aliasPattern})(?:\\s+(\\d{1,3}))?$`));
+    if(m)return build(m[1],m[2]||'');
+
+    // Prefixo sem hífen: SOS FOR / SOS 2 BEL
+    m=raw.match(new RegExp(`^(?:${aliasPattern})(?:\\s+(\\d{1,3}))?\\s+([A-Z0-9][A-Z0-9 ]{0,14})$`));
+    if(m)return build(m[2],m[1]||'');
+
+    // Short numerado: 2 - BEL
+    m=raw.match(/^(\\d{1,3})\\s*-\\s*([A-Z0-9][A-Z0-9 ]{0,14})$/);
+    if(m)return build(m[2],m[1]);
+
+    // Apenas sigla: VCP / THE / BOG
+    if(/^[A-Z0-9]{2,8}$/.test(raw))return build(raw);
+  }
+
+  // Última tentativa usando a regra oficial já existente.
+  for(const raw of candidates){
+    const formatted=standardizeUnitForCompany(company,raw);
+    if(formatted?.ok)return formatted.name;
+  }
+
+  return candidates[0]||'Unidade';
+}
+
+function userDisplayUnitCode(u){
+  if(!u)return 'Unidade';
+  const dbUnit=u.unitId?ORG_UNITS_DB.find(x=>x.id===u.unitId):null;
+  const dbCompany=(dbUnit?ORG_COMPANIES_DB.find(c=>c.id===dbUnit.company_id):null)
+    || u.company
+    || '';
+  return canonicalUnitDisplayCode(
+    dbCompany,
+    dbUnit?.short_code,
+    dbUnit?.name,
+    u.unit
+  );
+}
+
 function standardizeUnitForCompany(company,raw){
   const rule=unitCompanyRule(company);
   if(!rule)return {ok:false,reason:'Empresa sem padrão de unidade definido.'};
@@ -4742,7 +5095,7 @@ function renderOrgManagement(){
     return `<tr data-inactive="${u.active!==false&&companyActive?0:1}">
       <td>${c?.name||'—'}</td>
       <td><b>${u.name}</b></td>
-      <td>${u.short_code||'—'}</td>
+      <td>${liveDashboardUnitCode(u)}</td>
       <td>${m?orgDbFullName(m):'<span class="muted">Não definido</span>'}</td>
       <td>${linked}</td>
       <td>${statusCell}</td>
@@ -6181,6 +6534,18 @@ $('#closeAlertViewsBtn').addEventListener('click',()=>$('#alertViewsModal').clas
 
 
 // Inicialização
+(function initDashboardDates(){
+  const minDate=`${recentMonths(4).at(-1)}-01`;
+  ['personalDate','mgrDate','pfDate'].forEach(id=>{
+    const el=$('#'+id);if(!el)return;
+    el.value=DEMO_TODAY;
+    el.max=DEMO_TODAY;
+    el.min=minDate;
+  });
+  if($('#personalPeriod'))$('#personalPeriod').value='day';
+  if($('#mgrPeriod'))$('#mgrPeriod').value='day';
+  if($('#pfPeriod'))$('#pfPeriod').value='day';
+})();
 syncCompanySelects();fillSelectUnits($('#company'),$('#unit'),false);updateFirstCaptain();rebuildPerformanceOptions();rebuildUserMgmtUnits();renderPerformance();renderUserManagement();renderOrgManagement();
 
 /* ===== V8 — atmosfera visual (não altera regras de negócio) ===== */
@@ -6192,7 +6557,23 @@ syncCompanySelects();fillSelectUnits($('#company'),$('#unit'),false);updateFirst
   new MutationObserver(function(ms){ms.forEach(function(m){var t=m.target.nodeType===3?m.target.parentElement:m.target;if(t&&t.matches&&t.matches(SEL))tick(t)})}).observe(document.getElementById('app'),{subtree:true,childList:true,characterData:true});
   /* acesso autorizado ao entrar no app */
   var app=document.getElementById('app');
-  new MutationObserver(function(){if(!app.classList.contains('hidden')&&!app.dataset.in){app.dataset.in='1';var n=(document.getElementById('uname').textContent||'').trim().split(' ')[0];document.getElementById('accSub').textContent=n?'Bem-vindo, agente '+n+'.':'';access.classList.remove('on');void access.offsetWidth;access.classList.add('on')}else if(app.classList.contains('hidden')){delete app.dataset.in}}).observe(app,{attributes:true,attributeFilter:['class']});
+  new MutationObserver(function(){
+    if(!app.classList.contains('hidden')&&!app.dataset.in){
+      app.dataset.in='1';
+      var base='NACIONAL';
+      try{
+        if(currentUser&&currentUser.role!=='performance'){
+          base=userDisplayUnitCode(currentUser)||'NÃO DEFINIDA';
+        }
+      }catch(_){}
+      document.getElementById('accSub').textContent='BASE - '+base;
+      access.classList.remove('on');
+      void access.offsetWidth;
+      access.classList.add('on');
+    }else if(app.classList.contains('hidden')){
+      delete app.dataset.in;
+    }
+  }).observe(app,{attributes:true,attributeFilter:['class']});
   access.addEventListener('animationend',function(e){if(e.target===access)access.classList.remove('on')});
   /* credencial recusada: a caixa balança uma vez */
   var msg=document.getElementById('msg'),box=document.getElementById('loginForm');
@@ -6206,10 +6587,7 @@ syncCompanySelects();fillSelectUnits($('#company'),$('#unit'),false);updateFirst
 function liveDashboardUnitCode(unit){
   if(!unit)return 'Unidade';
   const company=ORG_COMPANIES_DB.find(c=>c.id===unit.company_id)||null;
-  const raw=unit.short_code||unit.name||'';
-  const formatted=standardizeUnitForCompany(company,raw);
-  if(formatted?.ok)return formatted.name;
-  return unit.name||unit.short_code||'Unidade';
+  return canonicalUnitDisplayCode(company,unit.short_code,unit.name);
 }
 
 /* ============================================================
@@ -6235,12 +6613,12 @@ window.RDSLiveDataProvider={
 
     const today=currentBusinessDate();
     const month=today.slice(0,7);
-    const monthStart=`${month}-01`;
+    const historyStart=addDays(today,-90);
 
     const {data,error}=await supabaseClient
       .from('daily_routines')
       .select('id,user_id,unit_id,routine_date,floor_approaches,online_captures,quotations,sales,note,closed,closed_at,created_at,updated_at')
-      .gte('routine_date',monthStart)
+      .gte('routine_date',historyStart)
       .lte('routine_date',today)
       .order('routine_date',{ascending:true});
 
@@ -6250,7 +6628,7 @@ window.RDSLiveDataProvider={
     if(error){
       // Única contingência permitida: cache REAL já carregado pelo Super Dashboard.
       const cachedReal=DASHBOARD_ROUTINE_ROWS
-        .filter(r=>String(r.date||'').startsWith(month))
+        .filter(r=>String(r.date||'')>=historyStart&&String(r.date||'')<=today)
         .map(r=>({
           id:r.dbId||null,
           user_id:r.userId,
@@ -6367,19 +6745,24 @@ window.RDSLiveDataProvider={
       const vendas=Number(r.sales||0);
       const operational=salao+online+cotacoes;
 
-      if(store){
+      const rowDate=String(r.routine_date||'');
+      const isCurrentMonth=rowDate.startsWith(month);
+
+      if(store && isCurrentMonth){
         store.month.salao+=salao;
         store.month.online+=online;
         store.month.cotacoes+=cotacoes;
         store.month.vendas+=vendas;
       }
 
-      user.month.salao+=salao;
-      user.month.online+=online;
-      user.month.cotacoes+=cotacoes;
-      user.month.vendas+=vendas;
+      if(isCurrentMonth){
+        user.month.salao+=salao;
+        user.month.online+=online;
+        user.month.cotacoes+=cotacoes;
+        user.month.vendas+=vendas;
+      }
 
-      const dayKey=String(r.routine_date||'').slice(8,10);
+      const dayKey=rowDate;
       if(dayKey){
         if(store){
           if(!store.daily[dayKey]){
@@ -6400,7 +6783,7 @@ window.RDSLiveDataProvider={
         user.daily[dayKey].vendas+=vendas;
       }
 
-      if(store && operational>0)store.monthActive.add(r.user_id);
+      if(store && isCurrentMonth && operational>0)store.monthActive.add(r.user_id);
 
       if(r.routine_date===today){
         if(store){
@@ -6425,11 +6808,24 @@ window.RDSLiveDataProvider={
       reason,
       syncMode:usedCachedRows?'cached-real':'database',
       rowCount:rawRows.length,
+      historyStart,
+      performers:PERFORMERS_DB
+        .filter(p=>p.active!==false)
+        .map(p=>{
+          const profile=profileById.get(p.user_id);
+          return {
+            id:p.user_id,
+            name:profile?profileFullName(profile):'Performer',
+            active:p.active!==false,
+            unitIds:PERFORMER_UNITS_DB.filter(x=>x.performer_user_id===p.user_id).map(x=>x.unit_id)
+          };
+        }),
       stores:[...storeMap.values()].map(s=>({
         id:s.id,
         name:s.name,
         unitName:s.unitName,
         company:s.company,
+        performerUserId:PERFORMER_UNITS_DB.find(x=>x.unit_id===s.id)?.performer_user_id||null,
         capacity:s.capacity,
         dayActiveAgents:s.dayActive.size,
         monthActiveAgents:s.monthActive.size,
@@ -6448,6 +6844,7 @@ window.RDSLiveDataProvider={
         unitName:u.unitName,
         unitShort:u.unitShort,
         company:u.company,
+        performerUserId:PERFORMER_UNITS_DB.find(x=>x.unit_id===u.unitId)?.performer_user_id||null,
         day:u.day,
         month:u.month,
         daily:u.daily
@@ -6658,7 +7055,7 @@ document.addEventListener('click',function(e){
 },true);
 </script>
 
-<script src="modules/dashboard-ao-vivo/bridge.js?v=9.5.19"></script>
+<script src="modules/dashboard-ao-vivo/bridge.js?v=9.6.3"></script>
 <script id="rds-pwa-install">
 (()=>{
   let deferredInstallPrompt=null;
