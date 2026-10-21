@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/><meta name="theme-color" content="#050608"/><meta name="color-scheme" content="dark light"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" name="viewport"/>
-<title>Rotina de Sucesso — V9.6.4 Final</title>
+<title>Rotina de Sucesso — V9.6.7 Final</title>
 <script>/* V9 — tema aplicado antes da pintura (evita piscar) */(function(){var t='dark';try{var s=localStorage.getItem('rds-theme');if(s==='light'||s==='dark')t=s}catch(e){}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='light'?'#f2f0ec':'#050608')})();</script>
 <style>
 :root{--bg:#0b0e12;--panel:#12171d;--panel2:#171d24;--line:#27303a;--text:#f5f7fa;--muted:#8d98a5;--red:#e43b32;--green:#61d394;--amber:#e9b45d}
@@ -1659,6 +1659,42 @@ tbody tr:hover{background:var(--accent-soft)}
   .performer-toolbar{grid-template-columns:1fr}.performer-unit-row{grid-template-columns:1fr;gap:9px;padding:10px}.performer-unit-assignment select{min-height:44px;font-size:16px}
   .performer-tabs{margin-left:-2px;margin-right:-2px}.performer-tabs button{min-height:42px;font-size:12px}
 }
+
+.performer-selected-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.performer-portfolio-modal-box{width:min(920px,calc(100vw - 32px));max-width:920px;max-height:calc(100dvh - 32px);overflow:hidden;display:flex;flex-direction:column}
+.performer-portfolio-toolbar{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,240px);gap:8px;margin:14px 0 8px}
+.performer-portfolio-quick{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}
+.performer-portfolio-quick .btn{min-height:36px}
+.performer-portfolio-summaryline{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 11px;margin-bottom:8px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);font-size:12px}
+.performer-portfolio-summaryline strong{font-size:13px}
+.performer-portfolio-summaryline span{color:var(--muted)}
+.performer-portfolio-list{min-height:180px;max-height:min(52dvh,520px);overflow:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:2px 3px 4px;overscroll-behavior:contain}
+.performer-portfolio-item{display:grid;grid-template-columns:22px minmax(0,1fr);gap:10px;align-items:center;padding:11px 12px;border:1px solid var(--line);border-radius:11px;background:var(--panel);cursor:pointer;transition:border-color .15s,background .15s,transform .08s}
+.performer-portfolio-item:hover{border-color:color-mix(in srgb,var(--accent) 38%,var(--line));background:color-mix(in srgb,var(--accent) 4%,var(--panel))}
+.performer-portfolio-item:active{transform:translateY(1px)}
+.performer-portfolio-item.selected{border-color:color-mix(in srgb,var(--accent) 58%,var(--line));background:color-mix(in srgb,var(--accent) 8%,var(--panel))}
+.performer-portfolio-item input{width:18px;height:18px;accent-color:var(--accent);margin:0}
+.performer-portfolio-code{font-size:13px;font-weight:900;letter-spacing:.01em}
+.performer-portfolio-meta{font-size:10.5px;color:var(--muted);margin-top:3px;line-height:1.4}
+.performer-portfolio-owner{display:inline-flex;align-items:center;margin-top:6px;padding:4px 7px;border:1px solid var(--line);border-radius:999px;background:var(--panel2);font-size:9.5px;font-weight:800;color:var(--muted)}
+.performer-portfolio-owner.mine{border-color:color-mix(in srgb,var(--accent) 32%,var(--line));color:var(--accent)}
+.performer-portfolio-owner.transfer{border-color:color-mix(in srgb,#e9b45d 45%,var(--line));color:#e9b45d}
+.performer-portfolio-actions{position:sticky;bottom:0;margin-top:10px;padding-top:10px;background:linear-gradient(180deg,transparent,var(--panel) 30%)}
+.performer-portfolio-empty{grid-column:1/-1;padding:24px 14px;border:1px dashed var(--line);border-radius:11px;text-align:center;color:var(--muted);font-size:12px}
+
+@media(max-width:760px){
+  .performer-selected-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}
+  .performer-selected-actions .btn{width:100%}
+  .performer-portfolio-modal-box{width:calc(100vw - 20px);max-height:calc(100dvh - 20px);padding:16px!important}
+  .performer-portfolio-toolbar{grid-template-columns:1fr}
+  .performer-portfolio-quick{display:grid;grid-template-columns:1fr 1fr}
+  .performer-portfolio-quick .btn:first-child{grid-column:1/-1}
+  .performer-portfolio-list{grid-template-columns:1fr;max-height:54dvh}
+  .performer-portfolio-summaryline{align-items:flex-start;flex-direction:column;gap:3px}
+  .performer-portfolio-item{padding:12px 10px}
+  .performer-portfolio-code{font-size:14px}
+}
+
 @media(max-width:390px){.performer-summary{grid-template-columns:1fr 1fr}.performer-summary .card:last-child{grid-column:1/-1}}
 </style>
 
@@ -1824,6 +1860,93 @@ tbody tr:hover{background:var(--accent-soft)}
   }
   #app.live-performance-mode .foot{
     display:none!important;
+  }
+}
+</style>
+
+
+<style id="rds-v967-daily-evolution">
+.pf-visual-stack{
+  display:flex;
+  flex-direction:column;
+}
+.pf-daily-divider{
+  height:1px;
+  background:var(--line);
+  margin:18px 0 14px;
+}
+.pf-daily-head{
+  margin-bottom:2px!important;
+}
+
+/* Comparação entre unidades: SIGLA LOJA - AEROPORTO na vertical. */
+#pfchart.unit-comparison-chart{
+  height:300px;
+  padding-bottom:92px;
+  overflow-x:auto;
+  overflow-y:hidden;
+}
+#pfchart.unit-comparison-chart .bar{
+  min-width:18px;
+}
+#pfchart.unit-comparison-chart .bar span{
+  bottom:-76px;
+  left:50%;
+  width:max-content;
+  max-width:none;
+  white-space:nowrap;
+  font-size:10.5px;
+  font-weight:800;
+  font-family:var(--mono);
+  transform:translateX(-50%) rotate(-90deg);
+  transform-origin:center center;
+}
+
+/* Evolução diária: todos os dias continuam visíveis. */
+.daily-evolution-chart{
+  height:250px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scrollbar-width:thin;
+}
+.daily-evolution-chart .bar{
+  min-width:16px;
+}
+.daily-evolution-chart .bar span{
+  font-size:10.5px;
+  font-weight:700;
+}
+.daily-evolution-chart .bar em{
+  font-size:10px;
+}
+
+@media(min-width:1200px){
+  #pfchart.unit-comparison-chart .bar span{
+    font-size:11px;
+  }
+  .daily-evolution-chart .bar{
+    min-width:18px;
+  }
+}
+
+@media(max-width:760px){
+  #pfchart.unit-comparison-chart{
+    height:285px;
+    padding-bottom:88px;
+  }
+  #pfchart.unit-comparison-chart .bar{
+    min-width:18px;
+    flex:0 0 18px;
+  }
+  .daily-evolution-chart{
+    height:235px;
+  }
+  .daily-evolution-chart .bar{
+    min-width:17px;
+    flex:0 0 17px;
+  }
+  .pf-daily-divider{
+    margin:15px 0 12px;
   }
 }
 </style>
@@ -2029,7 +2152,13 @@ tbody tr:hover{background:var(--accent-soft)}
   <div class="goal-progress-grid" id="mgrGoalProgressCards"></div>
 </section>
 <div class="grid g2" style="margin-top:14px">
-<section class="card pad"><div class="section" style="margin:0"><h2>Evolução por dia</h2><span id="mgrChartLabel">Todas as ações</span></div><div class="chart" id="mgrchart"></div></section>
+<section class="card pad">
+      <div class="section" style="margin:0">
+        <h2>Evolução diária da unidade</h2>
+        <span id="mgrChartLabel">Todas as ações</span>
+      </div>
+      <div class="chart daily-evolution-chart" id="mgrchart"></div>
+    </section>
 <section class="card pad">
 <div class="section manager-rank-head" style="margin:0">
   <div><h2>Ranking da equipe</h2><span id="mgrRankLabel">Organizado por ações</span></div>
@@ -2121,7 +2250,21 @@ tbody tr:hover{background:var(--accent-soft)}
 <div class="card stat"><div class="l">Preenchimento</div><div class="v" id="pfStatFill">0%</div><div class="d" id="pfStatFillDelta">rotinas registradas</div></div>
 </div>
 <div class="grid g2" style="margin-top:14px">
-<section class="card pad"><div class="section" style="margin:0"><h2>Comparação entre unidades</h2><span id="pfChartLabel">Todas as ações</span></div><div class="chart" id="pfchart"></div></section>
+<section class="card pad pf-visual-stack">
+  <div class="section" style="margin:0">
+    <h2>Comparação entre unidades</h2>
+    <span id="pfChartLabel">Todas as ações</span>
+  </div>
+  <div class="chart unit-comparison-chart" id="pfchart"></div>
+
+  <div class="pf-daily-divider"></div>
+
+  <div class="section pf-daily-head" style="margin:0">
+    <h2>Evolução diária</h2>
+    <span id="pfDailyChartLabel">Todas as ações</span>
+  </div>
+  <div class="chart daily-evolution-chart" id="pfdailychart"></div>
+</section>
 <section class="card pad"><div class="section" style="margin:0"><h2>Ranking de unidades</h2><span id="pfUnitRankLabel">Todas as ações</span></div><div id="unitrank"></div></section>
 </div>
 <div class="grid g2" style="margin-top:14px">
@@ -2168,7 +2311,7 @@ tbody tr:hover{background:var(--accent-soft)}
 </div>
 
 <div class="hidden" id="liveDashboardContainer">
-  <iframe id="liveDashboardFrame" data-src="modules/dashboard-ao-vivo/index.html?v=9.6.4" title="Dashboard Ao Vivo — Rotina de Sucesso" allow="fullscreen" allowfullscreen></iframe>
+  <iframe id="liveDashboardFrame" data-src="modules/dashboard-ao-vivo/index.html?v=9.6.7" title="Dashboard Ao Vivo — Rotina de Sucesso" allow="fullscreen" allowfullscreen></iframe>
 </div>
 
 
@@ -2199,7 +2342,10 @@ tbody tr:hover{background:var(--accent-soft)}
       <h3 id="performerSelectedName">Todos os Performers</h3>
       <div class="sub" id="performerSelectedMeta">Visão consolidada das lojas acompanhadas.</div>
     </div>
-    <button class="btn hidden" id="disablePerformerBtn" type="button">Desabilitar Performer</button>
+    <div class="performer-selected-actions">
+      <button class="btn red hidden" id="editPerformerPortfolioBtn" type="button">Selecionar lojas</button>
+      <button class="btn hidden" id="disablePerformerBtn" type="button">Desabilitar Performer</button>
+    </div>
   </div>
 
   <div class="performer-toolbar">
@@ -2323,6 +2469,38 @@ tbody tr:hover{background:var(--accent-soft)}
     <div class="modal-actions">
       <button class="btn" id="closePerformerModal" type="button">Cancelar</button>
       <button class="btn red" id="savePerformerBtn" type="button">Habilitar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal hidden" id="performerPortfolioModal">
+  <div class="modalbox performer-portfolio-modal-box">
+    <div class="kicker">CARTEIRA DO PERFORMER</div>
+    <h2 id="performerPortfolioTitle">Selecionar lojas</h2>
+    <p class="sub">Marque as lojas que este Performer vai acompanhar. Se uma loja já estiver com outro Performer, ela será transferida ao salvar.</p>
+
+    <div class="performer-portfolio-toolbar">
+      <input id="performerPortfolioSearch" placeholder="Buscar loja, aeroporto ou empresa..."/>
+      <select id="performerPortfolioCompany"><option value="all">Todas as empresas</option></select>
+    </div>
+
+    <div class="performer-portfolio-quick">
+      <button class="btn" id="performerPortfolioSelectVisible" type="button">Selecionar visíveis</button>
+      <button class="btn" id="performerPortfolioAddFree" type="button">Adicionar sem Performer</button>
+      <button class="btn" id="performerPortfolioClearVisible" type="button">Limpar visíveis</button>
+    </div>
+
+    <div class="performer-portfolio-summaryline">
+      <strong id="performerPortfolioSelectedCount">0 lojas selecionadas</strong>
+      <span id="performerPortfolioTransferCount">Nenhuma transferência</span>
+    </div>
+
+    <div class="performer-portfolio-list" id="performerPortfolioList"></div>
+    <div class="form-error" id="performerPortfolioStatus"></div>
+
+    <div class="modal-actions performer-portfolio-actions">
+      <button class="btn" id="closePerformerPortfolioModal" type="button">Cancelar</button>
+      <button class="btn red" id="savePerformerPortfolioBtn" type="button">Salvar carteira</button>
     </div>
   </div>
 </div>
@@ -2749,6 +2927,8 @@ let PERFORMERS_DB=[];
 let PERFORMER_UNITS_DB=[];
 let performerSelected='all';
 let performerDataReady=false;
+let performerPortfolioEditingUserId=null;
+let performerPortfolioDraft=new Set();
 let OPERATIONAL_UNIT_GOALS=[];
 let OPERATIONAL_PERSON_GOALS=[];
 const GOAL_DRAFTS={manager:null,performance:null};
@@ -2923,6 +3103,36 @@ function metricValue(r,key){return key==='all'?r.salao+r.online+r.cotacoes:r[key
 function sum(rows,key){return rows.reduce((a,r)=>a+metricValue(r,key),0)}
 function bars(el,data){const m=Math.max(1,...data.map(x=>x.v));el.innerHTML=data.length?data.map(x=>`<div class="bar" style="height:${Math.max(12,x.v/m*190)}px"><em>${formatInt(x.v)}</em><span>${x.l}</span></div>`).join(''):'<div class="sub">Sem dados para os filtros selecionados.</div>'}
 function rank(el,data){const sorted=[...data].sort((a,b)=>b.v-a.v);const m=Math.max(1,...sorted.map(x=>x.v));el.innerHTML=sorted.length?sorted.map((x,i)=>`<div class="rankrow"><div class="pos">${String(i+1).padStart(2,'0')}</div><div><div class="name">${x.n}</div><div class="rs">${x.s||''}</div><div class="prog"><i style="width:${x.v/m*100}%"></i></div></div><div class="rv">${formatInt(x.v)}</div></div>`).join(''):'<div class="sub" style="padding:12px 0">Sem dados para os filtros selecionados.</div>'}
+
+function dailyEvolutionSeries(rows,month,key,{period='month',date=DEMO_TODAY}={}){
+  const [y,m]=String(month).split('-').map(Number);
+  const daysInMonth=new Date(Date.UTC(y,m,0)).getUTCDate();
+  const currentMonth=DEMO_TODAY.slice(0,7);
+  let lastDay=daysInMonth;
+
+  if(month===currentMonth){
+    lastDay=Math.min(daysInMonth,Number(DEMO_TODAY.slice(8,10))||daysInMonth);
+  }
+
+  if(period!=='month'&&String(date).startsWith(month)){
+    lastDay=Math.min(lastDay,Number(String(date).slice(8,10))||lastDay);
+  }
+
+  const aggregate=new Map();
+  rows.forEach(r=>{
+    if(!String(r.date||'').startsWith(month))return;
+    aggregate.set(r.date,(aggregate.get(r.date)||0)+metricValue(r,key));
+  });
+
+  const out=[];
+  for(let d=1;d<=lastDay;d++){
+    const day=String(d).padStart(2,'0');
+    const full=`${month}-${day}`;
+    out.push({n:full,l:day,v:Number(aggregate.get(full)||0)});
+  }
+  return out;
+}
+
 function aggregateByDate(rows,key){const m=new Map();rows.forEach(r=>m.set(r.date,(m.get(r.date)||0)+metricValue(r,key)));return [...m.entries()].map(([n,v])=>({n,v}))}
 function getDateRangeLabel(rows){if(!rows.length)return 'Sem dados';const ds=rows.map(r=>r.date).sort();return `${ds[0].slice(8,10)}/${ds[0].slice(5,7)} a ${ds.at(-1).slice(8,10)}/${ds.at(-1).slice(5,7)}`}
 
@@ -3218,7 +3428,7 @@ function showLogin(){
   $('#user').value='';
   $('#pass').value='';
   $('#msg').textContent='';
-  ['first','hist','userModal','importUsersModal','importUnitsModal','companyModal','unitModal','broadcastAlertModal','alertViewsModal','adminAlertPopup','deleteConfirmModal','mandatoryPasswordModal','paletteModal','performerModal'].forEach(id=>$('#'+id)?.classList.add('hidden'));
+  ['first','hist','userModal','importUsersModal','importUnitsModal','companyModal','unitModal','broadcastAlertModal','alertViewsModal','adminAlertPopup','deleteConfirmModal','mandatoryPasswordModal','paletteModal','performerModal','performerPortfolioModal'].forEach(id=>$('#'+id)?.classList.add('hidden'));
 }
 function technicalEmailForUsername(username){
   const login=username.trim().toLowerCase();
@@ -4067,8 +4277,23 @@ function renderManager(){
   const focus={salao:'mgrStatSalao',online:'mgrStatOnline',cotacoes:'mgrStatCotacoes',vendas:'mgrStatTotal',all:'mgrStatTotal'}[key];
   $('#'+focus).parentElement.classList.add('metric-focus');
 
-  const byDate=aggregateByDate(rows,key).sort((a,b)=>a.n.localeCompare(b.n));
-  bars($('#mgrchart'),byDate.map(x=>({l:x.n.slice(8,10),v:x.v})));
+  const mgrDate=$('#mgrDate').value||DEMO_TODAY;
+  const mgrMonth=mgrDate.slice(0,7);
+  let mgrDailyBase=rowsWithLive().filter(r=>
+    r.company===c.company&&
+    r.unit===c.unit&&
+    String(r.date||'').startsWith(mgrMonth)
+  );
+  const mgrAgent=$('#mgrAgent').value;
+  if(mgrAgent!=='all')mgrDailyBase=mgrDailyBase.filter(r=>r.userId===mgrAgent);
+
+  const mgrDailySeries=dailyEvolutionSeries(
+    mgrDailyBase,
+    mgrMonth,
+    key,
+    {period:$('#mgrPeriod').value,date:mgrDate}
+  );
+  bars($('#mgrchart'),mgrDailySeries.map(x=>({l:x.l,v:x.v})));
 
   const rankKey=managerRankMode==='sales'?'vendas':'all';
   const byAgent=unique(rows.map(r=>r.userId)).map(id=>{
@@ -4081,7 +4306,7 @@ function renderManager(){
   });
   rank($('#mgrrank'),byAgent);
 
-  $('#mgrChartLabel').textContent=label;
+  $('#mgrChartLabel').textContent=`${label} · ${monthLabel(mgrMonth)}`;
   $('#mgrRankLabel').textContent=managerRankMode==='sales'?'Organizado por vendas':'Organizado por ações';
   $('#mgrSortActions').classList.toggle('active',managerRankMode==='actions');
   $('#mgrSortSales').classList.toggle('active',managerRankMode==='sales');
@@ -4266,10 +4491,28 @@ function renderPerformance(){
 
   const byUnit=unique(rows.map(r=>r.short)).map(s=>({
     n:s,
-    l:s.split(' ')[0],
+    l:s,
     v:sum(rows.filter(r=>r.short===s),key)
   }));
   bars($('#pfchart'),byUnit.map(x=>({l:x.l,v:x.v})));
+
+  const pfDailyMonth=ctx.date.slice(0,7);
+  const pfAllowedUnits=ctx.performer==='all'?null:performerUnitIds(ctx.performer);
+  let pfDailyBase=rowsWithLive().filter(r=>
+    String(r.date||'').startsWith(pfDailyMonth)&&
+    (ctx.company==='all'||r.company===ctx.company)&&
+    (ctx.unit==='all'||r.unit===ctx.unit)&&
+    (ctx.agent==='all'||r.userId===ctx.agent)&&
+    (!pfAllowedUnits||pfAllowedUnits.has(r.unitId))
+  );
+
+  const pfDailySeries=dailyEvolutionSeries(
+    pfDailyBase,
+    pfDailyMonth,
+    key,
+    {period:ctx.period,date:ctx.date}
+  );
+  bars($('#pfdailychart'),pfDailySeries.map(x=>({l:x.l,v:x.v})));
 
   const unitRanking=unique(rows.map(r=>r.short)).map(s=>{
     const ur=rows.filter(r=>r.short===s);
@@ -4292,6 +4535,7 @@ function renderPerformance(){
   rank($('#agentrank'),byAgent.slice().sort((a,b)=>b.v-a.v).slice(0,8));
 
   $('#pfChartLabel').textContent=label;
+  $('#pfDailyChartLabel').textContent=`${label} · ${monthLabel(pfDailyMonth)}`;
   $('#pfUnitRankLabel').textContent=label;
   $('#pfAgentRankLabel').textContent=label;
 
@@ -4612,7 +4856,7 @@ $('#pfGoalSave').addEventListener('click',()=>saveGoalDraft('performance'));
 
 
 /* ============================================================
-   V9.6.4 — DESKTOP / LEGIBILIDADE / LIVE 16:9
+   V9.6.7 — EVOLUÇÃO DIÁRIA / SUPER DASHBOARD + CAPITÃO
    Performer é função adicional de Performance/Admin.
    ============================================================ */
 function performerProfile(userId){return ORG_PROFILES_DB.find(p=>p.user_id===userId)||null}
@@ -4690,7 +4934,10 @@ function renderPerformerManagement(){
   const selectedCount=selected?PERFORMER_UNITS_DB.filter(x=>x.performer_user_id===selected.user_id&&activeUnits.some(u=>u.id===x.unit_id)).length:assignedActive.length;
   $('#performerSelectedMeta').textContent=selected?`${selectedCount} ${selectedCount===1?'loja vinculada':'lojas vinculadas'} · continua com acesso Performance/Admin global.`:`${performers.length} performers ativos · ${assignedActive.length} lojas vinculadas.`;
   $('#disablePerformerBtn').classList.toggle('hidden',!selected);
-  $('#performerManagementHint').innerHTML=selected?`Exibindo somente a carteira de <b>${importEsc(orgDbFullName(profile))}</b>. Para transferir ou adicionar lojas, volte para <b>Todos</b>.`:'Em <b>Todos</b>, use o seletor de cada loja para vincular, transferir ou deixar sem Performer.';
+  $('#editPerformerPortfolioBtn').classList.toggle('hidden',!selected);
+  $('#performerManagementHint').innerHTML=selected
+    ? `Exibindo a carteira de <b>${importEsc(orgDbFullName(profile))}</b>. Use <b>Selecionar lojas</b> para editar a carteira inteira de uma vez.`
+    : 'Em <b>Todos</b>, você ainda pode fazer ajustes individuais pelo seletor de cada loja.';
 
   const search=($('#performerSearch')?.value||'').trim().toLowerCase();
   const company=$('#performerCompanyFilter')?.value||'all';
@@ -4743,6 +4990,179 @@ async function assignUnitToPerformer(unitId,performerUserId,selectEl){
   }
 }
 
+
+function performerPortfolioActiveUnits(){
+  return ORG_UNITS_DB
+    .filter(u=>u.active!==false&&orgDbCompanyById(u.company_id)?.active!==false)
+    .sort((a,b)=>performerUnitCode(a).localeCompare(performerUnitCode(b),'pt-BR'));
+}
+
+function rebuildPerformerPortfolioCompanyFilter(){
+  const el=$('#performerPortfolioCompany');if(!el)return;
+  const current=el.value||'all';
+  const companies=ORG_COMPANIES_DB
+    .filter(c=>c.active!==false)
+    .sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
+  el.innerHTML='<option value="all">Todas as empresas</option>'+
+    companies.map(c=>`<option value="${c.id}">${importEsc(c.name)}</option>`).join('');
+  el.value=companies.some(c=>c.id===current)?current:'all';
+}
+
+function performerPortfolioVisibleUnits(){
+  const search=($('#performerPortfolioSearch')?.value||'').trim().toLowerCase();
+  const company=$('#performerPortfolioCompany')?.value||'all';
+  return performerPortfolioActiveUnits().filter(u=>{
+    if(company!=='all'&&u.company_id!==company)return false;
+    if(!search)return true;
+    const owner=performerAssignment(u.id);
+    const ownerProfile=owner?performerProfile(owner.performer_user_id):null;
+    const txt=[
+      performerUnitCode(u),
+      u.name,
+      u.short_code,
+      performerCompanyName(u),
+      performerManagerName(u),
+      ownerProfile?orgDbFullName(ownerProfile):''
+    ].join(' ').toLowerCase();
+    return txt.includes(search);
+  });
+}
+
+function updatePerformerPortfolioSummary(){
+  const count=performerPortfolioDraft.size;
+  const transferCount=[...performerPortfolioDraft].filter(unitId=>{
+    const a=performerAssignment(unitId);
+    return a&&a.performer_user_id!==performerPortfolioEditingUserId;
+  }).length;
+  $('#performerPortfolioSelectedCount').textContent=`${count} ${count===1?'loja selecionada':'lojas selecionadas'}`;
+  $('#performerPortfolioTransferCount').textContent=transferCount
+    ? `${transferCount} ${transferCount===1?'loja será transferida':'lojas serão transferidas'}`
+    : 'Nenhuma transferência';
+}
+
+function renderPerformerPortfolioPicker(){
+  const list=$('#performerPortfolioList');if(!list)return;
+  const rows=performerPortfolioVisibleUnits();
+
+  if(!rows.length){
+    list.innerHTML='<div class="performer-portfolio-empty">Nenhuma loja corresponde aos filtros atuais.</div>';
+    updatePerformerPortfolioSummary();
+    return;
+  }
+
+  list.innerHTML=rows.map(u=>{
+    const checked=performerPortfolioDraft.has(u.id);
+    const assignment=performerAssignment(u.id);
+    const ownerProfile=assignment?performerProfile(assignment.performer_user_id):null;
+    let ownerLabel='Sem Performer';
+    let ownerClass='';
+    if(assignment?.performer_user_id===performerPortfolioEditingUserId){
+      ownerLabel='Já está nesta carteira';
+      ownerClass='mine';
+    }else if(ownerProfile){
+      ownerLabel=`Atual: ${orgDbFullName(ownerProfile)} · será transferida se marcada`;
+      ownerClass='transfer';
+    }
+
+    return `<label class="performer-portfolio-item ${checked?'selected':''}" data-portfolio-unit-row="${u.id}">
+      <input type="checkbox" data-portfolio-unit="${u.id}" ${checked?'checked':''}/>
+      <span>
+        <span class="performer-portfolio-code">${importEsc(performerUnitCode(u))}</span>
+        <span class="performer-portfolio-meta">${importEsc(performerCompanyName(u))} · ${importEsc(performerManagerName(u))}</span>
+        <span class="performer-portfolio-owner ${ownerClass}">${importEsc(ownerLabel)}</span>
+      </span>
+    </label>`;
+  }).join('');
+
+  list.querySelectorAll('[data-portfolio-unit]').forEach(cb=>cb.addEventListener('change',()=>{
+    if(cb.checked)performerPortfolioDraft.add(cb.dataset.portfolioUnit);
+    else performerPortfolioDraft.delete(cb.dataset.portfolioUnit);
+    cb.closest('.performer-portfolio-item')?.classList.toggle('selected',cb.checked);
+    updatePerformerPortfolioSummary();
+  }));
+
+  updatePerformerPortfolioSummary();
+}
+
+function openPerformerPortfolioModal(){
+  const selected=activePerformerRecords().find(p=>p.user_id===performerSelected);
+  if(!selected)return;
+
+  const profile=performerProfile(selected.user_id);
+  performerPortfolioEditingUserId=selected.user_id;
+  performerPortfolioDraft=new Set(
+    PERFORMER_UNITS_DB
+      .filter(x=>x.performer_user_id===selected.user_id)
+      .map(x=>x.unit_id)
+  );
+
+  $('#performerPortfolioTitle').textContent=`Selecionar lojas · ${orgDbFullName(profile)}`;
+  $('#performerPortfolioSearch').value='';
+  rebuildPerformerPortfolioCompanyFilter();
+  $('#performerPortfolioCompany').value='all';
+  $('#performerPortfolioStatus').textContent='';
+  $('#savePerformerPortfolioBtn').disabled=false;
+
+  renderPerformerPortfolioPicker();
+  $('#performerPortfolioModal').classList.remove('hidden');
+}
+
+function closePerformerPortfolioModal(){
+  $('#performerPortfolioModal').classList.add('hidden');
+  performerPortfolioEditingUserId=null;
+  performerPortfolioDraft=new Set();
+}
+
+function changeVisiblePortfolioSelection(mode){
+  const visible=performerPortfolioVisibleUnits();
+  if(mode==='select'){
+    visible.forEach(u=>performerPortfolioDraft.add(u.id));
+  }else if(mode==='free'){
+    visible.forEach(u=>{
+      if(!performerAssignment(u.id))performerPortfolioDraft.add(u.id);
+    });
+  }else if(mode==='clear'){
+    visible.forEach(u=>performerPortfolioDraft.delete(u.id));
+  }
+  renderPerformerPortfolioPicker();
+}
+
+async function savePerformerPortfolio(){
+  if(!performerPortfolioEditingUserId)return;
+  const performer=activePerformerRecords().find(p=>p.user_id===performerPortfolioEditingUserId);
+  if(!performer)return;
+
+  const btn=$('#savePerformerPortfolioBtn');
+  const status=$('#performerPortfolioStatus');
+  const name=orgDbFullName(performerProfile(performer.user_id));
+  const unitIds=[...performerPortfolioDraft];
+
+  btn.disabled=true;
+  status.textContent=`Salvando carteira de ${name}...`;
+
+  try{
+    const result=await adminApi('setPerformerPortfolio',{
+      performerUserId:performer.user_id,
+      unitIds
+    });
+
+    closePerformerPortfolioModal();
+    await loadPerformerDataFromSupabase();
+
+    if($('#performerStatus')){
+      const moved=Number(result?.transferred||0);
+      $('#performerStatus').textContent=
+        `Carteira atualizada: ${Number(result?.assigned||unitIds.length)} lojas`+
+        (moved?` · ${moved} transferidas de outro Performer`:'')+'.';
+    }
+  }catch(err){
+    console.error('Erro ao salvar carteira do Performer:',err);
+    status.textContent=err?.message||'Não foi possível salvar a carteira.';
+    btn.disabled=false;
+  }
+}
+
+
 function openPerformerModal(){
   const modal=$('#performerModal'),select=$('#performerUserSelect'),status=$('#performerModalStatus');
   if(status)status.textContent='';
@@ -4771,6 +5191,15 @@ async function disableSelectedPerformer(){
     performerSelected='all';await loadPerformerDataFromSupabase();
   }catch(err){console.error(err);if(status)status.textContent=err?.message||'Não foi possível desabilitar o Performer.'}
 }
+
+$('#editPerformerPortfolioBtn')?.addEventListener('click',openPerformerPortfolioModal);
+$('#closePerformerPortfolioModal')?.addEventListener('click',closePerformerPortfolioModal);
+$('#savePerformerPortfolioBtn')?.addEventListener('click',savePerformerPortfolio);
+$('#performerPortfolioSearch')?.addEventListener('input',renderPerformerPortfolioPicker);
+$('#performerPortfolioCompany')?.addEventListener('change',renderPerformerPortfolioPicker);
+$('#performerPortfolioSelectVisible')?.addEventListener('click',()=>changeVisiblePortfolioSelection('select'));
+$('#performerPortfolioAddFree')?.addEventListener('click',()=>changeVisiblePortfolioSelection('free'));
+$('#performerPortfolioClearVisible')?.addEventListener('click',()=>changeVisiblePortfolioSelection('clear'));
 
 $('#enablePerformerBtn')?.addEventListener('click',openPerformerModal);
 $('#closePerformerModal')?.addEventListener('click',()=>$('#performerModal').classList.add('hidden'));
@@ -7148,7 +7577,7 @@ document.addEventListener('click',function(e){
 },true);
 </script>
 
-<script src="modules/dashboard-ao-vivo/bridge.js?v=9.6.4"></script>
+<script src="modules/dashboard-ao-vivo/bridge.js?v=9.6.7"></script>
 <script id="rds-pwa-install">
 (()=>{
   let deferredInstallPrompt=null;

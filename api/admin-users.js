@@ -414,6 +414,145 @@ module.exports = async function handler(req, res) {
       });
     }
 
+
+    if (action === 'setPerformerPortfolio') {
+      const performerUserId = String(body.performerUserId || '');
+      const unitIds = Array.isArray(body.unitIds)
+        ? [...new Set(body.unitIds.map(v => String(v || '')).filter(Boolean))]
+        : [];
+
+      if (!performerUserId) {
+        return json(res, 400, {
+          code: 'MISSING_PERFORMER',
+          message: 'Performer não informado.'
+        });
+      }
+
+      const [{ data: performer, error: performerError }, { data: performerProfile, error: profileError }] = await Promise.all([
+        admin
+          .from('performers')
+          .select('user_id,active')
+          .eq('user_id', performerUserId)
+          .maybeSingle(),
+        admin
+          .from('profiles')
+          .select('user_id,username,first_name,last_name,role,active')
+          .eq('user_id', performerUserId)
+          .maybeSingle()
+      ]);
+
+      if (performerError) throw performerError;
+      if (profileError) throw profileError;
+
+      if (!performer || !performer.active || !performerProfile ||
+          !performerProfile.active || performerProfile.role !== 'performance') {
+        return json(res, 400, {
+          code: 'INVALID_PERFORMER',
+          message: 'O usuário selecionado não é um Performer ativo.'
+        });
+      }
+
+      let selectedUnits = [];
+      if (unitIds.length) {
+        const { data, error } = await admin
+          .from('units')
+          .select('id,name,company_id,active')
+          .in('id', unitIds);
+
+        if (error) throw error;
+        selectedUnits = data || [];
+
+        const validIds = new Set(selectedUnits.filter(u => u.active !== false).map(u => String(u.id)));
+        const invalidIds = unitIds.filter(id => !validIds.has(id));
+
+        if (invalidIds.length) {
+          return json(res, 400, {
+            code: 'INVALID_UNITS',
+            message: 'Uma ou mais lojas selecionadas são inválidas ou estão inativas.'
+          });
+        }
+      }
+
+      const { data: allAssignments, error: assignmentsError } = await admin
+        .from('performer_units')
+        .select('unit_id,performer_user_id,assigned_by,assigned_at');
+
+      if (assignmentsError) throw assignmentsError;
+
+      const assignments = allAssignments || [];
+      const previousOwn = assignments
+        .filter(x => x.performer_user_id === performerUserId)
+        .map(x => String(x.unit_id));
+
+      const selectedSet = new Set(unitIds);
+      const removeIds = previousOwn.filter(id => !selectedSet.has(id));
+
+      const previousByUnit = new Map(
+        assignments.map(x => [String(x.unit_id), String(x.performer_user_id)])
+      );
+
+      const transferred = unitIds.filter(id => {
+        const old = previousByUnit.get(id);
+        return old && old !== performerUserId;
+      });
+
+      const newlyAssigned = unitIds.filter(id => !previousByUnit.has(id));
+
+      // Primeiro aplica as lojas selecionadas. O PK de unit_id garante
+      // que uma loja fique vinculada a apenas um Performer.
+      if (unitIds.length) {
+        const rows = unitIds.map(unitId => ({
+          unit_id: unitId,
+          performer_user_id: performerUserId,
+          assigned_by: actor.id,
+          assigned_at: new Date().toISOString()
+        }));
+
+        const { error: upsertError } = await admin
+          .from('performer_units')
+          .upsert(rows, { onConflict: 'unit_id' });
+
+        if (upsertError) throw upsertError;
+      }
+
+      // Só depois remove as lojas que saíram da carteira atual.
+      if (removeIds.length) {
+        const { error: removeError } = await admin
+          .from('performer_units')
+          .delete()
+          .eq('performer_user_id', performerUserId)
+          .in('unit_id', removeIds);
+
+        if (removeError) throw removeError;
+      }
+
+      await audit(
+        'PERFORMER_CARTEIRA_ATUALIZADA',
+        performerUserId,
+        JSON.stringify({
+          unitIds,
+          assigned: unitIds.length,
+          newlyAssigned,
+          transferred,
+          removed: removeIds
+        }),
+        JSON.stringify({
+          unitIds: previousOwn,
+          assigned: previousOwn.length
+        }),
+        'performer'
+      );
+
+      return json(res, 200, {
+        ok: true,
+        performerUserId,
+        assigned: unitIds.length,
+        transferred: transferred.length,
+        newlyAssigned: newlyAssigned.length,
+        removed: removeIds.length
+      });
+    }
+
     if (action === 'setPerformerUnit') {
       const unitId = String(body.unitId || '');
       const performerUserId = body.performerUserId ? String(body.performerUserId) : null;
