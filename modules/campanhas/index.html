@@ -100,7 +100,13 @@ h1{font-size:27px;margin:5px 0 4px;letter-spacing:-.03em}
   border-radius:999px;background:var(--red-soft);color:#ff918c;
   font:800 9px var(--mono);letter-spacing:.08em;text-transform:uppercase
 }
-.hero{
+
+  .admin-viewer{display:flex;align-items:flex-end;gap:12px;margin:0 0 14px;padding:14px 16px;border:1px solid var(--line);border-radius:16px;background:var(--panel)}
+  .admin-viewer label{display:grid;gap:6px;flex:1;color:var(--muted);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+  .admin-viewer select{width:100%;min-height:44px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);color:var(--text);padding:0 12px;font:inherit;font-size:15px}
+  .admin-viewer .admin-tag{white-space:nowrap;align-self:center;padding:8px 10px;border-radius:999px;background:rgba(228,59,50,.12);border:1px solid rgba(228,59,50,.28);color:#ff7068;font-size:11px;font-weight:900}
+
+  .hero{
   display:grid;grid-template-columns:minmax(0,1.35fr) minmax(260px,.65fr);gap:18px;
   align-items:center;margin-top:10px;padding:18px 20px;border:1px solid var(--red-line);
   border-radius:11px;background:radial-gradient(520px 180px at 16% 0%,rgba(239,60,53,.14),transparent 66%),var(--panel)
@@ -194,6 +200,11 @@ tfoot td{border-bottom:0;background:var(--panel2);font-weight:900}
   .rules-backdrop{padding:10px;align-items:end}
   .rules-card{max-height:86vh;border-radius:14px 14px 8px 8px;padding:15px 13px}
 }
+
+  @media(max-width:760px){
+    .admin-viewer{align-items:stretch;flex-direction:column;padding:12px}
+    .admin-viewer .admin-tag{align-self:flex-start}
+  }
 </style>
 </head>
 <body>
@@ -252,6 +263,13 @@ tfoot td{border-bottom:0;background:var(--panel2);font-weight:900}
     </section>
 
     <div id="content" class="hidden">
+      <div class="admin-viewer hidden" id="adminViewer">
+        <label>Visualizar usuário
+          <select id="adminParticipant"></select>
+        </label>
+        <span class="admin-tag">Performance/Admin</span>
+      </div>
+
       <section class="hero">
         <div>
           <div class="hero-label" id="heroLabel">Teu total na campanha</div>
@@ -259,8 +277,8 @@ tfoot td{border-bottom:0;background:var(--panel2);font-weight:900}
           <small id="campaignPeriod">—</small>
         </div>
         <div class="hero-side">
-          <strong>Resultado individual.</strong>
-          <p>O acesso é baseado no usuário logado. Outros participantes não aparecem nesta tela.</p>
+          <strong id="heroSideTitle">Resultado individual.</strong>
+          <p id="heroSideText">O acesso é baseado no usuário logado. Outros participantes não aparecem nesta tela.</p>
         </div>
       </section>
 
@@ -333,7 +351,8 @@ let state={
   data:null,
   campaigns:[],
   selectedCode:null,
-  selectedCampaign:null
+  selectedCampaign:null,
+  adminMode:false
 };
 
 function initials(n){
@@ -354,6 +373,7 @@ function showHome(){
   $('rulesBackdrop')?.classList.add('hidden');
   $('campaignResult').classList.add('hidden');
   $('campaignHome').classList.remove('hidden');
+  $('adminViewer')?.classList.add('hidden');
   $('pageTitle').textContent='Campanhas ativas';
   $('pageSubtitle').textContent='Escolha qual campanha tu quer visualizar.';
   requestHeight();
@@ -542,6 +562,33 @@ function requestRoutineClose(){
   }catch(_){}
 }
 
+
+function renderAdminParticipants(payload){
+  const viewer=$('adminViewer');
+  const select=$('adminParticipant');
+
+  if(!payload?.adminMode){
+    state.adminMode=false;
+    viewer.classList.add('hidden');
+    return;
+  }
+
+  state.adminMode=true;
+  const participants=Array.isArray(payload.participants)?payload.participants:[];
+  const selected=payload.selectedWintourUser||'';
+
+  select.innerHTML='';
+  participants.forEach(p=>{
+    const opt=document.createElement('option');
+    opt.value=p.wintourUser||'';
+    opt.textContent=(p.wintourUser||'Usuário')+(p.primaryStore?' · '+p.primaryStore:'');
+    if(opt.value===selected)opt.selected=true;
+    select.appendChild(opt);
+  });
+
+  viewer.classList.remove('hidden');
+}
+
 window.addEventListener('message',e=>{
   if(e.origin!==location.origin)return;
 
@@ -603,13 +650,26 @@ window.addEventListener('message',e=>{
     }
     if(p.status==='ok'&&Array.isArray(p.monthly)){
       state.data=p;
-      if(p.participant){
-        $('name').textContent=p.participant.displayName||$('name').textContent;
-        $('unit').textContent=(p.participant.unit||'Unidade')+' · Wintour '+(p.participant.wintourUser||'—');
-        $('avatar').textContent=initials(p.participant.displayName);
+      renderAdminParticipants(p);
+
+      if(p.adminMode){
+        const viewed=p.participant?.wintourUser||p.selectedWintourUser||'Usuário';
+        $('unit').textContent='Performance/Admin · Visualizando '+viewed;
+        $('heroLabel').textContent=`Total de ${viewed}`;
+        $('heroSideTitle').textContent='Visão administrativa.';
+        $('heroSideText').textContent='Seleciona qualquer participante desta campanha para consultar o resultado individual.';
+      }else{
+        if(p.participant){
+          $('name').textContent=p.participant.displayName||$('name').textContent;
+          $('unit').textContent=(p.participant.unit||'Unidade')+' · Wintour '+(p.participant.wintourUser||'—');
+          $('avatar').textContent=initials(p.participant.displayName);
+        }
+        $('heroLabel').textContent=`Teu total no ${p.campaign?.name||'resultado'}`;
+        $('heroSideTitle').textContent='Resultado individual.';
+        $('heroSideText').textContent='O acesso é baseado no usuário logado. Outros participantes não aparecem nesta tela.';
       }
+
       $('selectedCampaign').textContent=`${p.campaign?.name||'Campanha'} · ${p.campaign?.cycle||''}`;
-      $('heroLabel').textContent=`Teu total no ${p.campaign?.name||'resultado'}`;
       $('campaignPeriod').textContent=`Campanha: ${monthName(p.campaign?.startMonth)} a ${monthName(p.campaign?.endMonth)}`;
       $('status').classList.add('hidden');
       $('content').classList.remove('hidden');
@@ -621,6 +681,17 @@ window.addEventListener('message',e=>{
 
 document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
 $('period').addEventListener('change',e=>{state.period=e.target.value;render()});
+$('adminParticipant').addEventListener('change',e=>{
+  const wintourUser=e.target.value;
+  if(!state.selectedCode||!wintourUser)return;
+  try{
+    parent.postMessage({
+      type:'rds-campaign-user-select',
+      campaignCode:state.selectedCode,
+      wintourUser
+    },location.origin);
+  }catch(_){}
+});
 $('backToRoutine').addEventListener('click',requestRoutineClose);
 $('backToCampaigns').addEventListener('click',showHome);
 $('campaignRulesBtn').addEventListener('click',openCampaignRules);

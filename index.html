@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/><meta name="theme-color" content="#050608"/><meta name="color-scheme" content="dark light"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" name="viewport"/>
-<title>Rotina de Sucesso — V9.7.4 Final</title>
+<title>Rotina de Sucesso — V9.7.5 Final</title>
 <script>/* V9 — tema aplicado antes da pintura (evita piscar) */(function(){var t='dark';try{var s=localStorage.getItem('rds-theme');if(s==='light'||s==='dark')t=s}catch(e){}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='light'?'#f2f0ec':'#050608')})();</script>
 <style>
 :root{--bg:#0b0e12;--panel:#12171d;--panel2:#171d24;--line:#27303a;--text:#f5f7fa;--muted:#8d98a5;--red:#e43b32;--green:#61d394;--amber:#e9b45d}
@@ -2254,7 +2254,7 @@ tbody tr:hover{background:var(--accent-soft)}
 </main>
 <main class="hidden" id="campaigns">
   <div class="campaigns-frame-shell">
-    <iframe id="campaignsFrame" data-src="modules/campanhas/index.html?v=9.7.4" title="Campanhas — Rotina de Sucesso"></iframe>
+    <iframe id="campaignsFrame" data-src="modules/campanhas/index.html?v=9.7.5" title="Campanhas — Rotina de Sucesso"></iframe>
   </div>
 </main>
 <main class="hidden" id="performance">
@@ -3519,7 +3519,7 @@ async function loadActiveCampaigns(){
   }
 }
 
-async function loadCampaignsMine(campaignCode){
+async function loadCampaignsMine(campaignCode,targetWintourUser){
   const code=String(campaignCode||'').trim();
   if(!code||!currentUser||currentUser.source!=='supabase')return;
 
@@ -3533,13 +3533,103 @@ async function loadCampaignsMine(campaignCode){
       .eq('active',true)
       .maybeSingle();
 
-    if(campaignError){
-      console.error('Campanhas · campanha:',campaignError);
+    if(campaignError||!campaign){
+      if(campaignError)console.error('Campanhas · campanha:',campaignError);
       sendCampaignMessage('rds-campaign-data',{status:'unavailable',campaignCode:code});
       return;
     }
-    if(!campaign){
-      sendCampaignMessage('rds-campaign-data',{status:'unavailable',campaignCode:code});
+
+    const isAdmin=currentUser.role==='performance';
+
+    if(isAdmin){
+      const {data:participantRows,error:participantError}=await supabaseClient
+        .from('campaign_results')
+        .select('wintour_user,primary_store')
+        .eq('campaign_id',campaign.id)
+        .order('wintour_user',{ascending:true});
+
+      if(participantError){
+        console.error('Campanhas · participantes admin:',participantError);
+        sendCampaignMessage('rds-campaign-data',{status:'error',campaignCode:code});
+        return;
+      }
+
+      const byUser=new Map();
+      (participantRows||[]).forEach(r=>{
+        const u=String(r.wintour_user||'').trim();
+        if(!u)return;
+        if(!byUser.has(u))byUser.set(u,{wintourUser:u,primaryStore:r.primary_store||''});
+      });
+
+      const participants=Array.from(byUser.values())
+        .sort((a,b)=>a.wintourUser.localeCompare(b.wintourUser,'pt-BR'));
+
+      if(!participants.length){
+        sendCampaignMessage('rds-campaign-data',{status:'unavailable',campaignCode:code});
+        return;
+      }
+
+      let selected=String(targetWintourUser||'').trim();
+      if(!participants.some(p=>p.wintourUser===selected)){
+        selected=participants[0].wintourUser;
+      }
+
+      const {data:rows,error:rowsError}=await supabaseClient
+        .from('campaign_results')
+        .select('month,wintour_user,sales_count,prem_total,prem_avg,rate,sales_pts,rep_pts,meta_pts,crm_pts,plan_pts,plan_score,plan_source,total,gru_sales,companies,crm_companies,primary_store')
+        .eq('campaign_id',campaign.id)
+        .eq('wintour_user',selected)
+        .order('month',{ascending:true});
+
+      if(rowsError){
+        console.error('Campanhas · resultados admin:',rowsError);
+        sendCampaignMessage('rds-campaign-data',{status:'error',campaignCode:code});
+        return;
+      }
+
+      const selectedInfo=participants.find(p=>p.wintourUser===selected)||{wintourUser:selected,primaryStore:''};
+
+      sendCampaignMessage('rds-campaign-data',{
+        status:'ok',
+        adminMode:true,
+        campaignCode:code,
+        participants,
+        selectedWintourUser:selected,
+        campaign:{
+          code:campaign.code,
+          name:campaign.name,
+          cycle:campaign.cycle,
+          startMonth:campaign.start_month,
+          endMonth:campaign.end_month
+        },
+        participant:{
+          displayName:selected,
+          wintourUser:selected,
+          unit:selectedInfo.primaryStore||'Usuário da campanha',
+          linkMethod:'admin_view'
+        },
+        monthly:(rows||[]).map(r=>({
+          month:String(r.month||'').slice(0,7),
+          wintourUser:r.wintour_user,
+          salesCount:Number(r.sales_count||0),
+          premTotal:Number(r.prem_total||0),
+          premAvg:Number(r.prem_avg||0),
+          rate:Number(r.rate||0),
+          salesPts:Number(r.sales_pts||0),
+          repPts:Number(r.rep_pts||0),
+          metaPts:Number(r.meta_pts||0),
+          crmPts:Number(r.crm_pts||0),
+          planPts:Number(r.plan_pts||0),
+          planScore:r.plan_score==null?null:Number(r.plan_score),
+          planSource:r.plan_source||'',
+          total:Number(r.total||0),
+          gruSales:Number(r.gru_sales||0),
+          companies:r.companies||{},
+          crmCompanies:r.crm_companies||{},
+          primaryStore:r.primary_store||''
+        })),
+        updatedAt:campaign.updated_at||null
+      });
       return;
     }
 
@@ -3555,6 +3645,7 @@ async function loadCampaignsMine(campaignCode){
       sendCampaignMessage('rds-campaign-data',{status:'error',campaignCode:code});
       return;
     }
+
     if(!link?.wintour_user){
       sendCampaignMessage('rds-campaign-data',{
         status:'unlinked',
@@ -3579,6 +3670,7 @@ async function loadCampaignsMine(campaignCode){
 
     sendCampaignMessage('rds-campaign-data',{
       status:'ok',
+      adminMode:false,
       campaignCode:code,
       campaign:{
         code:campaign.code,
@@ -3590,7 +3682,7 @@ async function loadCampaignsMine(campaignCode){
       participant:{
         displayName:fullName(currentUser),
         wintourUser:link.wintour_user,
-        unit:currentUser.role==='performance'?'Performance/Admin':userDisplayUnitCode(currentUser),
+        unit:userDisplayUnitCode(currentUser),
         linkMethod:link.link_method
       },
       monthly:(rows||[]).map(r=>({
@@ -3699,6 +3791,10 @@ window.addEventListener('message',event=>{
   }
   if(event.data?.type==='rds-campaign-select'){
     loadCampaignsMine(event.data?.campaignCode);
+    return;
+  }
+  if(event.data?.type==='rds-campaign-user-select'){
+    loadCampaignsMine(event.data?.campaignCode,event.data?.wintourUser);
     return;
   }
   if(event.data?.type==='rds-campaign-refresh-list'){
