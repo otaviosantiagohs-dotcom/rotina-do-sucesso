@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/><meta name="theme-color" content="#050608"/><meta name="color-scheme" content="dark light"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" name="viewport"/>
-<title>Rotina de Sucesso — V9.7.1 Final</title>
+<title>Rotina de Sucesso — V9.7.2 Final</title>
 <script>/* V9 — tema aplicado antes da pintura (evita piscar) */(function(){var t='dark';try{var s=localStorage.getItem('rds-theme');if(s==='light'||s==='dark')t=s}catch(e){}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='light'?'#f2f0ec':'#050608')})();</script>
 <style>
 :root{--bg:#0b0e12;--panel:#12171d;--panel2:#171d24;--line:#27303a;--text:#f5f7fa;--muted:#8d98a5;--red:#e43b32;--green:#61d394;--amber:#e9b45d}
@@ -1988,6 +1988,7 @@ tbody tr:hover{background:var(--accent-soft)}
 .campaigns-frame-shell{width:100%;height:calc(100dvh - 175px);min-height:600px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel)}
 #campaignsFrame{display:block;width:100%;height:100%;border:0;background:var(--bg)}
 #campaignsGlobalBtn.active{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+#campaignsBackGlobalBtn{border-color:color-mix(in srgb,var(--accent) 42%,var(--line));font-weight:850}
 @media(max-width:760px){.campaigns-frame-shell{height:calc(100dvh - 205px);min-height:620px;border-radius:10px}}
 </style>
 </head>
@@ -2031,6 +2032,7 @@ tbody tr:hover{background:var(--accent-soft)}
 <button class="btn" id="clearDay">Zerar hoje</button><button class="btn" id="export" data-admin-excel-only="1">Exportar Excel</button>
 <button class="btn" id="history">Histórico</button>
 <button class="btn" id="campaignsGlobalBtn" type="button">Campanhas</button>
+<button class="btn hidden" id="campaignsBackGlobalBtn" type="button">← Voltar para Rotina de Sucesso</button>
 <button class="btn hidden" type="button" data-install-app>Instalar app</button>
 <button class="btn ghost" id="logout">Sair</button>
 </div>
@@ -2249,7 +2251,7 @@ tbody tr:hover{background:var(--accent-soft)}
 </main>
 <main class="hidden" id="campaigns">
   <div class="campaigns-frame-shell">
-    <iframe id="campaignsFrame" data-src="modules/campanhas/index.html?v=9.7.1.1" title="Campanhas — Rotina de Sucesso"></iframe>
+    <iframe id="campaignsFrame" data-src="modules/campanhas/index.html?v=9.7.2" title="Campanhas — Rotina de Sucesso"></iframe>
   </div>
 </main>
 <main class="hidden" id="performance">
@@ -2356,7 +2358,7 @@ tbody tr:hover{background:var(--accent-soft)}
 </div>
 
 <div class="hidden" id="liveDashboardContainer">
-  <iframe id="liveDashboardFrame" data-src="modules/dashboard-ao-vivo/index.html?v=9.7.1" title="Dashboard Ao Vivo — Rotina de Sucesso" allow="fullscreen" allowfullscreen></iframe>
+  <iframe id="liveDashboardFrame" data-src="modules/dashboard-ao-vivo/index.html?v=9.7.2" title="Dashboard Ao Vivo — Rotina de Sucesso" allow="fullscreen" allowfullscreen></iframe>
 </div>
 
 
@@ -3582,6 +3584,7 @@ function openCampaignsPage(){
   $('#managerModeNav')?.classList.add('hidden');
   $('#collabModeNav')?.classList.add('hidden');
   $('#campaignsGlobalBtn').classList.add('active');
+  $('#campaignsBackGlobalBtn')?.classList.remove('hidden');
   $('#kick').textContent='Pontuação em campanhas';
   $('#title').textContent='Campanhas';
   $('#subtitle').textContent='Resultados individuais vinculados ao teu login.';
@@ -3595,6 +3598,7 @@ function openCampaignsPage(){
 
 function closeCampaignsPage(){
   $('#campaignsGlobalBtn').classList.remove('active');
+  $('#campaignsBackGlobalBtn')?.classList.add('hidden');
   $('#campaigns').classList.add('hidden');
   const ret=campaignsReturnState;
   if(!currentUser){showLogin();return;}
@@ -3613,11 +3617,13 @@ $('#campaignsGlobalBtn')?.addEventListener('click',()=>{
   if($('#campaigns').classList.contains('hidden'))openCampaignsPage();
   else closeCampaignsPage();
 });
+$('#campaignsBackGlobalBtn')?.addEventListener('click',closeCampaignsPage);
 $('#campaignsFrame')?.addEventListener('load',()=>{sendCampaignsContext();loadCampaignsMine();});
 window.addEventListener('message',event=>{
   if(event.origin!==window.location.origin)return;
   if(event.data?.type==='rds-campaign-close')closeCampaignsPage();
 });
+window.RDSCloseCampaigns=closeCampaignsPage;
 
 function setManagerMode(mode){
   if(currentUser?.role!=='gerente')return;
@@ -3651,6 +3657,7 @@ function showLogin(){
   role=null;
   campaignsReturnState=null;
   $('#campaignsGlobalBtn')?.classList.remove('active');
+  $('#campaignsBackGlobalBtn')?.classList.add('hidden');
   if(desktopIdleTimer){clearTimeout(desktopIdleTimer);desktopIdleTimer=null}
   $('#app').classList.add('hidden');
   $('#login').classList.remove('hidden');
@@ -7806,7 +7813,7 @@ document.addEventListener('click',function(e){
 },true);
 </script>
 
-<script src="modules/dashboard-ao-vivo/bridge.js?v=9.7.1"></script>
+<script src="modules/dashboard-ao-vivo/bridge.js?v=9.7.2"></script>
 <script id="rds-pwa-install">
 (()=>{
   let deferredInstallPrompt=null;
