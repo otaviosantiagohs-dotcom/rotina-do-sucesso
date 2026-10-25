@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/><meta name="theme-color" content="#050608"/><meta name="color-scheme" content="dark light"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" name="viewport"/>
-<title>Rotina de Sucesso — V9.7.2 Final</title>
+<title>Rotina de Sucesso — V9.7.3 Final</title>
 <script>/* V9 — tema aplicado antes da pintura (evita piscar) */(function(){var t='dark';try{var s=localStorage.getItem('rds-theme');if(s==='light'||s==='dark')t=s}catch(e){}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='light'?'#f2f0ec':'#050608')})();</script>
 <style>
 :root{--bg:#0b0e12;--panel:#12171d;--panel2:#171d24;--line:#27303a;--text:#f5f7fa;--muted:#8d98a5;--red:#e43b32;--green:#61d394;--amber:#e9b45d}
@@ -2251,7 +2251,7 @@ tbody tr:hover{background:var(--accent-soft)}
 </main>
 <main class="hidden" id="campaigns">
   <div class="campaigns-frame-shell">
-    <iframe id="campaignsFrame" data-src="modules/campanhas/index.html?v=9.7.2" title="Campanhas — Rotina de Sucesso"></iframe>
+    <iframe id="campaignsFrame" data-src="modules/campanhas/index.html?v=9.7.3.3" title="Campanhas — Rotina de Sucesso"></iframe>
   </div>
 </main>
 <main class="hidden" id="performance">
@@ -3470,36 +3470,73 @@ function sendCampaignsContext(){
   try{frame.contentWindow?.postMessage({type:'rds-campaign-context',user:ctx},window.location.origin)}catch(_){ }
 }
 
-
-async function loadCampaignsMine(){
+function sendCampaignMessage(type,payload){
   const frame=$('#campaignsFrame');
-  if(!frame||!currentUser||currentUser.source!=='supabase')return;
+  if(!frame)return;
+  try{
+    frame.contentWindow?.postMessage({type,payload},window.location.origin);
+  }catch(_){}
+}
 
-  const send=(payload)=>{
-    try{
-      frame.contentWindow?.postMessage(
-        {type:'rds-campaign-data',payload},
-        window.location.origin
-      );
-    }catch(_){}
-  };
+async function loadActiveCampaigns(){
+  if(!currentUser||currentUser.source!=='supabase'){
+    sendCampaignMessage('rds-campaign-list',{status:'error',campaigns:[]});
+    return;
+  }
 
-  send({status:'loading'});
+  sendCampaignMessage('rds-campaign-list',{status:'loading',campaigns:[]});
+
+  try{
+    const {data,error}=await supabaseClient
+      .from('campaigns')
+      .select('code,name,cycle,start_month,end_month,active,updated_at')
+      .eq('active',true)
+      .order('start_month',{ascending:false});
+
+    if(error){
+      console.error('Campanhas · lista:',error);
+      sendCampaignMessage('rds-campaign-list',{status:'error',campaigns:[]});
+      return;
+    }
+
+    sendCampaignMessage('rds-campaign-list',{
+      status:'ok',
+      campaigns:(data||[]).map(c=>({
+        code:c.code,
+        name:c.name,
+        cycle:c.cycle,
+        startMonth:c.start_month,
+        endMonth:c.end_month,
+        updatedAt:c.updated_at||null
+      }))
+    });
+  }catch(err){
+    console.error('Campanhas · lista inesperada:',err);
+    sendCampaignMessage('rds-campaign-list',{status:'error',campaigns:[]});
+  }
+}
+
+async function loadCampaignsMine(campaignCode){
+  const code=String(campaignCode||'').trim();
+  if(!code||!currentUser||currentUser.source!=='supabase')return;
+
+  sendCampaignMessage('rds-campaign-data',{status:'loading',campaignCode:code});
 
   try{
     const {data:campaign,error:campaignError}=await supabaseClient
       .from('campaigns')
       .select('id,code,name,cycle,start_month,end_month,updated_at')
-      .eq('code','SOS_PREMIA_2025_2026')
+      .eq('code',code)
+      .eq('active',true)
       .maybeSingle();
 
     if(campaignError){
       console.error('Campanhas · campanha:',campaignError);
-      send({status:'unavailable'});
+      sendCampaignMessage('rds-campaign-data',{status:'unavailable',campaignCode:code});
       return;
     }
     if(!campaign){
-      send({status:'unavailable'});
+      sendCampaignMessage('rds-campaign-data',{status:'unavailable',campaignCode:code});
       return;
     }
 
@@ -3512,11 +3549,15 @@ async function loadCampaignsMine(){
 
     if(linkError){
       console.error('Campanhas · vínculo:',linkError);
-      send({status:'error'});
+      sendCampaignMessage('rds-campaign-data',{status:'error',campaignCode:code});
       return;
     }
     if(!link?.wintour_user){
-      send({status:'unlinked'});
+      sendCampaignMessage('rds-campaign-data',{
+        status:'unlinked',
+        campaignCode:code,
+        campaign:{code:campaign.code,name:campaign.name,cycle:campaign.cycle}
+      });
       return;
     }
 
@@ -3529,12 +3570,13 @@ async function loadCampaignsMine(){
 
     if(rowsError){
       console.error('Campanhas · resultados:',rowsError);
-      send({status:'error'});
+      sendCampaignMessage('rds-campaign-data',{status:'error',campaignCode:code});
       return;
     }
 
-    send({
+    sendCampaignMessage('rds-campaign-data',{
       status:'ok',
+      campaignCode:code,
       campaign:{
         code:campaign.code,
         name:campaign.name,
@@ -3572,7 +3614,7 @@ async function loadCampaignsMine(){
     });
   }catch(err){
     console.error('Campanhas · falha inesperada:',err);
-    send({status:'error'});
+    sendCampaignMessage('rds-campaign-data',{status:'error',campaignCode:code});
   }
 }
 
@@ -3585,15 +3627,19 @@ function openCampaignsPage(){
   $('#collabModeNav')?.classList.add('hidden');
   $('#campaignsGlobalBtn').classList.add('active');
   $('#campaignsBackGlobalBtn')?.classList.remove('hidden');
-  $('#kick').textContent='Pontuação em campanhas';
+  $('#kick').textContent='Campanhas';
   $('#title').textContent='Campanhas';
-  $('#subtitle').textContent='Resultados individuais vinculados ao teu login.';
-  $('#mode').textContent='consulta individual';
+  $('#subtitle').textContent='Escolha uma campanha ativa para visualizar teu resultado.';
+  $('#mode').textContent='campanhas ativas';
   $('#history').classList.add('hidden');
   $('#clearDay').classList.add('hidden');
+
   const frame=$('#campaignsFrame');
   if(frame && !frame.src)frame.src=frame.dataset.src;
-  setTimeout(()=>{sendCampaignsContext();loadCampaignsMine();},50);
+  setTimeout(()=>{
+    sendCampaignsContext();
+    loadActiveCampaigns();
+  },50);
 }
 
 function closeCampaignsPage(){
@@ -3618,10 +3664,23 @@ $('#campaignsGlobalBtn')?.addEventListener('click',()=>{
   else closeCampaignsPage();
 });
 $('#campaignsBackGlobalBtn')?.addEventListener('click',closeCampaignsPage);
-$('#campaignsFrame')?.addEventListener('load',()=>{sendCampaignsContext();loadCampaignsMine();});
+$('#campaignsFrame')?.addEventListener('load',()=>{
+  sendCampaignsContext();
+  loadActiveCampaigns();
+});
 window.addEventListener('message',event=>{
   if(event.origin!==window.location.origin)return;
-  if(event.data?.type==='rds-campaign-close')closeCampaignsPage();
+  if(event.data?.type==='rds-campaign-close'){
+    closeCampaignsPage();
+    return;
+  }
+  if(event.data?.type==='rds-campaign-select'){
+    loadCampaignsMine(event.data?.campaignCode);
+    return;
+  }
+  if(event.data?.type==='rds-campaign-refresh-list'){
+    loadActiveCampaigns();
+  }
 });
 window.RDSCloseCampaigns=closeCampaignsPage;
 
