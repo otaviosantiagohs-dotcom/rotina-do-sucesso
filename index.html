@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/><meta name="theme-color" content="#050608"/><meta name="color-scheme" content="dark light"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" name="viewport"/>
-<title>Rotina de Sucesso — V9.6.9 Final</title>
+<title>Rotina de Sucesso — V9.7.1 Final</title>
 <script>/* V9 — tema aplicado antes da pintura (evita piscar) */(function(){var t='dark';try{var s=localStorage.getItem('rds-theme');if(s==='light'||s==='dark')t=s}catch(e){}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='light'?'#f2f0ec':'#050608')})();</script>
 <style>
 :root{--bg:#0b0e12;--panel:#12171d;--panel2:#171d24;--line:#27303a;--text:#f5f7fa;--muted:#8d98a5;--red:#e43b32;--green:#61d394;--amber:#e9b45d}
@@ -1982,6 +1982,14 @@ tbody tr:hover{background:var(--accent-soft)}
 }
 </style>
 
+
+<style id="rds-v97-campaigns-shell">
+#campaigns{min-height:0}
+.campaigns-frame-shell{width:100%;height:calc(100dvh - 175px);min-height:600px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel)}
+#campaignsFrame{display:block;width:100%;height:100%;border:0;background:var(--bg)}
+#campaignsGlobalBtn.active{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+@media(max-width:760px){.campaigns-frame-shell{height:calc(100dvh - 205px);min-height:620px;border-radius:10px}}
+</style>
 </head>
 <body>
 <section class="login" id="login">
@@ -2022,6 +2030,7 @@ tbody tr:hover{background:var(--accent-soft)}
 <div class="current-date" id="systemTimezoneGlobal"><small>Horário do sistema</small><span>São Paulo/Brasília</span></div>
 <button class="btn" id="clearDay">Zerar hoje</button><button class="btn" id="export" data-admin-excel-only="1">Exportar Excel</button>
 <button class="btn" id="history">Histórico</button>
+<button class="btn" id="campaignsGlobalBtn" type="button">Campanhas</button>
 <button class="btn hidden" type="button" data-install-app>Instalar app</button>
 <button class="btn ghost" id="logout">Sair</button>
 </div>
@@ -2238,6 +2247,11 @@ tbody tr:hover{background:var(--accent-soft)}
     <div class="goal-progress-grid" id="mgrGoalEditorProgress"></div>
   </section>
 </main>
+<main class="hidden" id="campaigns">
+  <div class="campaigns-frame-shell">
+    <iframe id="campaignsFrame" data-src="modules/campanhas/index.html?v=9.7.1.1" title="Campanhas — Rotina de Sucesso"></iframe>
+  </div>
+</main>
 <main class="hidden" id="performance">
 <div class="admin-nav" id="performanceModeNav">
 <button class="active" data-performance-mode="dashboard">Super Dashboard</button>
@@ -2342,7 +2356,7 @@ tbody tr:hover{background:var(--accent-soft)}
 </div>
 
 <div class="hidden" id="liveDashboardContainer">
-  <iframe id="liveDashboardFrame" data-src="modules/dashboard-ao-vivo/index.html?v=9.6.9" title="Dashboard Ao Vivo — Rotina de Sucesso" allow="fullscreen" allowfullscreen></iframe>
+  <iframe id="liveDashboardFrame" data-src="modules/dashboard-ao-vivo/index.html?v=9.7.1" title="Dashboard Ao Vivo — Rotina de Sucesso" allow="fullscreen" allowfullscreen></iframe>
 </div>
 
 
@@ -3399,7 +3413,7 @@ function view(v){
 
   $('#managerModeNav')?.classList.toggle('hidden',currentUser?.role!=='gerente');
 
-  ['collab','manager','managerGoals','performance'].forEach(x=>$('#'+x).classList.add('hidden'));
+  ['collab','manager','managerGoals','performance','campaigns'].forEach(x=>$('#'+x).classList.add('hidden'));
   $('#'+v).classList.remove('hidden');
   $$('.tab').forEach(x=>x.classList.toggle('active',x.dataset.view===v));
   setTopForView(v);
@@ -3422,6 +3436,188 @@ function view(v){
   }
 }
 
+
+
+let campaignsReturnState=null;
+
+function campaignsContext(){
+  if(!currentUser)return null;
+  return {
+    displayName:fullName(currentUser),
+    unit:currentUser.role==='performance'?'Performance/Admin':userDisplayUnitCode(currentUser),
+    role:currentUser.role,
+    rank:currentUser.role==='gerente'?'Capitão':careerRankLabel(currentUser)
+  };
+}
+
+function captureCampaignsReturnState(){
+  if(!currentUser)return {type:'collab',mode:'entry'};
+  if(currentUser.role==='performance')return {type:'performance',mode:performanceMode};
+  if(currentUser.role==='gerente'){
+    if(!$('#managerGoals').classList.contains('hidden'))return {type:'manager',mode:'goals'};
+    if(!$('#manager').classList.contains('hidden'))return {type:'manager',mode:'dashboard'};
+    return {type:'manager',mode:!$('#collabDashboard').classList.contains('hidden')?'personal':'entry'};
+  }
+  return {type:'collab',mode:!$('#collabDashboard').classList.contains('hidden')?'dashboard':'entry'};
+}
+
+function sendCampaignsContext(){
+  const frame=$('#campaignsFrame');
+  const ctx=campaignsContext();
+  if(!frame||!ctx)return;
+  try{frame.contentWindow?.postMessage({type:'rds-campaign-context',user:ctx},window.location.origin)}catch(_){ }
+}
+
+
+async function loadCampaignsMine(){
+  const frame=$('#campaignsFrame');
+  if(!frame||!currentUser||currentUser.source!=='supabase')return;
+
+  const send=(payload)=>{
+    try{
+      frame.contentWindow?.postMessage(
+        {type:'rds-campaign-data',payload},
+        window.location.origin
+      );
+    }catch(_){}
+  };
+
+  send({status:'loading'});
+
+  try{
+    const {data:campaign,error:campaignError}=await supabaseClient
+      .from('campaigns')
+      .select('id,code,name,cycle,start_month,end_month,updated_at')
+      .eq('code','SOS_PREMIA_2025_2026')
+      .maybeSingle();
+
+    if(campaignError){
+      console.error('Campanhas · campanha:',campaignError);
+      send({status:'unavailable'});
+      return;
+    }
+    if(!campaign){
+      send({status:'unavailable'});
+      return;
+    }
+
+    const {data:link,error:linkError}=await supabaseClient
+      .from('campaign_user_links')
+      .select('wintour_user,link_method')
+      .eq('campaign_id',campaign.id)
+      .eq('user_id',currentUser.id)
+      .maybeSingle();
+
+    if(linkError){
+      console.error('Campanhas · vínculo:',linkError);
+      send({status:'error'});
+      return;
+    }
+    if(!link?.wintour_user){
+      send({status:'unlinked'});
+      return;
+    }
+
+    const {data:rows,error:rowsError}=await supabaseClient
+      .from('campaign_results')
+      .select('month,wintour_user,sales_count,prem_total,prem_avg,rate,sales_pts,rep_pts,meta_pts,crm_pts,plan_pts,plan_score,plan_source,total,gru_sales,companies,crm_companies,primary_store')
+      .eq('campaign_id',campaign.id)
+      .eq('wintour_user',link.wintour_user)
+      .order('month',{ascending:true});
+
+    if(rowsError){
+      console.error('Campanhas · resultados:',rowsError);
+      send({status:'error'});
+      return;
+    }
+
+    send({
+      status:'ok',
+      campaign:{
+        code:campaign.code,
+        name:campaign.name,
+        cycle:campaign.cycle,
+        startMonth:campaign.start_month,
+        endMonth:campaign.end_month
+      },
+      participant:{
+        displayName:fullName(currentUser),
+        wintourUser:link.wintour_user,
+        unit:currentUser.role==='performance'?'Performance/Admin':userDisplayUnitCode(currentUser),
+        linkMethod:link.link_method
+      },
+      monthly:(rows||[]).map(r=>({
+        month:String(r.month||'').slice(0,7),
+        wintourUser:r.wintour_user,
+        salesCount:Number(r.sales_count||0),
+        premTotal:Number(r.prem_total||0),
+        premAvg:Number(r.prem_avg||0),
+        rate:Number(r.rate||0),
+        salesPts:Number(r.sales_pts||0),
+        repPts:Number(r.rep_pts||0),
+        metaPts:Number(r.meta_pts||0),
+        crmPts:Number(r.crm_pts||0),
+        planPts:Number(r.plan_pts||0),
+        planScore:r.plan_score==null?null:Number(r.plan_score),
+        planSource:r.plan_source||'',
+        total:Number(r.total||0),
+        gruSales:Number(r.gru_sales||0),
+        companies:r.companies||{},
+        crmCompanies:r.crm_companies||{},
+        primaryStore:r.primary_store||''
+      })),
+      updatedAt:campaign.updated_at||null
+    });
+  }catch(err){
+    console.error('Campanhas · falha inesperada:',err);
+    send({status:'error'});
+  }
+}
+
+function openCampaignsPage(){
+  if(!currentUser)return;
+  campaignsReturnState=captureCampaignsReturnState();
+  ['collab','manager','managerGoals','performance','campaigns'].forEach(x=>$('#'+x).classList.add('hidden'));
+  $('#campaigns').classList.remove('hidden');
+  $('#managerModeNav')?.classList.add('hidden');
+  $('#collabModeNav')?.classList.add('hidden');
+  $('#campaignsGlobalBtn').classList.add('active');
+  $('#kick').textContent='Pontuação em campanhas';
+  $('#title').textContent='Campanhas';
+  $('#subtitle').textContent='Resultados individuais vinculados ao teu login.';
+  $('#mode').textContent='consulta individual';
+  $('#history').classList.add('hidden');
+  $('#clearDay').classList.add('hidden');
+  const frame=$('#campaignsFrame');
+  if(frame && !frame.src)frame.src=frame.dataset.src;
+  setTimeout(()=>{sendCampaignsContext();loadCampaignsMine();},50);
+}
+
+function closeCampaignsPage(){
+  $('#campaignsGlobalBtn').classList.remove('active');
+  $('#campaigns').classList.add('hidden');
+  const ret=campaignsReturnState;
+  if(!currentUser){showLogin();return;}
+  if(currentUser.role==='performance'){
+    view('performance');
+    setPerformanceMode(ret?.mode||'dashboard');
+  }else if(currentUser.role==='gerente'){
+    setManagerMode(ret?.mode||'dashboard');
+  }else{
+    view('collab');
+    setCollabMode(ret?.mode==='dashboard'?'dashboard':'entry');
+  }
+}
+
+$('#campaignsGlobalBtn')?.addEventListener('click',()=>{
+  if($('#campaigns').classList.contains('hidden'))openCampaignsPage();
+  else closeCampaignsPage();
+});
+$('#campaignsFrame')?.addEventListener('load',()=>{sendCampaignsContext();loadCampaignsMine();});
+window.addEventListener('message',event=>{
+  if(event.origin!==window.location.origin)return;
+  if(event.data?.type==='rds-campaign-close')closeCampaignsPage();
+});
 
 function setManagerMode(mode){
   if(currentUser?.role!=='gerente')return;
@@ -3453,6 +3649,8 @@ function showLogin(){
   if(window.RDSPalette)window.RDSPalette.resetForLogin();
   currentUser=null;
   role=null;
+  campaignsReturnState=null;
+  $('#campaignsGlobalBtn')?.classList.remove('active');
   if(desktopIdleTimer){clearTimeout(desktopIdleTimer);desktopIdleTimer=null}
   $('#app').classList.add('hidden');
   $('#login').classList.remove('hidden');
@@ -4887,7 +5085,7 @@ $('#pfGoalSave').addEventListener('click',()=>saveGoalDraft('performance'));
 
 
 /* ============================================================
-   V9.6.9 — REVISÃO GERAL / FILTROS AO VIVO / LAYOUT ESTÁVEL
+   V9.7 — CAMPANHAS / SOS PREMIA
    Performer é função adicional de Performance/Admin.
    ============================================================ */
 function performerProfile(userId){return ORG_PROFILES_DB.find(p=>p.user_id===userId)||null}
@@ -7608,7 +7806,7 @@ document.addEventListener('click',function(e){
 },true);
 </script>
 
-<script src="modules/dashboard-ao-vivo/bridge.js?v=9.6.9"></script>
+<script src="modules/dashboard-ao-vivo/bridge.js?v=9.7.1"></script>
 <script id="rds-pwa-install">
 (()=>{
   let deferredInstallPrompt=null;

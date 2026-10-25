@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="theme-color" content="#07090c"/>
+<title>Campanhas · Rotina de Sucesso</title>
+<style>
+:root{color-scheme:dark;--bg:#07090c;--panel:#0c0f14;--panel2:#10141b;--field:#090c10;--line:#202631;--line2:#2c3441;--text:#f5f7fa;--soft:#c8ced8;--muted:#7f8b9c;--red:#ef3c35;--red-soft:rgba(239,60,53,.10);--red-line:rgba(239,60,53,.42);--green:#4ed48f;--mono:ui-monospace,"SFMono-Regular","SF Mono",Menlo,Consolas,monospace;--sans:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:var(--sans)}body{background:radial-gradient(900px 420px at 88% -12%,rgba(239,60,53,.07),transparent 60%),var(--bg)}button,select{font:inherit;color:inherit}button{cursor:pointer}.page{max-width:1460px;margin:auto;padding:16px 18px 28px}.head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:13px}.kicker{font:800 9.5px var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--red)}h1{font-size:27px;margin:5px 0 4px;letter-spacing:-.03em}.sub{font-size:12px;color:var(--muted)}.btn{min-height:38px;padding:0 13px;border:1px solid var(--line2);border-radius:8px;background:var(--panel2);color:var(--soft);font-weight:800}.campaigns{display:flex;gap:8px;overflow-x:auto;margin-bottom:10px}.campaign{min-width:225px;text-align:left;padding:12px 14px;border:1px solid var(--red-line);border-radius:10px;background:var(--red-soft);color:var(--text)}.campaign span{font:800 9px var(--mono);letter-spacing:.14em;color:var(--red)}.campaign strong{display:block;font-size:13px;margin:4px 0 3px}.campaign small{color:var(--muted)}.identity{display:flex;align-items:center;gap:11px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}.avatar{width:40px;height:40px;display:grid;place-items:center;border:1px solid var(--red-line);border-radius:9px;background:var(--red-soft);font:900 11px var(--mono)}.identity strong{display:block;font-size:13px}.identity small{display:block;margin-top:3px;color:var(--muted);font:600 9.5px var(--mono)}.private{margin-left:auto;color:var(--green);font:800 9px var(--mono);letter-spacing:.08em;text-transform:uppercase}.status{margin-top:10px;min-height:150px;display:grid;place-items:center;text-align:center;padding:28px;border:1px dashed var(--line);border-radius:11px;background:var(--panel)}.status strong{display:block;font-size:16px;margin-bottom:7px}.status p{max-width:620px;margin:0;color:var(--muted);font-size:12px;line-height:1.55}.status .tag{display:inline-block;margin-top:12px;padding:6px 9px;border:1px solid var(--red-line);border-radius:999px;background:var(--red-soft);color:#ff918c;font:800 9px var(--mono);letter-spacing:.08em;text-transform:uppercase}.hero{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(260px,.65fr);gap:18px;align-items:center;margin-top:10px;padding:18px 20px;border:1px solid var(--red-line);border-radius:11px;background:radial-gradient(520px 180px at 16% 0%,rgba(239,60,53,.14),transparent 66%),var(--panel)}.hero-label{font:800 9.5px var(--mono);letter-spacing:.15em;color:var(--red);text-transform:uppercase}.total{font-size:46px;font-weight:900;line-height:1;margin:7px 0 5px;letter-spacing:-.04em}.total span{font-size:14px;font-weight:700;color:var(--soft)}.hero small{color:var(--muted)}.hero-side{border-left:1px solid var(--line);padding-left:18px}.hero-side strong{font-size:12px}.hero-side p{font-size:10.5px;color:var(--muted);line-height:1.5}.controls{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:11px 0 9px}.tabs{display:flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:9px;background:var(--panel)}.tabs button{min-height:34px;border:0;border-radius:6px;background:transparent;color:var(--muted);padding:0 15px;font-size:10.5px;font-weight:800}.tabs button.active{background:var(--red);color:#fff}.period{display:flex;align-items:center;gap:8px;color:var(--muted);font:700 9px var(--mono);text-transform:uppercase}.period select{min-height:36px;border:1px solid var(--line2);border-radius:8px;background:var(--field);padding:0 9px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{padding:12px 13px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}.stat:first-child{border-color:var(--red-line);background:linear-gradient(180deg,rgba(239,60,53,.06),var(--panel))}.stat .l{font:700 9px var(--mono);letter-spacing:.10em;color:var(--muted);text-transform:uppercase}.stat .v{font-size:25px;font-weight:900;margin-top:5px}.stat .s{font-size:9.5px;color:var(--muted)}.panel{margin-top:9px;border:1px solid var(--line);border-radius:11px;background:var(--panel);overflow:hidden}.panel-head{display:flex;justify-content:space-between;gap:14px;padding:13px 15px;border-bottom:1px solid var(--line)}.panel-head h2{margin:0;font-size:13px}.panel-head p{margin:3px 0 0;color:var(--muted);font-size:10px}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse}th,td{padding:11px 15px;border-bottom:1px solid var(--line);text-align:left}th{background:var(--field);color:var(--muted);font:800 8.5px var(--mono);letter-spacing:.10em;text-transform:uppercase}td{font-size:11px}th:last-child,td:last-child{text-align:right}.pts{font-weight:900;color:var(--red)}tfoot td{border:0;background:var(--panel2);font-weight:900}.detail{display:block;margin-top:3px;color:var(--muted);font-size:9.5px}.hidden{display:none!important}@media(max-width:650px){.page{padding:14px 12px 24px}.head{flex-direction:column}.private{display:none}.hero{grid-template-columns:1fr;padding:16px}.hero-side{display:none}.total{font-size:39px}.controls{flex-direction:column;align-items:stretch}.tabs{display:grid;grid-template-columns:repeat(3,1fr)}.tabs button{padding:0 5px}.period{justify-content:space-between}.stats{gap:6px}.stat{padding:10px 8px}.stat .l{font-size:8px}.stat .v{font-size:21px}th,td{padding:10px 11px}}
+</style>
+</head>
+<body>
+<main class="page">
+  <header class="head">
+    <div><div class="kicker">Pontuação em campanhas</div><h1>Minha performance nas campanhas</h1><div class="sub">Aqui aparecem somente os resultados vinculados ao teu login.</div></div>
+    <button class="btn" id="back" type="button">Voltar</button>
+  </header>
+
+  <div class="campaigns"><button class="campaign" type="button"><span>SOS PREMIA</span><strong>Resultado 2025/2026</strong><small>Outubro/2025 a Setembro/2026</small></button></div>
+
+  <section class="identity"><div class="avatar" id="avatar">—</div><div><strong id="name">Usuário logado</strong><small id="unit">Consultando vínculo da campanha</small></div><div class="private">Consulta individual</div></section>
+
+  <section class="status" id="status"><div><strong>Consultando SOS Premia...</strong><p>Estamos localizando a pontuação vinculada ao teu login.</p><span class="tag">Consulta individual</span></div></section>
+
+  <div id="content" class="hidden">
+    <section class="hero"><div><div class="hero-label">Teu total no SOS Premia</div><div class="total" id="total">0 <span>pontos</span></div><small>Campanha: Outubro/2025 a Setembro/2026</small></div><div class="hero-side"><strong>Resultado individual.</strong><p>O acesso é baseado no usuário logado. Outros participantes não aparecem nesta tela.</p></div></section>
+    <div class="controls"><div class="tabs"><button class="active" data-view="geral">Geral</button><button data-view="mensal">Mensal</button><button data-view="trimestre">Trimestral</button></div><label class="period hidden" id="periodWrap">Período<select id="period"></select></label></div>
+    <div class="stats"><article class="stat"><div class="l">Pontos no período</div><div class="v" id="periodTotal">0</div><div class="s" id="periodLabel">Campanha completa</div></article><article class="stat"><div class="l">Meses pontuados</div><div class="v" id="monthCount">0</div><div class="s">Com registros</div></article><article class="stat"><div class="l">Critérios pontuados</div><div class="v" id="criteriaCount">0</div><div class="s">Origens da pontuação</div></article></div>
+    <section class="panel"><div class="panel-head"><div><h2 id="tableTitle">Teus pontos, mês a mês</h2><p id="tableSubtitle">Seleciona Mensal ou Trimestral para conferir os critérios.</p></div></div><div class="table-wrap"><table><thead><tr><th id="columnTitle">Mês</th><th id="middleTitle">Trimestre da campanha</th><th>Pontos</th></tr></thead><tbody id="rows"></tbody><tfoot><tr><td colspan="2">Total do período</td><td class="pts" id="tableTotal">0 pts</td></tr></tfoot></table></div></section>
+  </div>
+</main>
+<script>
+'use strict';
+
+const MONTHS=['2025-10','2025-11','2025-12','2026-01','2026-02','2026-03','2026-04','2026-05','2026-06','2026-07','2026-08','2026-09'];
+const LABELS=['Outubro/2025','Novembro/2025','Dezembro/2025','Janeiro/2026','Fevereiro/2026','Março/2026','Abril/2026','Maio/2026','Junho/2026','Julho/2026','Agosto/2026','Setembro/2026'];
+const QUARTERS=['1º trimestre · Out–Dez/2025','2º trimestre · Jan–Mar/2026','3º trimestre · Abr–Jun/2026','4º trimestre · Jul–Set/2026'];
+const COMPONENTS=[
+  ['salesPts','Pontos por vendas','Pontuação oficial por vendas.'],
+  ['repPts','Recompra','Pontuação oficial de recompra.'],
+  ['metaPts','Meta DU','Pontuação oficial da Meta DU.'],
+  ['crmPts','CRM','Pontuação oficial de CRM.'],
+  ['planPts','Plano de Voo','Pontuação oficial do Plano de Voo.']
+];
+
+const $=id=>document.getElementById(id);
+const fmt=n=>new Intl.NumberFormat('pt-BR',{maximumFractionDigits:2}).format(Number(n)||0);
+const sumTotal=rows=>(rows||[]).reduce((s,r)=>s+Number(r.total||0),0);
+
+let state={view:'geral',period:'2026-09',data:null};
+
+function initials(n){
+  return String(n||'').split(/\s+/).filter(Boolean).slice(0,2)
+    .map(x=>x[0]).join('').toUpperCase()||'—';
+}
+function esc(v){
+  return String(v??'')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function setStatus(title,text,tag=''){
+  $('status').classList.remove('hidden');
+  $('content').classList.add('hidden');
+  $('status').innerHTML=`<div><strong>${esc(title)}</strong><p>${esc(text)}</p>${tag?`<span class="tag">${esc(tag)}</span>`:''}</div>`;
+}
+function filteredMonthly(){
+  if(!state.data)return [];
+  const all=state.data.monthly||[];
+  if(state.view==='mensal')return all.filter(r=>r.month===state.period);
+  if(state.view==='trimestre'){
+    const q=Number(state.period);
+    return all.filter(r=>Math.floor(MONTHS.indexOf(r.month)/3)===q);
+  }
+  return all;
+}
+function periodLabel(){
+  if(state.view==='mensal')return LABELS[MONTHS.indexOf(state.period)]||state.period;
+  if(state.view==='trimestre')return QUARTERS[Number(state.period)]||'Trimestre';
+  return 'Campanha completa';
+}
+function componentTotal(rows,key){
+  return rows.reduce((s,r)=>s+Number(r[key]||0),0);
+}
+function render(){
+  if(!state.data)return;
+
+  const rows=filteredMonthly();
+  const label=periodLabel();
+
+  $('periodTotal').textContent=fmt(sumTotal(rows));
+  $('periodLabel').textContent=label;
+  $('monthCount').textContent=rows.filter(r=>Number(r.total)!==0).length;
+
+  const activeComponents=COMPONENTS.filter(([key])=>componentTotal(rows,key)!==0).length;
+  $('criteriaCount').textContent=activeComponents;
+  $('tableTotal').textContent=fmt(sumTotal(rows))+' pts';
+
+  $('tableTitle').textContent=state.view==='geral'
+    ? 'Teus pontos, mês a mês'
+    : 'De onde vêm os teus pontos';
+  $('tableSubtitle').textContent=state.view==='geral'
+    ? 'Seleciona Mensal ou Trimestral para conferir os critérios.'
+    : label;
+  $('columnTitle').textContent=state.view==='geral'?'Mês':'Critério';
+  $('middleTitle').textContent=state.view==='geral'?'Trimestre da campanha':'Referência';
+
+  const body=$('rows');
+  body.innerHTML='';
+
+  if(state.view==='geral'){
+    MONTHS.forEach((month,i)=>{
+      const row=(state.data.monthly||[]).find(r=>r.month===month);
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
+        <td>${LABELS[i]}</td>
+        <td>${Math.floor(i/3)+1}º trimestre</td>
+        <td class="pts">${row?fmt(row.total)+' pts':'Sem registros'}</td>`;
+      body.appendChild(tr);
+    });
+    return;
+  }
+
+  COMPONENTS.forEach(([key,name,description])=>{
+    const value=componentTotal(rows,key);
+    const tr=document.createElement('tr');
+
+    let extra=description;
+    if(key==='planPts' && state.view==='mensal'){
+      const src=rows[0]?.planSource;
+      if(src)extra=src;
+    }
+
+    tr.innerHTML=`
+      <td>${esc(name)}<span class="detail">${esc(extra)}</span></td>
+      <td>${esc(label)}</td>
+      <td class="pts">${fmt(value)} pts</td>`;
+    body.appendChild(tr);
+  });
+}
+function setView(v){
+  state.view=v;
+  document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===v));
+
+  const p=$('period');
+  p.innerHTML='';
+
+  if(v==='mensal'){
+    MONTHS.forEach((m,i)=>p.add(new Option(LABELS[i],m)));
+    state.period='2026-09';
+  }else if(v==='trimestre'){
+    QUARTERS.forEach((q,i)=>p.add(new Option(q,String(i))));
+    state.period='3';
+  }
+
+  $('periodWrap').classList.toggle('hidden',v==='geral');
+  if(v!=='geral')p.value=state.period;
+  render();
+}
+
+window.addEventListener('message',e=>{
+  if(e.origin!==location.origin)return;
+
+  if(e.data?.type==='rds-campaign-context'){
+    const u=e.data.user||{};
+    $('name').textContent=u.displayName||'Usuário logado';
+    $('unit').textContent=(u.unit||'Unidade')+(u.rank?' · '+u.rank:'');
+    $('avatar').textContent=initials(u.displayName);
+  }
+
+  if(e.data?.type==='rds-campaign-data'){
+    const p=e.data.payload||{};
+
+    if(p.status==='loading'){
+      setStatus('Consultando SOS Premia...','Estamos localizando a pontuação vinculada ao teu login.','Consulta individual');
+      return;
+    }
+    if(p.status==='unavailable'){
+      setStatus('Banco da campanha ainda não está disponível.','Execute primeiro o SQL da V9.7.1 no Supabase e tente novamente.','Teste V9.7.1');
+      return;
+    }
+    if(p.status==='unlinked'){
+      setStatus('Usuário ainda não vinculado.','Não encontrei uma correspondência segura entre teu login da Rotina de Sucesso e um usuário Wintour do SOS Premia. Nenhum resultado foi exibido.','Proteção de dados');
+      return;
+    }
+    if(p.status==='error'){
+      setStatus('Não foi possível consultar tua pontuação.','A consulta ao banco falhou. A V9.7 anterior continua disponível para rollback.','Erro de consulta');
+      return;
+    }
+    if(p.status==='ok'&&Array.isArray(p.monthly)){
+      state.data=p;
+
+      if(p.participant){
+        $('name').textContent=p.participant.displayName||$('name').textContent;
+        $('unit').textContent=(p.participant.unit||'Unidade')+' · Wintour '+(p.participant.wintourUser||'—');
+        $('avatar').textContent=initials(p.participant.displayName);
+      }
+
+      $('status').classList.add('hidden');
+      $('content').classList.remove('hidden');
+      $('total').innerHTML=fmt(sumTotal(p.monthly))+' <span>pontos</span>';
+      setView('geral');
+    }
+  }
+});
+
+document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
+$('period').addEventListener('change',e=>{state.period=e.target.value;render()});
+$('back').addEventListener('click',()=>parent.postMessage({type:'rds-campaign-close'},location.origin));
+</script>
+</body></html>
