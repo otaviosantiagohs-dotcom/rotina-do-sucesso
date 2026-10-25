@@ -82,7 +82,9 @@ h1{font-size:27px;margin:5px 0 4px;letter-spacing:-.03em}
 
 /* RESULTADO */
 .result-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.result-nav-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .result-nav .btn{min-height:36px}
+.rules-btn{border-color:var(--red-line);background:var(--red-soft);color:#ffd0cd}
 .selected{
   color:var(--muted);font:700 9px var(--mono);letter-spacing:.08em;text-transform:uppercase
 }
@@ -136,26 +138,61 @@ th:last-child,td:last-child{text-align:right;white-space:nowrap}
 .detail{display:block;margin-top:3px;color:var(--muted);font-size:9.5px;line-height:1.4}
 tfoot td{border-bottom:0;background:var(--panel2);font-weight:900}
 
+
+.rules-backdrop{
+  position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:18px;
+  background:rgba(0,0,0,.72);backdrop-filter:blur(4px)
+}
+.rules-card{
+  width:min(680px,100%);max-height:min(82vh,760px);overflow:auto;
+  border:1px solid var(--line2);border-radius:14px;background:var(--panel2);padding:18px
+}
+.rules-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:14px}
+.rules-head h2{margin:4px 0 0;font-size:18px}
+.rules-close{width:40px;min-width:40px;padding:0;font-size:18px}
+.rules-list{display:grid;gap:8px}
+.rule-item{padding:12px 13px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+.rule-item strong{display:block;font-size:12px;margin-bottom:4px}
+.rule-item span{display:block;color:var(--muted);font-size:11px;line-height:1.5}
+.rules-note{margin-top:10px;color:var(--muted);font-size:10px;line-height:1.5}
+
 @media(max-width:900px){.campaign-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){
-  .page{padding:13px 12px 24px}
-  .head{flex-direction:column}
-  .head .btn{align-self:flex-start}
+  .page{padding:10px 10px 12px}
+  .head{flex-direction:column;gap:9px;margin-bottom:9px}
+  .head h1{font-size:22px;margin-top:3px}
+  .head .btn{align-self:flex-start;min-height:38px}
+  .identity{padding:9px 10px;margin-bottom:9px}
   .identity .private{display:none}
-  .campaign-home-head{align-items:flex-start;flex-direction:column}
-  .campaign-grid{grid-template-columns:1fr}
-  .hero{grid-template-columns:1fr;padding:16px}
+  .campaign-home-head{align-items:flex-start;flex-direction:row;margin:3px 0 8px}
+  .campaign-home-head p{font-size:10px}
+  .campaign-grid{grid-template-columns:1fr;gap:8px}
+  .campaign-card{padding:13px}
+  .campaign-card strong{margin:9px 0 4px}
+  .campaign-card .period{margin-top:10px}
+  .campaign-card .open{margin-top:10px;padding-top:9px}
+  .campaign-loading,.campaign-empty{min-height:120px;padding:20px 14px}
+  .result-nav{align-items:flex-start;flex-direction:column;gap:7px;margin-bottom:8px}
+  .result-nav-actions{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:7px}
+  .result-nav-actions .btn{width:100%;padding:0 8px;font-size:11px}
+  .selected{font-size:8px}
+  .hero{grid-template-columns:1fr;padding:13px;margin-top:7px}
   .hero-side{display:none}
-  .total{font-size:39px}
-  .controls{align-items:stretch;flex-direction:column}
+  .total{font-size:36px}
+  .controls{align-items:stretch;flex-direction:column;margin:8px 0 7px;gap:7px}
   .tabs{display:grid;grid-template-columns:repeat(3,1fr)}
-  .tabs button{padding:0 6px}
+  .tabs button{padding:0 4px;min-height:38px}
   .period-select{justify-content:space-between}
-  .stats{gap:6px}
-  .stat{padding:10px 8px}
-  .stat .l{font-size:8px}
-  .stat .v{font-size:21px}
-  th,td{padding:10px 11px}
+  .period-select select{font-size:16px}
+  .stats{gap:5px}
+  .stat{padding:9px 7px}
+  .stat .l{font-size:7.5px;letter-spacing:.06em}
+  .stat .v{font-size:20px}
+  .panel{margin-top:7px}
+  .panel-head{padding:10px 11px}
+  th,td{padding:9px 10px}
+  .rules-backdrop{padding:10px;align-items:end}
+  .rules-card{max-height:86vh;border-radius:14px 14px 8px 8px;padding:15px 13px}
 }
 </style>
 </head>
@@ -199,7 +236,10 @@ tfoot td{border-bottom:0;background:var(--panel2);font-weight:900}
 
   <section id="campaignResult" class="hidden">
     <div class="result-nav">
-      <button class="btn" id="backToCampaigns" type="button">← Campanhas</button>
+      <div class="result-nav-actions">
+        <button class="btn" id="backToCampaigns" type="button">← Campanhas</button>
+        <button class="btn rules-btn" id="campaignRulesBtn" type="button">Regras de Campanha</button>
+      </div>
       <div class="selected">Campanha selecionada · <strong id="selectedCampaign">—</strong></div>
     </div>
 
@@ -255,6 +295,20 @@ tfoot td{border-bottom:0;background:var(--panel2);font-weight:900}
   </section>
 </main>
 
+<div class="rules-backdrop hidden" id="rulesBackdrop" role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
+  <section class="rules-card">
+    <div class="rules-head">
+      <div>
+        <div class="kicker">Regras da campanha</div>
+        <h2 id="rulesTitle">—</h2>
+      </div>
+      <button class="btn rules-close" id="rulesClose" type="button" aria-label="Fechar regras">×</button>
+    </div>
+    <div class="rules-list" id="rulesList"></div>
+    <div class="rules-note" id="rulesNote"></div>
+  </section>
+</div>
+
 <script>
 'use strict';
 
@@ -278,7 +332,8 @@ let state={
   period:'2026-09',
   data:null,
   campaigns:[],
-  selectedCode:null
+  selectedCode:null,
+  selectedCampaign:null
 };
 
 function initials(n){
@@ -295,13 +350,17 @@ function monthName(iso){
 function showHome(){
   state.data=null;
   state.selectedCode=null;
+  state.selectedCampaign=null;
+  $('rulesBackdrop')?.classList.add('hidden');
   $('campaignResult').classList.add('hidden');
   $('campaignHome').classList.remove('hidden');
   $('pageTitle').textContent='Campanhas ativas';
   $('pageSubtitle').textContent='Escolha qual campanha tu quer visualizar.';
+  requestHeight();
 }
 function showResultShell(campaign){
   state.selectedCode=campaign.code;
+  state.selectedCampaign=campaign;
   $('campaignHome').classList.add('hidden');
   $('campaignResult').classList.remove('hidden');
   $('content').classList.add('hidden');
@@ -310,11 +369,13 @@ function showResultShell(campaign){
   $('selectedCampaign').textContent=`${campaign.name} · ${campaign.cycle}`;
   $('pageTitle').textContent=campaign.name;
   $('pageSubtitle').textContent=`Resultado individual · ${campaign.cycle}`;
+  requestHeight();
 }
 function setStatus(title,text,tag=''){
   $('status').classList.remove('hidden');
   $('content').classList.add('hidden');
   $('status').innerHTML=`<div><strong>${esc(title)}</strong><p>${esc(text)}</p>${tag?`<span class="tag">${esc(tag)}</span>`:''}</div>`;
+  requestHeight();
 }
 function renderCampaignList(){
   $('campaignLoading').classList.add('hidden');
@@ -349,6 +410,7 @@ function renderCampaignList(){
     btn.addEventListener('click',()=>selectCampaign(c));
     grid.appendChild(btn);
   });
+  requestHeight();
 }
 function selectCampaign(campaign){
   showResultShell(campaign);
@@ -356,6 +418,49 @@ function selectCampaign(campaign){
     parent.postMessage({type:'rds-campaign-select',campaignCode:campaign.code},location.origin);
   }catch(_){}
 }
+
+function campaignRules(code){
+  if(code==='SOS_PREMIA_2025_2026'){
+    return {
+      title:'SOS Premia · Resultado 2025/2026',
+      items:[
+        ['Pontuação por vendas','Premiação média a partir de R$ 179: 2 pontos por venda. Abaixo de R$ 179: 1 ponto por venda.'],
+        ['Recompra','Cada recompra válida soma 1 ponto.'],
+        ['Meta DU individual','Ao atingir a Meta DU individual, soma 50 pontos.'],
+        ['CRM','O uso válido do CRM soma a pontuação prevista na apuração oficial da campanha.'],
+        ['Plano de Voo','Resultado de 75 a 85: +10 pontos · 86 a 95: +20 pontos · 96 ou mais: +30 pontos.']
+      ],
+      note:'Os resultados exibidos na Rotina de Sucesso vêm da apuração oficial importada da campanha. A tela não recalcula nem altera a pontuação.'
+    };
+  }
+  return {
+    title:state.selectedCampaign?.name||'Campanha',
+    items:[['Regras','As regras desta campanha ainda não foram cadastradas nesta tela.']],
+    note:'O resultado individual permanece disponível normalmente.'
+  };
+}
+function openCampaignRules(){
+  if(!state.selectedCode)return;
+  const rules=campaignRules(state.selectedCode);
+  $('rulesTitle').textContent=rules.title;
+  $('rulesList').innerHTML=rules.items.map(([name,text])=>`<div class="rule-item"><strong>${esc(name)}</strong><span>${esc(text)}</span></div>`).join('');
+  $('rulesNote').textContent=rules.note||'';
+  $('rulesBackdrop').classList.remove('hidden');
+  requestHeight();
+}
+function closeCampaignRules(){
+  $('rulesBackdrop').classList.add('hidden');
+  requestHeight();
+}
+let heightFrame=0;
+function requestHeight(){
+  cancelAnimationFrame(heightFrame);
+  heightFrame=requestAnimationFrame(()=>{
+    const h=Math.max(document.documentElement.scrollHeight,document.body.scrollHeight);
+    try{parent.postMessage({type:'rds-campaign-height',height:h},location.origin)}catch(_){}
+  });
+}
+
 function filteredMonthly(){
   if(!state.data)return [];
   const all=state.data.monthly||[];
@@ -398,6 +503,7 @@ function render(){
       tr.innerHTML=`<td>${LABELS[i]}</td><td>${Math.floor(i/3)+1}º trimestre</td><td class="pts">${row?fmt(row.total)+' pts':'Sem registros'}</td>`;
       body.appendChild(tr);
     });
+    requestHeight();
     return;
   }
 
@@ -409,6 +515,7 @@ function render(){
     tr.innerHTML=`<td>${esc(name)}<span class="detail">${esc(extra)}</span></td><td>${esc(label)}</td><td class="pts">${fmt(value)} pts</td>`;
     body.appendChild(tr);
   });
+  requestHeight();
 }
 function setView(v){
   state.view=v;
@@ -437,6 +544,11 @@ function requestRoutineClose(){
 
 window.addEventListener('message',e=>{
   if(e.origin!==location.origin)return;
+
+  if(e.data?.type==='rds-campaign-request-height'){
+    requestHeight();
+    return;
+  }
 
   if(e.data?.type==='rds-campaign-context'){
     const u=e.data.user||{};
@@ -511,6 +623,16 @@ document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',(
 $('period').addEventListener('change',e=>{state.period=e.target.value;render()});
 $('backToRoutine').addEventListener('click',requestRoutineClose);
 $('backToCampaigns').addEventListener('click',showHome);
+$('campaignRulesBtn').addEventListener('click',openCampaignRules);
+$('rulesClose').addEventListener('click',closeCampaignRules);
+$('rulesBackdrop').addEventListener('click',e=>{if(e.target===$('rulesBackdrop'))closeCampaignRules()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('rulesBackdrop').classList.contains('hidden'))closeCampaignRules()});
+if('ResizeObserver' in window){
+  const ro=new ResizeObserver(requestHeight);
+  ro.observe(document.body);
+}
+window.addEventListener('load',requestHeight);
+setTimeout(requestHeight,80);
 </script>
 </body>
 </html>

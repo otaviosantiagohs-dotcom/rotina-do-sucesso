@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/><meta name="theme-color" content="#050608"/><meta name="color-scheme" content="dark light"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" name="viewport"/>
-<title>Rotina de Sucesso — V9.7.3 Final</title>
+<title>Rotina de Sucesso — V9.7.4 Final</title>
 <script>/* V9 — tema aplicado antes da pintura (evita piscar) */(function(){var t='dark';try{var s=localStorage.getItem('rds-theme');if(s==='light'||s==='dark')t=s}catch(e){}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='light'?'#f2f0ec':'#050608')})();</script>
 <style>
 :root{--bg:#0b0e12;--panel:#12171d;--panel2:#171d24;--line:#27303a;--text:#f5f7fa;--muted:#8d98a5;--red:#e43b32;--green:#61d394;--amber:#e9b45d}
@@ -1989,7 +1989,10 @@ tbody tr:hover{background:var(--accent-soft)}
 #campaignsFrame{display:block;width:100%;height:100%;border:0;background:var(--bg)}
 #campaignsGlobalBtn.active{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 #campaignsBackGlobalBtn{border-color:color-mix(in srgb,var(--accent) 42%,var(--line));font-weight:850}
-@media(max-width:760px){.campaigns-frame-shell{height:calc(100dvh - 205px);min-height:620px;border-radius:10px}}
+@media(max-width:760px){
+  .campaigns-frame-shell{height:420px;min-height:0;border-radius:10px;transition:height .16s ease}
+  #campaigns{padding-bottom:0}
+}
 </style>
 </head>
 <body>
@@ -2251,7 +2254,7 @@ tbody tr:hover{background:var(--accent-soft)}
 </main>
 <main class="hidden" id="campaigns">
   <div class="campaigns-frame-shell">
-    <iframe id="campaignsFrame" data-src="modules/campanhas/index.html?v=9.7.3.3" title="Campanhas — Rotina de Sucesso"></iframe>
+    <iframe id="campaignsFrame" data-src="modules/campanhas/index.html?v=9.7.4" title="Campanhas — Rotina de Sucesso"></iframe>
   </div>
 </main>
 <main class="hidden" id="performance">
@@ -3618,6 +3621,20 @@ async function loadCampaignsMine(campaignCode){
   }
 }
 
+
+function adjustCampaignFrameHeight(rawHeight){
+  const shell=document.querySelector('.campaigns-frame-shell');
+  if(!shell)return;
+  if(!window.matchMedia('(max-width:760px)').matches){
+    shell.style.height='';
+    return;
+  }
+  const h=Number(rawHeight);
+  if(!Number.isFinite(h)||h<=0)return;
+  const target=Math.max(300,Math.min(Math.ceil(h)+4,2400));
+  shell.style.height=target+'px';
+}
+
 function openCampaignsPage(){
   if(!currentUser)return;
   campaignsReturnState=captureCampaignsReturnState();
@@ -3643,6 +3660,8 @@ function openCampaignsPage(){
 }
 
 function closeCampaignsPage(){
+  const campaignShell=document.querySelector('.campaigns-frame-shell');
+  if(campaignShell)campaignShell.style.height='';
   $('#campaignsGlobalBtn').classList.remove('active');
   $('#campaignsBackGlobalBtn')?.classList.add('hidden');
   $('#campaigns').classList.add('hidden');
@@ -3670,6 +3689,10 @@ $('#campaignsFrame')?.addEventListener('load',()=>{
 });
 window.addEventListener('message',event=>{
   if(event.origin!==window.location.origin)return;
+  if(event.data?.type==='rds-campaign-height'){
+    adjustCampaignFrameHeight(event.data?.height);
+    return;
+  }
   if(event.data?.type==='rds-campaign-close'){
     closeCampaignsPage();
     return;
@@ -3680,6 +3703,14 @@ window.addEventListener('message',event=>{
   }
   if(event.data?.type==='rds-campaign-refresh-list'){
     loadActiveCampaigns();
+  }
+});
+window.addEventListener('resize',()=>{
+  if(!window.matchMedia('(max-width:760px)').matches){
+    const shell=document.querySelector('.campaigns-frame-shell');
+    if(shell)shell.style.height='';
+  }else{
+    try{$('#campaignsFrame')?.contentWindow?.postMessage({type:'rds-campaign-request-height'},window.location.origin)}catch(_){}
   }
 });
 window.RDSCloseCampaigns=closeCampaignsPage;
