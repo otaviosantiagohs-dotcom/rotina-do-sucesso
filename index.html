@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/><meta name="theme-color" content="#050608"/><meta name="color-scheme" content="dark light"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" name="viewport"/>
-<title>Rotina de Sucesso — V9.7.5 Final</title>
+<title>Rotina de Sucesso — V9.7.6 Final</title>
 <script>/* V9 — tema aplicado antes da pintura (evita piscar) */(function(){var t='dark';try{var s=localStorage.getItem('rds-theme');if(s==='light'||s==='dark')t=s}catch(e){}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='light'?'#f2f0ec':'#050608')})();</script>
 <style>
 :root{--bg:#0b0e12;--panel:#12171d;--panel2:#171d24;--line:#27303a;--text:#f5f7fa;--muted:#8d98a5;--red:#e43b32;--green:#61d394;--amber:#e9b45d}
@@ -2254,7 +2254,7 @@ tbody tr:hover{background:var(--accent-soft)}
 </main>
 <main class="hidden" id="campaigns">
   <div class="campaigns-frame-shell">
-    <iframe id="campaignsFrame" data-src="modules/campanhas/index.html?v=9.7.5" title="Campanhas — Rotina de Sucesso"></iframe>
+    <iframe id="campaignsFrame" data-src="modules/campanhas/index.html?v=9.7.6" title="Campanhas — Rotina de Sucesso"></iframe>
   </div>
 </main>
 <main class="hidden" id="performance">
@@ -3542,20 +3542,39 @@ async function loadCampaignsMine(campaignCode,targetWintourUser){
     const isAdmin=currentUser.role==='performance';
 
     if(isAdmin){
-      const {data:participantRows,error:participantError}=await supabaseClient
-        .from('campaign_results')
-        .select('wintour_user,primary_store')
-        .eq('campaign_id',campaign.id)
-        .order('wintour_user',{ascending:true});
+      // A campanha possui mais de 1.000 linhas. O PostgREST/Supabase pode
+      // limitar uma resposta a 1.000 registros, então buscamos em páginas
+      // para garantir que TODOS os participantes cheguem ao seletor do Admin.
+      const participantRows=[];
+      const pageSize=1000;
+      let pageStart=0;
 
-      if(participantError){
-        console.error('Campanhas · participantes admin:',participantError);
-        sendCampaignMessage('rds-campaign-data',{status:'error',campaignCode:code});
-        return;
+      while(true){
+        const {data:pageRows,error:participantError}=await supabaseClient
+          .from('campaign_results')
+          .select('wintour_user,primary_store')
+          .eq('campaign_id',campaign.id)
+          .order('wintour_user',{ascending:true})
+          .range(pageStart,pageStart+pageSize-1);
+
+        if(participantError){
+          console.error('Campanhas · participantes admin:',participantError);
+          sendCampaignMessage('rds-campaign-data',{status:'error',campaignCode:code});
+          return;
+        }
+
+        const batch=pageRows||[];
+        participantRows.push(...batch);
+
+        if(batch.length<pageSize)break;
+        pageStart+=pageSize;
+
+        // Proteção contra loop inesperado.
+        if(pageStart>20000)break;
       }
 
       const byUser=new Map();
-      (participantRows||[]).forEach(r=>{
+      participantRows.forEach(r=>{
         const u=String(r.wintour_user||'').trim();
         if(!u)return;
         if(!byUser.has(u))byUser.set(u,{wintourUser:u,primaryStore:r.primary_store||''});
