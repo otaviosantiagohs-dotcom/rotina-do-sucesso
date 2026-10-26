@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/><meta name="theme-color" content="#050608"/><meta name="color-scheme" content="dark light"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" name="viewport"/>
-<title>Rotina de Sucesso — V9.7.6 Final</title>
+<title>Rotina de Sucesso — V9.7.7 Final</title>
 <script>/* V9 — tema aplicado antes da pintura (evita piscar) */(function(){var t='dark';try{var s=localStorage.getItem('rds-theme');if(s==='light'||s==='dark')t=s}catch(e){}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='light'?'#f2f0ec':'#050608')})();</script>
 <style>
 :root{--bg:#0b0e12;--panel:#12171d;--panel2:#171d24;--line:#27303a;--text:#f5f7fa;--muted:#8d98a5;--red:#e43b32;--green:#61d394;--amber:#e9b45d}
@@ -2254,7 +2254,7 @@ tbody tr:hover{background:var(--accent-soft)}
 </main>
 <main class="hidden" id="campaigns">
   <div class="campaigns-frame-shell">
-    <iframe id="campaignsFrame" data-src="modules/campanhas/index.html?v=9.7.6" title="Campanhas — Rotina de Sucesso"></iframe>
+    <iframe id="campaignsFrame" data-src="modules/campanhas/index.html?v=9.7.7" title="Campanhas — Rotina de Sucesso"></iframe>
   </div>
 </main>
 <main class="hidden" id="performance">
@@ -3451,6 +3451,7 @@ function campaignsContext(){
     displayName:fullName(currentUser),
     unit:currentUser.role==='performance'?'Performance/Admin':userDisplayUnitCode(currentUser),
     role:currentUser.role,
+    isAdmin:currentUser.role==='performance',
     rank:currentUser.role==='gerente'?'Capitão':careerRankLabel(currentUser)
   };
 }
@@ -3519,6 +3520,218 @@ async function loadActiveCampaigns(){
   }
 }
 
+
+async function campaignOwnValidation(campaignId){
+  if(!campaignId||!currentUser||currentUser.source!=='supabase')return null;
+  try{
+    const {data,error}=await supabaseClient
+      .from('campaign_result_validations')
+      .select('status,validated_at,review_requested_at,updated_at,wintour_user')
+      .eq('campaign_id',campaignId)
+      .eq('user_id',currentUser.id)
+      .maybeSingle();
+    if(error){
+      console.error('Campanhas · validação própria:',error);
+      return null;
+    }
+    return data||null;
+  }catch(err){
+    console.error('Campanhas · validação própria inesperada:',err);
+    return null;
+  }
+}
+
+async function setCampaignMyValidation(campaignCode,status){
+  if(!currentUser||currentUser.source!=='supabase')return;
+
+  sendCampaignMessage('rds-campaign-validation-action-result',{
+    status:'loading',
+    campaignCode,
+    action:status
+  });
+
+  try{
+    const {data,error}=await supabaseClient.rpc('campaign_set_my_validation',{
+      p_campaign_code:campaignCode,
+      p_status:status
+    });
+
+    if(error)throw error;
+
+    const row=Array.isArray(data)?data[0]:data;
+    let performer=null;
+
+    if(status==='review_requested'){
+      const {data:performerRows,error:performerError}=await supabaseClient
+        .rpc('campaign_my_performer');
+
+      if(performerError){
+        console.error('Campanhas · Performer da unidade:',performerError);
+      }else{
+        const p=Array.isArray(performerRows)?performerRows[0]:performerRows;
+        performer=p?{
+          performerUserId:p.performer_user_id||null,
+          performerName:p.performer_name||null,
+          unitId:p.unit_id||null,
+          unitName:p.unit_name||null
+        }:null;
+      }
+    }
+
+    sendCampaignMessage('rds-campaign-validation-action-result',{
+      status:'ok',
+      campaignCode,
+      action:status,
+      validation:row||null,
+      performer
+    });
+  }catch(err){
+    console.error('Campanhas · registrar validação:',err);
+    sendCampaignMessage('rds-campaign-validation-action-result',{
+      status:'error',
+      campaignCode,
+      action:status,
+      message:err?.message||'Não foi possível registrar a confirmação.'
+    });
+  }
+}
+
+async function loadCampaignValidationDashboard(campaignCode){
+  if(!currentUser||currentUser.source!=='supabase'||currentUser.role!=='performance')return;
+
+  const code=String(campaignCode||'').trim();
+  if(!code)return;
+
+  sendCampaignMessage('rds-campaign-validation-dashboard',{
+    status:'loading',
+    campaignCode:code
+  });
+
+  try{
+    const {data:campaign,error:campaignError}=await supabaseClient
+      .from('campaigns')
+      .select('id,code,name,cycle,start_month,end_month')
+      .eq('code',code)
+      .maybeSingle();
+
+    if(campaignError||!campaign){
+      if(campaignError)console.error('Campanhas · painel validação campanha:',campaignError);
+      sendCampaignMessage('rds-campaign-validation-dashboard',{
+        status:'error',
+        campaignCode:code
+      });
+      return;
+    }
+
+    // Participantes: paginação evita limite de 1.000 registros do Supabase.
+    const participantRows=[];
+    const pageSize=1000;
+    let pageStart=0;
+
+    while(true){
+      const {data:pageRows,error:pageError}=await supabaseClient
+        .from('campaign_results')
+        .select('wintour_user,primary_store')
+        .eq('campaign_id',campaign.id)
+        .order('wintour_user',{ascending:true})
+        .range(pageStart,pageStart+pageSize-1);
+
+      if(pageError)throw pageError;
+      const batch=pageRows||[];
+      participantRows.push(...batch);
+      if(batch.length<pageSize)break;
+      pageStart+=pageSize;
+      if(pageStart>20000)break;
+    }
+
+    const participantsMap=new Map();
+    participantRows.forEach(r=>{
+      const u=String(r.wintour_user||'').trim();
+      if(!u)return;
+      if(!participantsMap.has(u)){
+        participantsMap.set(u,{
+          wintourUser:u,
+          primaryStore:r.primary_store||''
+        });
+      }
+    });
+
+    const [validationsRes,linksRes]=await Promise.all([
+      supabaseClient
+        .from('campaign_result_validations')
+        .select('user_id,wintour_user,status,validated_at,review_requested_at,updated_at')
+        .eq('campaign_id',campaign.id),
+      supabaseClient
+        .from('campaign_user_links')
+        .select('user_id,wintour_user')
+        .eq('campaign_id',campaign.id)
+    ]);
+
+    if(validationsRes.error)throw validationsRes.error;
+    if(linksRes.error)throw linksRes.error;
+
+    const links=linksRes.data||[];
+    const userIds=[...new Set(links.map(x=>x.user_id).filter(Boolean))];
+    const profileMap=new Map();
+
+    if(userIds.length){
+      const {data:profiles,error:profilesError}=await supabaseClient
+        .from('profiles')
+        .select('user_id,username,first_name,last_name,unit_id,active')
+        .in('user_id',userIds);
+
+      if(profilesError)throw profilesError;
+      (profiles||[]).forEach(p=>profileMap.set(p.user_id,p));
+    }
+
+    const linkByWintour=new Map(links.map(l=>[l.wintour_user,l]));
+    const validationByWintour=new Map((validationsRes.data||[]).map(v=>[v.wintour_user,v]));
+
+    const rows=Array.from(participantsMap.values())
+      .map(p=>{
+        const link=linkByWintour.get(p.wintourUser)||null;
+        const profile=link?profileMap.get(link.user_id)||null:null;
+        const validation=validationByWintour.get(p.wintourUser)||null;
+        const fullName=profile
+          ? [profile.first_name,profile.last_name].filter(Boolean).join(' ').trim()
+          : '';
+
+        return {
+          wintourUser:p.wintourUser,
+          primaryStore:p.primaryStore,
+          linked:!!link,
+          appUsername:profile?.username||'',
+          displayName:fullName||profile?.username||'',
+          status:validation?.status||'pending',
+          validatedAt:validation?.validated_at||null,
+          reviewRequestedAt:validation?.review_requested_at||null,
+          updatedAt:validation?.updated_at||null
+        };
+      })
+      .sort((a,b)=>a.wintourUser.localeCompare(b.wintourUser,'pt-BR'));
+
+    sendCampaignMessage('rds-campaign-validation-dashboard',{
+      status:'ok',
+      campaignCode:code,
+      campaign:{
+        code:campaign.code,
+        name:campaign.name,
+        cycle:campaign.cycle,
+        startMonth:campaign.start_month,
+        endMonth:campaign.end_month
+      },
+      rows
+    });
+  }catch(err){
+    console.error('Campanhas · painel de validação:',err);
+    sendCampaignMessage('rds-campaign-validation-dashboard',{
+      status:'error',
+      campaignCode:code,
+      message:err?.message||'Falha ao carregar validações.'
+    });
+  }
+}
+
 async function loadCampaignsMine(campaignCode,targetWintourUser){
   const code=String(campaignCode||'').trim();
   if(!code||!currentUser||currentUser.source!=='supabase')return;
@@ -3540,6 +3753,21 @@ async function loadCampaignsMine(campaignCode,targetWintourUser){
     }
 
     const isAdmin=currentUser.role==='performance';
+    let ownCampaignLink=null;
+    let ownValidation=null;
+
+    if(isAdmin){
+      const {data:ownLinkData,error:ownLinkError}=await supabaseClient
+        .from('campaign_user_links')
+        .select('wintour_user,link_method')
+        .eq('campaign_id',campaign.id)
+        .eq('user_id',currentUser.id)
+        .maybeSingle();
+
+      if(ownLinkError)console.error('Campanhas · vínculo próprio Admin:',ownLinkError);
+      ownCampaignLink=ownLinkData||null;
+      ownValidation=await campaignOwnValidation(campaign.id);
+    }
 
     if(isAdmin){
       // A campanha possui mais de 1.000 linhas. O PostgREST/Supabase pode
@@ -3614,6 +3842,9 @@ async function loadCampaignsMine(campaignCode,targetWintourUser){
         campaignCode:code,
         participants,
         selectedWintourUser:selected,
+        ownWintourUser:ownCampaignLink?.wintour_user||null,
+        isOwnResult:!!ownCampaignLink?.wintour_user&&selected===ownCampaignLink.wintour_user,
+        validation:ownCampaignLink?.wintour_user&&selected===ownCampaignLink.wintour_user?ownValidation:null,
         campaign:{
           code:campaign.code,
           name:campaign.name,
@@ -3687,9 +3918,14 @@ async function loadCampaignsMine(campaignCode,targetWintourUser){
       return;
     }
 
+    const validation=await campaignOwnValidation(campaign.id);
+
     sendCampaignMessage('rds-campaign-data',{
       status:'ok',
       adminMode:false,
+      isOwnResult:true,
+      ownWintourUser:link.wintour_user,
+      validation,
       campaignCode:code,
       campaign:{
         code:campaign.code,
@@ -3814,6 +4050,14 @@ window.addEventListener('message',event=>{
   }
   if(event.data?.type==='rds-campaign-user-select'){
     loadCampaignsMine(event.data?.campaignCode,event.data?.wintourUser);
+    return;
+  }
+  if(event.data?.type==='rds-campaign-validation-action'){
+    setCampaignMyValidation(event.data?.campaignCode,event.data?.status);
+    return;
+  }
+  if(event.data?.type==='rds-campaign-validation-dashboard-request'){
+    loadCampaignValidationDashboard(event.data?.campaignCode);
     return;
   }
   if(event.data?.type==='rds-campaign-refresh-list'){

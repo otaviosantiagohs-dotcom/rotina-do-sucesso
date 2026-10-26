@@ -42,6 +42,47 @@ h1{font-size:27px;margin:5px 0 4px;letter-spacing:-.03em}
 .private{margin-left:auto;color:var(--green);font:800 9px var(--mono);letter-spacing:.08em;text-transform:uppercase}
 
 /* CENTRAL DE CAMPANHAS */
+
+.validation-admin-btn{display:none}
+.validation-admin-btn.visible{display:inline-flex}
+.validation-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;padding:14px;border:1px solid var(--line);border-radius:16px;background:var(--panel)}
+.validation-actions .validation-copy{grid-column:1/-1}
+.validation-actions .validation-copy strong{display:block;font-size:14px;margin-bottom:4px}
+.validation-actions .validation-copy span{display:block;color:var(--muted);font-size:12px;line-height:1.45}
+.validation-actions .btn{min-height:44px;font-weight:900}
+.validation-actions .btn.validate{background:#1f7a4c;border-color:#2b9660;color:#fff}
+.validation-actions .btn.review{background:transparent}
+.validation-actions .btn[disabled]{opacity:.55;cursor:not-allowed}
+.validation-state{grid-column:1/-1;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 10px;border-radius:11px;background:var(--panel2);font-size:12px;color:var(--muted)}
+.validation-state b{color:var(--text)}
+.validation-pill{display:inline-flex;align-items:center;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:900;border:1px solid var(--line)}
+.validation-pill.validated{border-color:#2b9660;color:#64d99a;background:rgba(31,122,76,.12)}
+.validation-pill.review_requested{border-color:#d49a38;color:#f1bf66;background:rgba(212,154,56,.1)}
+.validation-pill.pending{color:var(--muted)}
+.review-backdrop,.validation-panel-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:18px;z-index:60}
+.review-card{width:min(520px,100%);border:1px solid var(--line);border-radius:18px;background:var(--panel);padding:20px}
+.review-card h2{margin:5px 0 8px;font-size:22px}
+.review-card p{margin:0;color:var(--muted);line-height:1.55}
+.performer-box{margin:14px 0;padding:13px;border:1px solid var(--line);border-radius:12px;background:var(--panel2)}
+.performer-box small{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;font-weight:900;letter-spacing:.05em}
+.performer-box strong{display:block;margin-top:5px;font-size:17px}
+.validation-dashboard{margin-top:12px}
+.validation-dashboard-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.validation-dashboard-head h2{margin:2px 0 4px;font-size:22px}
+.validation-dashboard-head p{margin:0;color:var(--muted);font-size:12px}
+.validation-toolbar{display:grid;grid-template-columns:minmax(180px,.8fr) minmax(220px,1fr);gap:8px;margin-bottom:10px}
+.validation-toolbar select,.validation-toolbar input{width:100%;min-height:44px;border:1px solid var(--line);border-radius:11px;background:var(--panel2);color:var(--text);padding:0 11px;font:inherit}
+.validation-filter-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.validation-filter-tabs button{min-height:38px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);color:var(--muted);padding:0 12px;font-weight:850;cursor:pointer}
+.validation-filter-tabs button.active{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.validation-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-bottom:10px}
+.validation-summary .stat{min-width:0}
+.validation-list{display:grid;gap:7px}
+.validation-row{display:grid;grid-template-columns:minmax(160px,1.1fr) minmax(130px,.8fr) minmax(120px,.7fr) minmax(140px,.8fr);gap:10px;align-items:center;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+.validation-row .user strong{display:block;font-size:13px}
+.validation-row .user span,.validation-row .store,.validation-row .date{font-size:11px;color:var(--muted)}
+.validation-empty{padding:22px 14px;text-align:center;border:1px dashed var(--line);border-radius:12px;color:var(--muted)}
+
 .campaign-home-head{
   display:flex;align-items:end;justify-content:space-between;gap:14px;margin:6px 0 10px
 }
@@ -202,6 +243,16 @@ tfoot td{border-bottom:0;background:var(--panel2);font-weight:900}
 }
 
   @media(max-width:760px){
+  .validation-actions{grid-template-columns:1fr;padding:11px;gap:7px}
+  .validation-actions .validation-copy,.validation-state{grid-column:1}
+  .validation-dashboard-head{flex-direction:column}
+  .validation-dashboard-head .btn{width:100%}
+  .validation-toolbar{grid-template-columns:1fr}
+  .validation-summary{grid-template-columns:1fr 1fr}
+  .validation-row{grid-template-columns:1fr;gap:5px}
+  .review-backdrop{align-items:end;padding:10px}
+  .review-card{border-radius:16px 16px 8px 8px}
+
     .admin-viewer{align-items:stretch;flex-direction:column;padding:12px}
     .admin-viewer .admin-tag{align-self:flex-start}
   }
@@ -233,7 +284,10 @@ tfoot td{border-bottom:0;background:var(--panel2);font-weight:900}
         <h2>Escolha uma campanha</h2>
         <p>Somente campanhas ativas aparecem aqui.</p>
       </div>
-      <div class="count" id="campaignCount">Carregando...</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+        <button class="btn validation-admin-btn" id="validationDashboardBtn" type="button">Validação de resultados por campanha</button>
+        <div class="count" id="campaignCount">Carregando...</div>
+      </div>
     </div>
 
     <div class="campaign-loading" id="campaignLoading">
@@ -282,6 +336,19 @@ tfoot td{border-bottom:0;background:var(--panel2);font-weight:900}
         </div>
       </section>
 
+      <section class="validation-actions hidden" id="validationActions">
+        <div class="validation-copy">
+          <strong>Confirmação do resultado</strong>
+          <span>Confirma que visualizou e está de acordo com o resultado desta campanha. Se houver questionamento, solicita revisão antes de validar.</span>
+        </div>
+        <button class="btn validate" id="validateResultBtn" type="button">Resultado validado</button>
+        <button class="btn review" id="requestReviewBtn" type="button">Solicitar revisão</button>
+        <div class="validation-state" id="validationState">
+          <span class="validation-pill pending">Pendente</span>
+          <span>Aguardando tua confirmação.</span>
+        </div>
+      </section>
+
       <div class="controls">
         <div class="tabs">
           <button class="active" data-view="geral" type="button">Geral</button>
@@ -311,7 +378,52 @@ tfoot td{border-bottom:0;background:var(--panel2);font-weight:900}
       </section>
     </div>
   </section>
+  <section id="validationDashboard" class="hidden validation-dashboard">
+    <div class="validation-dashboard-head">
+      <div>
+        <div class="kicker">Performance/Admin</div>
+        <h2>Validação de resultados por campanha</h2>
+        <p>Consulta exclusiva dos administradores. Acompanha quem validou, quem solicitou revisão e quem ainda está pendente.</p>
+      </div>
+      <button class="btn" id="backFromValidationDashboard" type="button">← Campanhas</button>
+    </div>
+
+    <div class="validation-toolbar">
+      <select id="validationCampaignSelect" aria-label="Campanha"></select>
+      <input id="validationSearch" type="search" placeholder="Buscar usuário Wintour, login ou loja..."/>
+    </div>
+
+    <div class="validation-filter-tabs">
+      <button class="active" data-validation-filter="all" type="button">Todos</button>
+      <button data-validation-filter="validated" type="button">Validados</button>
+      <button data-validation-filter="review_requested" type="button">Revisão solicitada</button>
+      <button data-validation-filter="pending" type="button">Pendentes</button>
+    </div>
+
+    <div class="validation-summary">
+      <article class="stat"><div class="l">Participantes</div><div class="v" id="validationTotal">0</div><div class="s">Na campanha</div></article>
+      <article class="stat"><div class="l">Validados</div><div class="v" id="validationValidated">0</div><div class="s">Confirmados</div></article>
+      <article class="stat"><div class="l">Revisão</div><div class="v" id="validationReview">0</div><div class="s">Com questionamento</div></article>
+      <article class="stat"><div class="l">Pendentes</div><div class="v" id="validationPending">0</div><div class="s">Sem confirmação</div></article>
+    </div>
+
+    <div class="validation-list" id="validationList"></div>
+  </section>
 </main>
+
+<div class="review-backdrop hidden" id="reviewBackdrop" role="dialog" aria-modal="true" aria-labelledby="reviewTitle">
+  <section class="review-card">
+    <div class="kicker">Solicitação de revisão</div>
+    <h2 id="reviewTitle">Certo. Para isso, entre em contato com o seu Performer.</h2>
+    <p>O resultado ficou marcado como <b>Revisão solicitada</b>. Procura o Performer responsável pela tua unidade para esclarecer o resultado.</p>
+    <div class="performer-box">
+      <small>Performer da tua unidade</small>
+      <strong id="reviewPerformerName">Consultando...</strong>
+      <span class="sub" id="reviewUnitName"></span>
+    </div>
+    <button class="btn red" id="closeReviewMessage" type="button">Entendi</button>
+  </section>
+</div>
 
 <div class="rules-backdrop hidden" id="rulesBackdrop" role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
   <section class="rules-card">
@@ -352,7 +464,12 @@ let state={
   campaigns:[],
   selectedCode:null,
   selectedCampaign:null,
-  adminMode:false
+  adminMode:false,
+  isAdmin:false,
+  validation:null,
+  validationFilter:'all',
+  validationDashboardRows:[],
+  validationDashboardCampaign:null
 };
 
 function initials(n){
@@ -372,6 +489,7 @@ function showHome(){
   state.selectedCampaign=null;
   $('rulesBackdrop')?.classList.add('hidden');
   $('campaignResult').classList.add('hidden');
+  $('validationDashboard').classList.add('hidden');
   $('campaignHome').classList.remove('hidden');
   $('adminViewer')?.classList.add('hidden');
   $('pageTitle').textContent='Campanhas ativas';
@@ -563,6 +681,173 @@ function requestRoutineClose(){
 }
 
 
+
+function formatDateTime(v){
+  if(!v)return '—';
+  try{
+    return new Intl.DateTimeFormat('pt-BR',{
+      dateStyle:'short',
+      timeStyle:'short'
+    }).format(new Date(v));
+  }catch(_){return '—'}
+}
+
+function validationLabel(status){
+  if(status==='validated')return 'Validado';
+  if(status==='review_requested')return 'Revisão solicitada';
+  return 'Pendente';
+}
+
+function renderOwnValidation(payload){
+  const root=$('validationActions');
+  const own=payload?.isOwnResult===true;
+
+  if(!own){
+    root.classList.add('hidden');
+    return;
+  }
+
+  root.classList.remove('hidden');
+  state.validation=payload.validation||null;
+
+  const status=state.validation?.status||'pending';
+  const stateEl=$('validationState');
+  const validateBtn=$('validateResultBtn');
+  const reviewBtn=$('requestReviewBtn');
+
+  if(status==='validated'){
+    const when=formatDateTime(state.validation?.validated_at||state.validation?.validatedAt);
+    stateEl.innerHTML=`<span class="validation-pill validated">VALIDADO</span><span><b>Resultado confirmado.</b> Registrado em ${esc(when)}.</span>`;
+    validateBtn.disabled=true;
+    validateBtn.textContent='Resultado validado ✓';
+    reviewBtn.disabled=true;
+    return;
+  }
+
+  if(status==='review_requested'){
+    const when=formatDateTime(state.validation?.review_requested_at||state.validation?.reviewRequestedAt);
+    stateEl.innerHTML=`<span class="validation-pill review_requested">REVISÃO SOLICITADA</span><span><b>Revisão registrada.</b> Solicitação em ${esc(when)}. Depois de esclarecer, tu ainda podes validar o resultado.</span>`;
+    validateBtn.disabled=false;
+    validateBtn.textContent='Resultado validado';
+    reviewBtn.disabled=true;
+    reviewBtn.textContent='Revisão solicitada ✓';
+    return;
+  }
+
+  stateEl.innerHTML='<span class="validation-pill pending">PENDENTE</span><span>Aguardando tua confirmação.</span>';
+  validateBtn.disabled=false;
+  validateBtn.textContent='Resultado validado';
+  reviewBtn.disabled=false;
+  reviewBtn.textContent='Solicitar revisão';
+}
+
+function sendValidationAction(status){
+  if(!state.selectedCode)return;
+  const validateBtn=$('validateResultBtn');
+  const reviewBtn=$('requestReviewBtn');
+  validateBtn.disabled=true;
+  reviewBtn.disabled=true;
+
+  try{
+    parent.postMessage({
+      type:'rds-campaign-validation-action',
+      campaignCode:state.selectedCode,
+      status
+    },location.origin);
+  }catch(_){}
+}
+
+function openValidationDashboard(){
+  if(!state.isAdmin)return;
+
+  $('campaignHome').classList.add('hidden');
+  $('campaignResult').classList.add('hidden');
+  $('validationDashboard').classList.remove('hidden');
+  $('pageTitle').textContent='Validação de resultados por campanha';
+  $('pageSubtitle').textContent='Painel exclusivo Performance/Admin.';
+
+  const select=$('validationCampaignSelect');
+  select.innerHTML='';
+  state.campaigns.forEach(c=>{
+    const opt=new Option(`${c.name} · ${c.cycle||''}`,c.code);
+    select.add(opt);
+  });
+
+  const code=select.value||state.campaigns[0]?.code;
+  if(code)requestValidationDashboard(code);
+  requestHeight();
+}
+
+function requestValidationDashboard(code){
+  if(!state.isAdmin||!code)return;
+  $('validationList').innerHTML='<div class="validation-empty">Carregando validações...</div>';
+  try{
+    parent.postMessage({
+      type:'rds-campaign-validation-dashboard-request',
+      campaignCode:code
+    },location.origin);
+  }catch(_){}
+}
+
+function filteredValidationRows(){
+  const q=($('validationSearch')?.value||'').trim().toLowerCase();
+  return (state.validationDashboardRows||[]).filter(r=>{
+    if(state.validationFilter!=='all'&&r.status!==state.validationFilter)return false;
+    if(!q)return true;
+    return [
+      r.wintourUser,
+      r.appUsername,
+      r.displayName,
+      r.primaryStore
+    ].join(' ').toLowerCase().includes(q);
+  });
+}
+
+function renderValidationDashboard(){
+  const rows=state.validationDashboardRows||[];
+  const validated=rows.filter(r=>r.status==='validated').length;
+  const review=rows.filter(r=>r.status==='review_requested').length;
+  const pending=rows.filter(r=>r.status==='pending').length;
+
+  $('validationTotal').textContent=String(rows.length);
+  $('validationValidated').textContent=String(validated);
+  $('validationReview').textContent=String(review);
+  $('validationPending').textContent=String(pending);
+
+  const visible=filteredValidationRows();
+  const list=$('validationList');
+
+  if(!visible.length){
+    list.innerHTML='<div class="validation-empty">Nenhum usuário corresponde ao filtro selecionado.</div>';
+    requestHeight();
+    return;
+  }
+
+  list.innerHTML=visible.map(r=>{
+    const date=r.status==='validated'
+      ? formatDateTime(r.validatedAt)
+      : r.status==='review_requested'
+        ? formatDateTime(r.reviewRequestedAt)
+        : '—';
+
+    const app=r.displayName
+      ? `${r.displayName}${r.appUsername&&r.appUsername!==r.displayName?' · '+r.appUsername:''}`
+      : (r.appUsername||'Sem vínculo com login');
+
+    return `<article class="validation-row">
+      <div class="user">
+        <strong>${esc(r.wintourUser)}</strong>
+        <span>${esc(app)}</span>
+      </div>
+      <div class="store">${esc(r.primaryStore||'Loja não informada')}</div>
+      <div><span class="validation-pill ${esc(r.status)}">${esc(validationLabel(r.status))}</span></div>
+      <div class="date">${esc(date)}</div>
+    </article>`;
+  }).join('');
+
+  requestHeight();
+}
+
 function renderAdminParticipants(payload){
   const viewer=$('adminViewer');
   const select=$('adminParticipant');
@@ -602,6 +887,8 @@ window.addEventListener('message',e=>{
     $('name').textContent=u.displayName||'Usuário logado';
     $('unit').textContent=(u.unit||'Unidade')+(u.rank?' · '+u.rank:'');
     $('avatar').textContent=initials(u.displayName);
+    state.isAdmin=u.isAdmin===true||u.role==='performance';
+    $('validationDashboardBtn').classList.toggle('visible',state.isAdmin);
   }
 
   if(e.data?.type==='rds-campaign-list'){
@@ -651,6 +938,7 @@ window.addEventListener('message',e=>{
     if(p.status==='ok'&&Array.isArray(p.monthly)){
       state.data=p;
       renderAdminParticipants(p);
+      renderOwnValidation(p);
 
       if(p.adminMode){
         const viewed=p.participant?.wintourUser||p.selectedWintourUser||'Usuário';
@@ -676,11 +964,85 @@ window.addEventListener('message',e=>{
       $('total').innerHTML=fmt(sumTotal(p.monthly))+' <span>pontos</span>';
       setView('geral');
     }
+
+  if(e.data?.type==='rds-campaign-validation-action-result'){
+    const p=e.data.payload||{};
+    if(p.campaignCode&&state.selectedCode&&p.campaignCode!==state.selectedCode)return;
+
+    if(p.status==='loading'){
+      return;
+    }
+
+    if(p.status==='error'){
+      renderOwnValidation({
+        isOwnResult:true,
+        validation:state.validation
+      });
+      alert(p.message||'Não foi possível registrar a confirmação.');
+      return;
+    }
+
+    if(p.status==='ok'){
+      const normalized=p.validation?{
+        status:p.validation.status,
+        validated_at:p.validation.validated_at,
+        review_requested_at:p.validation.review_requested_at
+      }:null;
+
+      state.validation=normalized;
+      renderOwnValidation({
+        isOwnResult:true,
+        validation:normalized
+      });
+
+      if(p.action==='review_requested'){
+        const performer=p.performer||{};
+        $('reviewPerformerName').textContent=performer.performerName||'Performer não definido para esta unidade';
+        $('reviewUnitName').textContent=performer.unitName
+          ? `Unidade: ${performer.unitName}`
+          : 'Procura a Gestão Comercial caso a unidade ainda não tenha Performer vinculado.';
+        $('reviewBackdrop').classList.remove('hidden');
+      }
+      requestHeight();
+    }
+  }
+
+  if(e.data?.type==='rds-campaign-validation-dashboard'){
+    const p=e.data.payload||{};
+    if(p.status==='loading'){
+      $('validationList').innerHTML='<div class="validation-empty">Carregando validações...</div>';
+      return;
+    }
+    if(p.status==='error'){
+      $('validationList').innerHTML='<div class="validation-empty">Não foi possível carregar as validações desta campanha.</div>';
+      return;
+    }
+    if(p.status==='ok'){
+      state.validationDashboardRows=Array.isArray(p.rows)?p.rows:[];
+      state.validationDashboardCampaign=p.campaign||null;
+      renderValidationDashboard();
+    }
+  }
+
   }
 });
 
 document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
 $('period').addEventListener('change',e=>{state.period=e.target.value;render()});
+$('validateResultBtn').addEventListener('click',()=>sendValidationAction('validated'));
+$('requestReviewBtn').addEventListener('click',()=>sendValidationAction('review_requested'));
+$('closeReviewMessage').addEventListener('click',()=>{$('reviewBackdrop').classList.add('hidden');requestHeight()});
+$('reviewBackdrop').addEventListener('click',e=>{if(e.target===$('reviewBackdrop')){$('reviewBackdrop').classList.add('hidden');requestHeight()}});
+$('validationDashboardBtn').addEventListener('click',openValidationDashboard);
+$('backFromValidationDashboard').addEventListener('click',showHome);
+$('validationCampaignSelect').addEventListener('change',e=>requestValidationDashboard(e.target.value));
+$('validationSearch').addEventListener('input',renderValidationDashboard);
+document.querySelectorAll('[data-validation-filter]').forEach(btn=>btn.addEventListener('click',()=>{
+  state.validationFilter=btn.dataset.validationFilter||'all';
+  document.querySelectorAll('[data-validation-filter]').forEach(b=>b.classList.toggle('active',b===btn));
+  renderValidationDashboard();
+}));
+
 $('adminParticipant').addEventListener('change',e=>{
   const wintourUser=e.target.value;
   if(!state.selectedCode||!wintourUser)return;
@@ -697,7 +1059,15 @@ $('backToCampaigns').addEventListener('click',showHome);
 $('campaignRulesBtn').addEventListener('click',openCampaignRules);
 $('rulesClose').addEventListener('click',closeCampaignRules);
 $('rulesBackdrop').addEventListener('click',e=>{if(e.target===$('rulesBackdrop'))closeCampaignRules()});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('rulesBackdrop').classList.contains('hidden'))closeCampaignRules()});
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape')return;
+  if(!$('reviewBackdrop').classList.contains('hidden')){
+    $('reviewBackdrop').classList.add('hidden');
+    requestHeight();
+    return;
+  }
+  if(!$('rulesBackdrop').classList.contains('hidden'))closeCampaignRules();
+});
 if('ResizeObserver' in window){
   const ro=new ResizeObserver(requestHeight);
   ro.observe(document.body);
