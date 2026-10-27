@@ -385,13 +385,17 @@ tfoot td{border-bottom:0;background:var(--panel2);font-weight:900}
         <h2>Validação de resultados por campanha</h2>
         <p>Consulta exclusiva dos administradores. Acompanha quem validou, quem solicitou revisão e quem ainda está pendente.</p>
       </div>
-      <button class="btn" id="backFromValidationDashboard" type="button">← Campanhas</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" id="refreshValidationDashboard" type="button">↻ Atualizar validações</button>
+        <button class="btn" id="backFromValidationDashboard" type="button">← Campanhas</button>
+      </div>
     </div>
 
     <div class="validation-toolbar">
       <select id="validationCampaignSelect" aria-label="Campanha"></select>
       <input id="validationSearch" type="search" placeholder="Buscar usuário Wintour, login ou loja..."/>
     </div>
+    <div class="sub" id="validationLastUpdated" style="margin:-2px 0 10px">Última atualização: —</div>
 
     <div class="validation-filter-tabs">
       <button class="active" data-validation-filter="all" type="button">Todos</button>
@@ -565,7 +569,7 @@ function campaignRules(code){
         ['Pontuação por vendas','Premiação média a partir de R$ 179: 2 pontos por venda. Abaixo de R$ 179: 1 ponto por venda.'],
         ['Recompra','Cada recompra válida soma 1 ponto.'],
         ['Meta DU individual','Ao atingir a Meta DU individual, soma 50 pontos.'],
-        ['CRM','O venda realizada para cliente do CRM lançada corretamente no sistema soma a pontuação prevista na apuração oficial da campanha.'],
+        ['CRM','Venda realizada para cliente do CRM lançada corretamente no sistema.'],
         ['Plano de Voo','Resultado de 75 a 85: +10 pontos · 86 a 95: +20 pontos · 96 ou mais: +30 pontos.']
       ],
       note:'Os resultados exibidos na Rotina de Sucesso vêm da apuração oficial importada da campanha. A tela não recalcula nem altera a pontuação.'
@@ -781,6 +785,11 @@ function openValidationDashboard(){
 function requestValidationDashboard(code){
   if(!state.isAdmin||!code)return;
   $('validationList').innerHTML='<div class="validation-empty">Carregando validações...</div>';
+  const refreshBtn=$('refreshValidationDashboard');
+  if(refreshBtn){
+    refreshBtn.disabled=true;
+    refreshBtn.textContent='Atualizando...';
+  }
   try{
     parent.postMessage({
       type:'rds-campaign-validation-dashboard-request',
@@ -1013,6 +1022,13 @@ window.addEventListener('message',e=>{
       $('validationList').innerHTML='<div class="validation-empty">Carregando validações...</div>';
       return;
     }
+
+    const refreshBtn=$('refreshValidationDashboard');
+    if(refreshBtn){
+      refreshBtn.disabled=false;
+      refreshBtn.textContent='↻ Atualizar validações';
+    }
+
     if(p.status==='error'){
       $('validationList').innerHTML='<div class="validation-empty">Não foi possível carregar as validações desta campanha.</div>';
       return;
@@ -1020,6 +1036,7 @@ window.addEventListener('message',e=>{
     if(p.status==='ok'){
       state.validationDashboardRows=Array.isArray(p.rows)?p.rows:[];
       state.validationDashboardCampaign=p.campaign||null;
+      $('validationLastUpdated').textContent='Última atualização: '+formatDateTime(p.loadedAt||new Date().toISOString());
       renderValidationDashboard();
     }
   }
@@ -1034,6 +1051,10 @@ $('requestReviewBtn').addEventListener('click',()=>sendValidationAction('review_
 $('closeReviewMessage').addEventListener('click',()=>{$('reviewBackdrop').classList.add('hidden');requestHeight()});
 $('reviewBackdrop').addEventListener('click',e=>{if(e.target===$('reviewBackdrop')){$('reviewBackdrop').classList.add('hidden');requestHeight()}});
 $('validationDashboardBtn').addEventListener('click',openValidationDashboard);
+$('refreshValidationDashboard').addEventListener('click',()=>{
+  const code=$('validationCampaignSelect').value||state.validationDashboardCampaign?.code;
+  if(code)requestValidationDashboard(code);
+});
 $('backFromValidationDashboard').addEventListener('click',showHome);
 $('validationCampaignSelect').addEventListener('change',e=>requestValidationDashboard(e.target.value));
 $('validationSearch').addEventListener('input',renderValidationDashboard);

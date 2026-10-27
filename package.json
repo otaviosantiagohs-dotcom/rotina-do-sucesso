@@ -1,7 +1,7 @@
 {
   "name": "rotina-do-sucesso",
   "private": true,
-  "version": "8.6.0",
+  "version": "10.1.0",
   "dependencies": {
     "@supabase/supabase-js": "^2.0.0"
   }
